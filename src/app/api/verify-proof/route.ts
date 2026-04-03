@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { registerOnChain } from '@/lib/world-id';
+import type { Address } from 'viem';
 
 interface IRequestPayload {
-  payload: Record<string, unknown>;
+  payload: {
+    merkle_root: string;
+    nullifier_hash: string;
+    proof: string;
+    [key: string]: unknown;
+  };
   action: string;
   signal: string | undefined;
 }
@@ -32,12 +39,35 @@ export async function POST(req: NextRequest) {
   const verifyRes = (await response.json()) as IVerifyResponse;
 
   if (verifyRes.success) {
-    // This is where you should perform backend actions if the verification succeeds
-    // Such as, setting a user as "verified" in a database
-    return NextResponse.json({ verifyRes, status: 200 });
+    // Register on-chain via CredentialGate if signal is a valid address
+    let onChainResult = null;
+    if (signal && process.env.CREDENTIAL_GATE) {
+      try {
+        const proofArray = decodeProof(payload.proof);
+        onChainResult = await registerOnChain(
+          signal as Address,
+          BigInt(payload.merkle_root),
+          BigInt(payload.nullifier_hash),
+          proofArray,
+        );
+      } catch (err) {
+        console.error('On-chain registration failed:', err);
+        // API verification succeeded — return success even if on-chain fails
+      }
+    }
+
+    return NextResponse.json({ verifyRes, onChainResult, status: 200 });
   } else {
-    // This is where you should handle errors from the World ID /verify endpoint.
-    // Usually these errors are due to a user having already verified.
     return NextResponse.json({ verifyRes, status: 400 });
   }
+}
+
+/** Decode ABI-encoded proof string into 8-element bigint tuple */
+function decodeProof(proof: string): readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] {
+  const packed = proof.startsWith('0x') ? proof.slice(2) : proof;
+  const result: bigint[] = [];
+  for (let i = 0; i < 8; i++) {
+    result.push(BigInt('0x' + packed.slice(i * 64, (i + 1) * 64)));
+  }
+  return result as unknown as readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
 }
