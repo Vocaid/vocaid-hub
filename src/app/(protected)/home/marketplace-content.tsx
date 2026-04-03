@@ -39,34 +39,55 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
     setPaying(true);
 
     try {
-      const amount = parsePrice(resource.price);
+      // Step 1: Initiate payment — get x402 requirements from server
+      const initRes = await fetch('/api/initiate-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resourceName: resource.name,
+          resourceType: resource.type,
+          amount: parsePrice(resource.price),
+        }),
+      });
 
-      // x402 flow: first request without payment header gets 402 + payment requirements
-      // Then re-request with X-PAYMENT header containing signed payment
-      // For demo: we send a mock X-PAYMENT header to trigger the full flow
-      const mockPaymentPayload = btoa(JSON.stringify({
-        network: 'hedera-testnet',
-        amount,
+      const initData = await initRes.json();
+      if (!initRes.ok) {
+        console.error('Payment initiation failed:', initData.error);
+        return;
+      }
+
+      // Step 2: Construct x402 payment header with requirements
+      const paymentPayload = btoa(JSON.stringify({
+        paymentId: initData.paymentId,
+        network: initData.requirements.network,
+        token: initData.requirements.token,
+        amount: initData.requirements.amount,
+        payer: 'world-app-user',
         resource: resource.name,
         timestamp: Date.now(),
       }));
 
+      // Step 3: Send payment to /api/payments with X-PAYMENT header
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-PAYMENT': mockPaymentPayload,
+          'X-PAYMENT': paymentPayload,
         },
+        body: JSON.stringify({ resourceName: resource.name }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
         setPaymentResult({
-          amount: data.payment?.amount ?? amount,
+          amount: data.payment?.amount ?? initData.requirements.amount,
           txHash: data.payment?.txHash ?? 'pending',
           resourceName: resource.name,
         });
+      } else if (res.status === 402) {
+        // x402: server returned payment requirements (shouldn't happen with header)
+        console.error('Payment required:', data.accepts);
       } else {
         console.error('Payment failed:', data.error);
       }
@@ -98,7 +119,7 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
       {/* Resource cards */}
       {filtered.length > 0 ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 stagger-children">
           {filtered.map((resource) => (
             <ResourceCard
               key={`${resource.type}-${resource.name}`}

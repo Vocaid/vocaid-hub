@@ -4,14 +4,13 @@
   "setupAt": "2026-04-03T20:00:00.000Z",
   "tokens": {
     "credentialToken": {
-      "id": "PENDING_SETUP",
+      "id": "0.0.8499633",
       "name": "VocaidCredential",
       "symbol": "VCRED",
       "type": "NON_FUNGIBLE_UNIQUE",
       "supplyType": "INFINITE",
       "kycRequired": true,
-      "freezeDefault": false,
-      "note": "Run `npx tsx scripts/setup-hedera.ts` to create and fill this ID"
+      "freezeDefault": false
     },
     "usdc": {
       "id": "0.0.429274",
@@ -20,9 +19,8 @@
   },
   "topics": {
     "auditTrail": {
-      "id": "PENDING_SETUP",
-      "memo": "Vocaid Hub — Agent Decision Audit Trail",
-      "note": "Run `npx tsx scripts/setup-hedera.ts` to create and fill this ID"
+      "id": "0.0.8499635",
+      "memo": "Vocaid Hub — Agent Decision Audit Trail"
     }
   },
   "facilitator": {

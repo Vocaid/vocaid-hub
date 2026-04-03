@@ -12,3 +12,4 @@ coverage/
 
 # OpenClaw
 agents/.0g-skills/node_modules/
+.vercel

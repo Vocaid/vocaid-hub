@@ -29,16 +29,30 @@ A Python backend would need to shell out to Node.js for MiniKit, 0G broker, and 
 vocaid-hub/
 ├── app/                       # Next.js 15 App Router
 │   ├── layout.tsx             # Root layout with MiniKit provider
-│   ├── page.tsx               # Marketplace (ISR 30s)
+│   ├── page.tsx               # Landing / entry point
+│   ├── (protected)/           # Auth-gated route group
+│   │   ├── layout.tsx         # World ID session check
+│   │   ├── home/
+│   │   │   └── page.tsx       # Marketplace (ISR 30s)
+│   │   ├── predictions/
+│   │   │   └── page.tsx       # Prediction markets (ISR 10s)
+│   │   └── profile/
+│   │       └── page.tsx       # User profile + agent fleet (SSR)
 │   ├── gpu-verify/
 │   │   └── page.tsx           # GPU provider portal (SSR)
-│   ├── predictions/
-│   │   └── page.tsx           # Prediction markets (ISR 10s)
-│   ├── profile/
-│   │   └── page.tsx           # User profile + agent fleet (SSR)
+│   ├── .well-known/
+│   │   └── agent-card.json/   # A2A agent card endpoint (ERC-8004)
 │   └── api/                   # Server-side API routes (holds keys)
-│       ├── verify/
+│       ├── auth/
+│       │   └── [...nextauth]/
+│       │       └── route.ts   # NextAuth session provider
+│       ├── verify-proof/
 │       │   └── route.ts       # World ID proof validation
+│       ├── world-id/
+│       │   └── check/
+│       │       └── route.ts   # World ID status check
+│       ├── rp-signature/
+│       │   └── route.ts       # RP signature for World ID
 │       ├── gpu/
 │       │   ├── register/
 │       │   │   └── route.ts   # GPU provider ERC-8004 registration
@@ -46,6 +60,11 @@ vocaid-hub/
 │       │       └── route.ts   # List verified providers
 │       ├── payments/
 │       │   └── route.ts       # Hedera x402 via Blocky402
+│       ├── initiate-payment/
+│       │   └── route.ts       # MiniKit payment initiation
+│       ├── hedera/
+│       │   └── audit/
+│       │       └── route.ts   # HCS audit trail via Mirror Node
 │       ├── predictions/
 │       │   ├── route.ts       # List/create markets
 │       │   └── [id]/

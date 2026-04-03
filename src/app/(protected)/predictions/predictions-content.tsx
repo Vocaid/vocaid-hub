@@ -41,7 +41,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   return (
     <>
       {markets.length > 0 ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 stagger-children">
           {markets.map((market) => (
             <PredictionCard key={market.id} market={market} onBet={handleBet} />
           ))}
