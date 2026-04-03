@@ -75,7 +75,7 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 | Framework | Next.js | ^15.2.8 | App Router, SSR/ISR, API routes |
 | Language | TypeScript | ^5 | Type-safe throughout |
 | UI | Tailwind CSS | ^4 | Mobile-first responsive design |
-| Auth | World ID + NextAuth | 4.0-dev / 5.0-beta | ZK proof verification, session management |
+| Auth | World ID + NextAuth | ^5.0.0-beta.25 | ZK proof verification, session management |
 | World SDK | @worldcoin/minikit-js + minikit-react | latest | MiniKit commands (verify, pay, signTypedData) |
 | 0G SDK | @0glabs/0g-serving-broker + 0g-ts-sdk | ^0.7.4 / ^0.3.3 | Compute broker, storage, chain interactions |
 | Hedera SDK | @hashgraph/sdk + hedera-agent-kit | ^2.81.0 / ^3.8.2-rc.1 | HTS tokens, HCS topics, transfers |

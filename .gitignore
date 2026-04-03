@@ -10,6 +10,13 @@ artifacts/
 typechain-types/
 coverage/
 
+# Build artifacts
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# IDE / tooling
+.vercel/
+.claude/
+
 # OpenClaw
 agents/.0g-skills/node_modules/
-.vercel

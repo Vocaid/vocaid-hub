@@ -91,3 +91,24 @@ body {
 .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
 .stagger-children > *:nth-child(7) { animation-delay: 360ms; }
 .stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+
+/* Page enter animation for route transitions */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.25s ease-out both;
+}
+
+/* World App bottom bar reserve */
+.pb-world-safe {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
