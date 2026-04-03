@@ -2,8 +2,6 @@ import {
   createPublicClient,
   createWalletClient,
   http,
-  encodeFunctionData,
-  decodeFunctionResult,
   type Address,
   type Hex,
 } from "viem";
