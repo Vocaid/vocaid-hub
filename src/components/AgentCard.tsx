@@ -18,10 +18,10 @@ export interface AgentCardProps {
 }
 
 const roleConfig: Record<AgentRole, { icon: typeof Bot; label: string; color: string }> = {
-  'signal-analyst': { icon: Eye, label: 'Signal Analyst', color: 'text-blue-400' },
-  'market-maker': { icon: TrendingUp, label: 'Market Maker', color: 'text-green-400' },
-  'risk-manager': { icon: Shield, label: 'Risk Manager', color: 'text-red-400' },
-  'discovery': { icon: Bot, label: 'Discovery', color: 'text-purple-400' },
+  'signal-analyst': { icon: Eye, label: 'Signal Analyst', color: 'text-chain-world' },
+  'market-maker': { icon: TrendingUp, label: 'Market Maker', color: 'text-chain-og' },
+  'risk-manager': { icon: Shield, label: 'Risk Manager', color: 'text-status-failed' },
+  'discovery': { icon: Bot, label: 'Discovery', color: 'text-chain-hedera' },
 };
 
 export function AgentCard({
@@ -38,16 +38,16 @@ export function AgentCard({
   return (
     <button
       onClick={() => onSelect?.(agentId)}
-      className="w-full rounded-xl border border-gray-800 bg-gray-900/60 p-4 text-left transition-colors hover:border-gray-600"
+      className="w-full rounded-xl border border-border-card bg-surface p-4 text-left transition-colors hover:border-primary-accent/30"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className={`rounded-lg bg-gray-800 p-2 ${color}`}>
+          <div className={`rounded-lg bg-surface p-2 ${color}`}>
             <RoleIcon size={20} />
           </div>
           <div>
-            <h3 className="font-semibold text-white">{name}</h3>
-            <p className="text-sm text-gray-400">{label}</p>
+            <h3 className="font-semibold text-primary">{name}</h3>
+            <p className="text-sm text-secondary">{label}</p>
           </div>
         </div>
         <ChainBadge chain="0g" />
@@ -60,12 +60,12 @@ export function AgentCard({
             verified={verified}
             type="world-id"
           />
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-secondary">
             ERC-8004 #{agentId}
           </span>
         </div>
         {operatorWorldId && operatorWorldId !== 'pending-verification' && (
-          <p className="truncate text-xs text-gray-500">
+          <p className="truncate text-xs text-secondary">
             Operator: {operatorWorldId.slice(0, 10)}...
           </p>
         )}

@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Vocaid Hub — Hybrid Resource Allocation',
   description: 'Discover, verify, and trade any resource — human skills, GPU compute, AI agents — across World, 0G, and Hedera.',
+  icons: {
+    icon: '/compact-logo.png',
+    apple: '/compact-logo.png',
+  },
 };
 
 export default async function RootLayout({

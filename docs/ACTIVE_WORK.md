@@ -30,6 +30,7 @@
 | 8 | Demo seed data script + demo flow doc | `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | done | 2026-04-03T23:00Z | 2026-04-03T23:30Z |
 | 14 | Comprehensive README.md + PENDING_WORK.md + package.json fix + Edge agent card fix | `README.md`, `docs/PENDING_WORK.md`, `package.json`, `public/agent-cards/edge.json` | done | 2026-04-03T23:45Z | 2026-04-04T00:15Z |
 | 3 | Fix .env.example missing Hedera vars + P-023 Mirror Node verification | `.env.example`, `docs/PENDING_WORK.md` | done | 2026-04-04T00:30Z | 2026-04-04T00:35Z |
+| 2 | UI brand standards: favicon, logo, AgentCard colors, AuthButton color, DESIGN_SYSTEM.md | `src/app/layout.tsx`, `src/app/page.tsx`, `src/components/AgentCard.tsx`, `src/components/AuthButton/index.tsx`, `docs/DESIGN_SYSTEM.md` | in-progress | 2026-04-04T01:00Z | — |
 
 ---
 

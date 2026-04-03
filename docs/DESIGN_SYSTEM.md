@@ -164,6 +164,26 @@ See `SCREEN_FLOW.md` for complete screen-by-screen specifications, architecture 
 
 ---
 
+## Brand Assets
+
+Three logo variants in `public/`. Use `next/image` with explicit width/height.
+
+| File | Size | Usage | Where |
+|------|------|-------|-------|
+| `app-logo.png` | 630KB | Full logo (V + bandaid mark + wordmark) | Landing page hero, README header |
+| `compact-logo.png` | 120KB | Compact mark (V + bandaid, no wordmark) | Favicon, TopBar icon, og:image |
+| `white-favicon.png` | 117KB | White variant of compact mark | Dark backgrounds only |
+
+### Rules
+
+- **Landing page**: Use `app-logo.png` at `width={180}` — replaces text heading
+- **Favicon**: `compact-logo.png` configured via `metadata.icons` in `layout.tsx`
+- **Navigation TopBar**: Text "Vocaid Hub" is sufficient (compact logo optional if space permits)
+- **Never stretch** — always use `className="h-auto"` with fixed width
+- **No emoji icons** — use Lucide React icons exclusively (see Iconography section)
+
+---
+
 ## Dark Mode
 
 **Not for hackathon.** Light mode only. Keeps scope minimal. MiniKit template defaults to light.

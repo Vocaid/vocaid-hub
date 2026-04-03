@@ -1,15 +1,21 @@
 import { Page } from '@/components/PageLayout';
 import { AuthButton } from '../components/AuthButton';
 import { Globe, Zap, CircleDollarSign } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <Page>
       <Page.Main className="flex flex-col items-center justify-center gap-8 px-6">
         <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <h1 className="text-3xl font-bold text-primary tracking-tight">
-            Vocaid Hub
-          </h1>
+          <Image
+            src="/app-logo.png"
+            alt="Vocaid Hub"
+            width={180}
+            height={60}
+            priority
+            className="h-auto"
+          />
           <p className="text-sm text-secondary text-center max-w-[280px]">
             Discover, verify, and trade any resource — human skills, GPU compute, AI agents.
           </p>

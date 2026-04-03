@@ -60,7 +60,7 @@
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
 | P-030 | Package name still `@worldcoin/next-15-template` | ✅ done | Agent 14 | `package.json` | Fixed to `vocaid-hub` |
-| P-031 | Favicon + OG images need branding | unclaimed | — | `public/favicon.ico`, `public/og-image.png`, `src/app/layout.tsx` | Default World template assets |
+| P-031 | Favicon + OG images need branding | ✅ done | Agent 2 | `src/app/layout.tsx`, `src/app/page.tsx`, `docs/DESIGN_SYSTEM.md` | Favicon set to compact-logo.png, app-logo.png on landing, brand assets documented |
 | P-032 | `README-minikit.md` leftover from scaffold | ✅ done | Agent 7 | `README-minikit.md` | Deleted |
 
 ---
@@ -70,6 +70,7 @@
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
 | P-040 | Edge agent card references "Arc network" | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed to reference Hedera |
-| — | — | — | — | — | — |
+| P-041 | AgentCard.tsx used hardcoded dark theme colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Replaced gray-800/900, blue-400 etc with design system tokens |
+| P-042 | AuthButton error text used hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Changed to text-status-failed |
 
 > Agents: Add new items here as you discover them during implementation. Use IDs P-041+.

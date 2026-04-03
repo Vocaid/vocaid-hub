@@ -106,7 +106,7 @@ export const AuthButton = () => {
         </Button>
       </LiveFeedback>
       {feedbackState === 'failed' && errorMessage && (
-        <p className="text-xs text-red-400 text-center max-w-65">
+        <p className="text-xs text-status-failed text-center max-w-65">
           {errorMessage}
         </p>
       )}
