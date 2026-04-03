@@ -60,21 +60,27 @@ export async function POST(req: NextRequest) {
     // Step 2: Settle the payment on-chain
     const settlement = await settlePayment(paymentHeader);
 
-    // Step 3: Log to HCS audit trail (best-effort, don't block response)
+    // Step 3: Log to HCS audit trail via Hedera Agent Kit (AI/Agentic track)
+    // Uses executeAgentAction to demonstrate an AI agent executing on Hedera
     if (AUDIT_TOPIC_ID) {
-      logAuditMessage(
-        AUDIT_TOPIC_ID,
-        JSON.stringify({
-          type: "payment_settled",
-          payer: verification.payer,
-          amount: verification.amount,
-          token: verification.token,
-          txHash: settlement.txHash,
-          timestamp: new Date().toISOString(),
-        }),
-      ).catch((err) =>
-        console.error("Failed to log audit message:", err),
-      );
+      const auditPayload = JSON.stringify({
+        type: "agent_payment_settled",
+        payer: verification.payer,
+        amount: verification.amount,
+        token: verification.token,
+        txHash: settlement.txHash,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Primary: Agent Kit path (demonstrates AI agent executing Hedera tx)
+      executeAgentAction("submit_topic_message", {
+        topicId: AUDIT_TOPIC_ID,
+        message: auditPayload,
+      }).catch((agentErr) => {
+        // Fallback: direct SDK call if Agent Kit fails
+        console.error("Agent Kit audit failed, using direct SDK:", agentErr);
+        logAuditMessage(AUDIT_TOPIC_ID, auditPayload).catch(console.error);
+      });
     }
 
     // Step 4: Return the paid resource

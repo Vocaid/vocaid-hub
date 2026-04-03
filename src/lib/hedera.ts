@@ -199,9 +199,10 @@ export async function transferNft(
   const client = initClient();
   const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
 
+  const nftId = NftId.fromString(`${tokenId}/${serialNumber}`);
   const tx = new TransferTransaction()
     .addNftTransfer(
-      new NftId(tokenId, serialNumber),
+      nftId,
       AccountId.fromString(fromAccountId),
       AccountId.fromString(toAccountId),
     )

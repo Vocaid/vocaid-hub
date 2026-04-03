@@ -17,12 +17,12 @@ export function getAddress(envVar: string): Address {
 }
 
 export const addresses = {
-  identityRegistry: () => getAddress("IDENTITY_REGISTRY", "IdentityRegistry"),
-  reputationRegistry: () => getAddress("REPUTATION_REGISTRY", "ReputationRegistry"),
-  validationRegistry: () => getAddress("VALIDATION_REGISTRY", "ValidationRegistry"),
-  gpuProviderRegistry: () => getAddress("GPU_PROVIDER_REGISTRY", "GPUProviderRegistry"),
-  mockTEEValidator: () => getAddress("MOCK_TEE_VALIDATOR", "MockTEEValidator"),
-  resourcePrediction: () => getAddress("RESOURCE_PREDICTION", "ResourcePrediction"),
+  identityRegistry: () => getAddress("IDENTITY_REGISTRY"),
+  reputationRegistry: () => getAddress("REPUTATION_REGISTRY"),
+  validationRegistry: () => getAddress("VALIDATION_REGISTRY"),
+  gpuProviderRegistry: () => getAddress("GPU_PROVIDER_REGISTRY"),
+  mockTEEValidator: () => getAddress("MOCK_TEE_VALIDATOR"),
+  resourcePrediction: () => getAddress("RESOURCE_PREDICTION"),
 } as const;
 
 // --- External 0G contracts (read-only) ---
