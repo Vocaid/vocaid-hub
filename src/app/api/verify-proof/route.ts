@@ -62,13 +62,10 @@ export async function POST(req: NextRequest) {
     const credentialTokenId = process.env.HEDERA_CREDENTIAL_TOKEN;
     if (credentialTokenId && signal) {
       try {
+        // HTS NFT metadata max 100 bytes — compact format
+        const shortAddr = `${signal.slice(0, 8)}...${signal.slice(-4)}`;
         const metadata = new TextEncoder().encode(
-          JSON.stringify({
-            type: 'world-id-verified',
-            address: signal,
-            nullifierHash: payload.nullifier_hash,
-            verifiedAt: new Date().toISOString(),
-          }),
+          `wid:${shortAddr}:${Date.now()}`,
         );
         const serials = await mintCredential(credentialTokenId, [metadata]);
         credentialResult = { tokenId: credentialTokenId, serials };
