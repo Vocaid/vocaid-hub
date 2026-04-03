@@ -80,24 +80,37 @@ vocaid-hub/
 │           └── route.ts       # Unified resource listing
 │
 ├── lib/                       # Shared server utilities
-│   ├── hedera.ts              # @hashgraph/sdk wrapper (HTS, HCS, x402)
+│   ├── hedera.ts              # @hashgraph/sdk wrapper (HTS, HCS, scheduled tx)
+│   ├── hedera-agent.ts        # Hedera Agent Kit (HederaAIToolkit wrapper)
 │   ├── blocky402.ts           # x402 facilitator client
 │   ├── og-chain.ts            # 0G Chain interactions (ethers + ERC-8004)
 │   ├── og-compute.ts          # 0G inference broker SDK
+│   ├── og-broker.ts           # 0G broker types + helpers
 │   ├── og-storage.ts          # 0G Storage KV for agent state
-│   ├── world-id.ts            # World ID verification
+│   ├── agentkit.ts            # World AgentKit registration (ERC-8004)
+│   ├── world-id.ts            # World ID verification + auth gate
+│   ├── reputation.ts          # ERC-8004 ReputationRegistry queries
 │   ├── contracts.ts           # Contract ABIs + addresses from deployments/
 │   └── types.ts               # Shared TypeScript types
 │
 ├── components/                # React components (see DESIGN_SYSTEM.md)
-│   ├── ResourceCard.tsx
-│   ├── ChainBadge.tsx
-│   ├── ReputationBar.tsx
-│   ├── VerificationStatus.tsx
-│   ├── PredictionCard.tsx
-│   ├── PaymentConfirmation.tsx
-│   ├── AgentCard.tsx
-│   └── GPUStepper.tsx
+│   ├── ResourceCard.tsx       # Resource listing card with chain badge
+│   ├── ResourceCardSkeleton.tsx # Loading skeleton for ResourceCard
+│   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
+│   ├── ReputationBar.tsx      # ERC-8004 reputation score bar
+│   ├── VerificationStatus.tsx # TEE/World ID verification badge
+│   ├── PredictionCard.tsx     # Prediction market card with bet UI
+│   ├── PaymentConfirmation.tsx # x402 payment receipt
+│   ├── AgentCard.tsx          # OpenClaw agent identity card
+│   ├── GPUStepper.tsx         # GPU provider registration stepper
+│   ├── Navigation/            # Bottom tab navigation (World App)
+│   ├── PageLayout/            # Page wrapper with header
+│   ├── AuthButton/            # World ID auth trigger
+│   ├── Pay/                   # MiniKit pay command wrapper
+│   ├── Verify/                # MiniKit verify command wrapper
+│   ├── Transaction/           # Transaction status display
+│   ├── UserInfo/              # User profile header
+│   └── ViewPermissions/       # Permission gate UI
 │
 ├── public/                    # Static assets
 │   └── agent-cards/           # ERC-8004 agent card JSONs
@@ -131,6 +144,7 @@ vocaid-hub/
 │       ├── nanopayments.md
 │       ├── reputation.md
 │       ├── prediction.md
+│       ├── shield-check.md
 │       └── og-storage.md
 │
 ├── scripts/                   # Deployment + demo
