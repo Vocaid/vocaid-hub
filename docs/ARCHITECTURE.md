@@ -286,16 +286,16 @@ No traditional database. No Redis. No Postgres.
 
 ## Hedera Integration Details
 
-### Blocky402 x402 Facilitator (VERIFIED LIVE)
+### Blocky402 x402 Facilitator (VERIFY AT VENUE — ask Hedera sponsor)
 
 | Config | Value |
 |--------|-------|
 | **Facilitator URL** | `https://api.testnet.blocky402.com` |
 | **Network ID** | `hedera-testnet` |
 | **Fee Payer** | `0.0.7162784` (Blocky402 pays gas) |
-| **USDC Token** | `0.0.456858` (native Circle USDC on Hedera) |
-| **Endpoints** | `/supported` ✅, `/verify` ✅, `/settle` ✅ |
-| **API Key** | None required (open access, tested live) |
+| **USDC Token** | `0.0.429274` (native Circle USDC on Hedera) |
+| **Endpoints** | `/supported`, `/verify`, `/settle` (need live verification) |
+| **API Key** | None required (open access) |
 
 ### Hedera SDK Operations (TypeScript — No Solidity)
 
@@ -349,5 +349,5 @@ No traditional database. No Redis. No Postgres.
 | 0G Ledger | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` | 0G (16602) |
 | Blocky402 Facilitator | `https://api.testnet.blocky402.com` | Hedera |
 | Blocky402 Fee Payer | `0.0.7162784` | Hedera |
-| USDC on Hedera | `0.0.456858` | Hedera |
+| USDC on Hedera | `0.0.429274` | Hedera |
 | Vercel URL | `https://vocaid-hub.vercel.app` | — |

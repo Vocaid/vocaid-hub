@@ -283,7 +283,7 @@ openclaw skills install erc-8004
 
 ---
 
-## 4. Hedera — Settle Layer (SELECTED) + Arc Chain (NOT SELECTED — Historical Reference)
+## 4. Hedera — Settle Layer (SELECTED)
 
 ### Hedera Testnet Configuration (SELECTED)
 
@@ -361,82 +361,6 @@ await msgTx.execute(client);
 
 ---
 
-### Arc Chain + Circle Nanopayments (NOT SELECTED — Historical Reference)
-
-> **Arc was evaluated but NOT selected as the 3rd partner. Hedera was selected instead.** This section is retained for historical reference only.
-
-### Arc Testnet Configuration (NOT SELECTED)
-
-| Parameter | Value |
-|-----------|-------|
-| Chain ID | `5042002` |
-| CAIP-2 | `eip155:5042002` |
-| RPC | `https://rpc.testnet.arc.network` |
-| WebSocket | `wss://rpc.testnet.arc.network` |
-| Block Explorer | `https://testnet.arcscan.app` |
-| Faucet | `https://faucet.circle.com` |
-| Gas Token | USDC (18 decimals for gas, 6 for ERC-20) |
-| Base Fee | ~160 Gwei (~$0.01/tx) |
-| Finality | Deterministic, sub-second, single block |
-| USDC Address | `0x3600000000000000000000000000000000000000` |
-| EURC Address | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` |
-| GatewayWallet | `0x0077777d7EBA4688BDeF3E311b846F25870A19B9` |
-| Permit2 | `0x000000000022D473030F116dDEE9F6B43aC78BA3` |
-
-### Circle Nanopayments Integration
-
-**x402 Flow:**
-1. Buyer deposits USDC into Gateway Wallet (one-time onchain tx)
-2. Buyer requests paid resource → seller responds `402 Payment Required`
-3. Buyer signs EIP-3009 authorization offchain (zero gas)
-4. Buyer retries with `PAYMENT-SIGNATURE` header
-5. Seller verifies signature, serves resource immediately
-6. Gateway batches authorizations and settles onchain in bulk
-
-**Buyer SDK:**
-```bash
-npm install @circle-fin/x402-batching viem tsx typescript
-```
-
-```typescript
-import { GatewayClient } from "@circle-fin/x402-batching/client";
-const client = new GatewayClient({ chain: "arcTestnet", privateKey: "0x..." });
-
-// One-time deposit
-await client.deposit("1"); // 1 USDC
-
-// Pay for resource (automatic 402 handling)
-const { data } = await client.pay("http://api.example.com/gpu-inference");
-```
-
-**Seller SDK:**
-```bash
-npm install @circle-fin/x402-batching @x402/core @x402/evm viem express
-```
-
-```typescript
-import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
-const gateway = createGatewayMiddleware({
-  sellerAddress: "0x...",
-  networks: ["eip155:5042002"],
-});
-app.get("/inference", gateway.require("$0.01"), (req, res) => {
-  res.json({ result: "...", paid_by: req.payment.payer });
-});
-```
-
-### EIP-3009 (Gasless Transfer Authorization)
-
-```solidity
-function transferWithAuthorization(
-    address from, address to, uint256 value,
-    uint256 validAfter, uint256 validBefore,
-    bytes32 nonce, uint8 v, bytes32 r, bytes32 s
-) external;
-```
-
-Key: Nonce is random bytes32 (NOT sequential). Gas paid by Gateway facilitator, not buyer/seller.
-
 ### Prediction Market Contract Pattern (~120 lines)
 
 ```solidity
@@ -475,7 +399,7 @@ Oracle resolution: Read price from 0G marketplace (or Chainlink feed), resolve i
 | **Polygon** | Production | RelAI, Bitrefill | ~2s | Very low | Yes | No partner |
 | **Avalanche** | Production | Available | ~1s | Low | Yes | No partner |
 | **Stellar** | Production | OpenZeppelin | ~5s | Near-zero | No | No partner |
-| **Arc** | Circle Gateway | Circle Nanopayments | Sub-second (batched) | $0 per-payment | Yes | NOT SELECTED |
+| ~~Arc~~ | ~~Circle Gateway~~ | ~~Circle Nanopayments~~ | — | — | — | NOT SELECTED |
 | **Hedera** | Blocky402 | x402 USDC via Blocky402 | ~3-5s | $0.0001 | Yes | $15k (SELECTED) |
 | **0G** | **NOT x402** | **NONE** | Own mechanism | Unknown | Deployable | $15k |
 
@@ -490,7 +414,7 @@ Oracle resolution: Read price from 0G marketplace (or Chainlink feed), resolve i
 | **AP2** | Authorization | Processor-defined | Enterprise auditable payments |
 | **MPP** | Session | Stablecoins on Tempo | Streaming micropayments |
 | **OpenClaw ACP** | Agent coordination | Hedera HBAR | Hedera-specific agent payments (SELECTED) |
-| **Circle Nanopayments** | Batched | USDC (gas-free) | Sub-cent agent payments, high frequency (NOT SELECTED — Arc) |
+| ~~Circle Nanopayments~~ | ~~Batched~~ | ~~USDC (gas-free)~~ | NOT SELECTED (Arc) |
 
 ---
 
