@@ -2,6 +2,8 @@ import {
   createPublicClient,
   createWalletClient,
   http,
+  encodeFunctionData,
+  decodeFunctionResult,
   type Address,
   type Hex,
 } from "viem";
@@ -70,6 +72,16 @@ const IDENTITY_REGISTRY_ABI = [
     inputs: [{ name: "agentId", type: "uint256" }],
     outputs: [{ name: "", type: "address" }],
   },
+  // Transfer event to discover registered agents
+  {
+    name: "Transfer",
+    type: "event",
+    inputs: [
+      { name: "from", type: "address", indexed: true },
+      { name: "to", type: "address", indexed: true },
+      { name: "tokenId", type: "uint256", indexed: true },
+    ],
+  },
   {
     name: "Registered",
     type: "event",
@@ -106,10 +118,12 @@ function getOGWalletClient() {
   });
 }
 
+// Encode a string value as ABI bytes for metadata storage
 function encodeStringToBytes(value: string): Hex {
   return `0x${Buffer.from(value, "utf-8").toString("hex")}` as Hex;
 }
 
+// Decode ABI bytes back to a UTF-8 string
 function decodeBytesToString(hex: Hex): string {
   const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
   return Buffer.from(clean, "hex").toString("utf-8");
@@ -118,8 +132,8 @@ function decodeBytesToString(hex: Hex): string {
 export interface AgentRegistrationParams {
   agentURI: string;
   operatorWorldId: string; // nullifierHash from World ID verification
-  role: string;
-  agentkitId?: string;
+  role: string; // e.g. "signal-analyst", "market-maker", "risk-manager", "discovery"
+  agentkitId?: string; // optional external AgentKit identifier
 }
 
 export interface RegisteredAgent {

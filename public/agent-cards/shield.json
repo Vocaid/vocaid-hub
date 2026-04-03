@@ -1,23 +1,25 @@
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Shield",
   "description": "Risk management agent — validates GPU providers via TEE attestation, enforces risk gates, and monitors reputation scores across the Vocaid network.",
   "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
   "services": [
     {
-      "name": "A2A",
+      "type": "a2a",
       "endpoint": "/api/agents/shield/a2a",
-      "version": "1.0",
-      "description": "Agent-to-agent messaging for risk assessments and provider validation requests"
+      "description": "Agent-to-agent messaging endpoint for risk assessments and provider validation requests"
     },
     {
-      "name": "MCP",
+      "type": "mcp",
       "endpoint": "/api/agents/shield/mcp",
-      "version": "1.0",
       "description": "Model Context Protocol endpoint for automated risk scoring and gate enforcement"
     }
   ],
-  "supportedTrust": ["world-id", "erc-8004", "tee-attestation", "reputation"],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
   "metadata": {
     "type": "ai-agent",
     "role": "risk-manager",

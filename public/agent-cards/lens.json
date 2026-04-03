@@ -1,23 +1,25 @@
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Lens",
   "description": "Discovery and transparency agent — indexes registered agents, surfaces provider metadata, and provides a unified view of the Vocaid agent ecosystem.",
   "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
   "services": [
     {
-      "name": "A2A",
+      "type": "a2a",
       "endpoint": "/api/agents/lens/a2a",
-      "version": "1.0",
-      "description": "Agent-to-agent messaging for agent discovery queries and metadata lookups"
+      "description": "Agent-to-agent messaging endpoint for agent discovery queries and metadata lookups"
     },
     {
-      "name": "MCP",
+      "type": "mcp",
       "endpoint": "/api/agents/lens/mcp",
-      "version": "1.0",
       "description": "Model Context Protocol endpoint for ecosystem-wide agent search and filtering"
     }
   ],
-  "supportedTrust": ["world-id", "erc-8004", "reputation"],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
   "metadata": {
     "type": "ai-agent",
     "role": "discovery",

@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -11,23 +11,23 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
+  /* Brand */
+  --color-primary: #0f172a;
+  --color-primary-accent: #3b82f6;
+  --color-secondary: #64748b;
+  --color-surface: #f8fafc;
+  --color-border-card: #e2e8f0;
+
   /* Chain colors */
-  --color-chain-world: #3B82F6;
-  --color-chain-og: #10B981;
-  --color-chain-hedera: #8247E5;
+  --color-chain-world: #3b82f6;
+  --color-chain-og: #10b981;
+  --color-chain-hedera: #8247e5;
 
   /* Status colors */
-  --color-status-verified: #10B981;
-  --color-status-pending: #F59E0B;
-  --color-status-failed: #EF4444;
-  --color-status-inactive: #94A3B8;
-
-  /* Brand */
-  --color-primary: #0F172A;
-  --color-primary-accent: #3B82F6;
-  --color-secondary: #64748B;
-  --color-surface: #F8FAFC;
-  --color-border-card: #E2E8F0;
+  --color-status-verified: #10b981;
+  --color-status-pending: #f59e0b;
+  --color-status-failed: #ef4444;
+  --color-status-inactive: #94a3b8;
 }
 
 body {

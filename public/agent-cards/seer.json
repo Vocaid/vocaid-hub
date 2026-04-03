@@ -1,23 +1,25 @@
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Seer",
   "description": "Signal analysis agent — monitors on-chain and off-chain data feeds to surface allocation-relevant insights for the Vocaid resource marketplace.",
   "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
   "services": [
     {
-      "name": "A2A",
+      "type": "a2a",
       "endpoint": "/api/agents/seer/a2a",
-      "version": "1.0",
-      "description": "Agent-to-agent messaging for signal queries and data feed subscriptions"
+      "description": "Agent-to-agent messaging endpoint for signal queries and data feed subscriptions"
     },
     {
-      "name": "MCP",
+      "type": "mcp",
       "endpoint": "/api/agents/seer/mcp",
-      "version": "1.0",
       "description": "Model Context Protocol endpoint for LLM-driven signal analysis"
     }
   ],
-  "supportedTrust": ["world-id", "erc-8004", "reputation"],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
   "metadata": {
     "type": "ai-agent",
     "role": "signal-analyst",

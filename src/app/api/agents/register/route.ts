@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     const { agentURI, operatorWorldId, operatorAddress, role, agentkitId } =
       body;
 
+    // Validate required fields
     if (!agentURI || !operatorWorldId || !operatorAddress || !role) {
       return NextResponse.json(
         {
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Register on 0G Chain IdentityRegistry
     const result = await registerAgent({
       agentURI,
       operatorWorldId,

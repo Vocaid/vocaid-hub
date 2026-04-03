@@ -1,23 +1,25 @@
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Edge",
   "description": "Market maker agent — executes trades, manages predictions, and handles nanopayment flows on the Arc network for Vocaid resource allocation.",
   "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
   "services": [
     {
-      "name": "A2A",
+      "type": "a2a",
       "endpoint": "/api/agents/edge/a2a",
-      "version": "1.0",
-      "description": "Agent-to-agent messaging for trade negotiation and order routing"
+      "description": "Agent-to-agent messaging endpoint for trade negotiation and order routing"
     },
     {
-      "name": "MCP",
+      "type": "mcp",
       "endpoint": "/api/agents/edge/mcp",
-      "version": "1.0",
       "description": "Model Context Protocol endpoint for market-making strategy execution"
     }
   ],
-  "supportedTrust": ["world-id", "erc-8004", "reputation"],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
   "metadata": {
     "type": "ai-agent",
     "role": "market-maker",
