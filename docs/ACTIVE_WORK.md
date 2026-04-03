@@ -20,7 +20,8 @@
 
 | Agent | Task | Target Files | Status | Started (UTC) | Completed (UTC) |
 |-------|------|-------------|--------|---------------|-----------------|
-| (none active) | — | — | — | — | — |
+| 4 | Fix OpenClaw config: Arc→Hedera env vars | `agents/openclaw.json` | done | 2026-04-03T18:00Z | 2026-04-03T18:10Z |
+| 2 | World ID hard gate on all resource API routes + enable auth redirect | `src/app/api/gpu/*`, `src/app/api/predictions/*`, `src/app/api/payments/*`, `src/app/api/reputation/*`, `src/app/(protected)/layout.tsx`, `.env.example` | in-progress | 2026-04-03T20:00Z | — |
 
 ---
 

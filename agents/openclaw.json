@@ -51,7 +51,11 @@
       },
       "env": [
         "OG_RPC_URL",
-        "ARC_RPC_URL",
+        "HEDERA_OPERATOR_ID",
+        "HEDERA_OPERATOR_KEY",
+        "HEDERA_NETWORK",
+        "HEDERA_USDC_TOKEN",
+        "BLOCKY402_URL",
         "WALLET_PRIVATE_KEY"
       ]
     },
