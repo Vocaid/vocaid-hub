@@ -45,7 +45,7 @@ export async function getRequestHeaders(
   return broker.inference.getRequestHeaders(
     providerAddress,
     content,
-  ) as Promise<Record<string, string>>;
+  ) as unknown as Promise<Record<string, string>>;
 }
 
 /**
@@ -85,7 +85,7 @@ export async function callInference(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(headers as Record<string, string>),
+      ...(headers as unknown as Record<string, string>),
     },
     body: JSON.stringify({
       model,
@@ -116,7 +116,7 @@ export async function callInference(
     response: responseText,
     chatID,
     verified,
-    headers: headers as Record<string, string>,
+    headers: headers as unknown as Record<string, string>,
   };
 }
 
