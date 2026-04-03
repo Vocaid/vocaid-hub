@@ -51,7 +51,7 @@ export async function getReputationSummary(agentId: bigint, tag1 = "", tag2 = ""
     args: [agentId],
   }) as Address[];
 
-  if (clients.length === 0) return { count: 0n, summaryValue: 0n, decimals: 0 };
+  if (clients.length === 0) return { count: BigInt(0), summaryValue: BigInt(0), decimals: 0 };
 
   const [count, summaryValue, decimals] = await client.readContract({
     address: addresses.reputationRegistry(),
