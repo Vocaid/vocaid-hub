@@ -10,17 +10,28 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Chain colors */
+  --color-chain-world: #3B82F6;
+  --color-chain-og: #10B981;
+  --color-chain-hedera: #8247E5;
+
+  /* Status colors */
+  --color-status-verified: #10B981;
+  --color-status-pending: #F59E0B;
+  --color-status-failed: #EF4444;
+  --color-status-inactive: #94A3B8;
+
+  /* Brand */
+  --color-primary: #0F172A;
+  --color-primary-accent: #3B82F6;
+  --color-secondary: #64748B;
+  --color-surface: #F8FAFC;
+  --color-border-card: #E2E8F0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
