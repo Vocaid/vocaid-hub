@@ -25,9 +25,10 @@
 | 7 | Wave 4: Polish + Submission + Demo (all 3 tracks) | `src/app/**/*.tsx`, `globals.css`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | active | 2026-04-03 | — |
 | 2 | World ID hard gate on all resource API routes + enable auth redirect | `src/app/api/gpu/*`, `src/app/api/predictions/*`, `src/app/api/payments/*`, `src/app/api/reputation/*`, `src/app/(protected)/layout.tsx`, `.env.example` | done | 2026-04-03T20:00Z | 2026-04-03T21:00Z |
 | 3 | Run Hedera setup script, test x402 payment e2e, wire World ID → HTS credential mint | `scripts/setup-hedera.ts`, `src/lib/hedera.ts`, `src/app/api/verify-proof/route.ts`, `deployments/hedera-testnet.json` | done | 2026-04-03T20:30Z | 2026-04-03T21:00Z |
-| 6 | Wave 4: Demo + Polish + Submission | `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/globals.css`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md` | in-progress | 2026-04-03T22:00Z | — |
+| 6 | Wave 4: Demo + Polish + Submission | `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/globals.css`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md` | done | 2026-04-03T22:00Z | 2026-04-03T23:30Z |
 | 9 | x402 middleware + payment initiation + hire flow | `src/lib/x402-middleware.ts` (new), `src/app/api/initiate-payment/route.ts`, `src/app/api/payments/route.ts` (GET only), `src/app/(protected)/home/marketplace-content.tsx` (handleHire only) | done | 2026-04-03T22:30Z | 2026-04-03T23:00Z |
-| 8 | Demo seed data script + demo flow doc | `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | in-progress | 2026-04-03T23:00Z | — |
+| 8 | Demo seed data script + demo flow doc | `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | done | 2026-04-03T23:00Z | 2026-04-03T23:30Z |
+| 14 | Comprehensive README.md + PENDING_WORK.md + package.json fix + Edge agent card fix | `README.md`, `docs/PENDING_WORK.md`, `package.json`, `public/agent-cards/edge.json` | done | 2026-04-03T23:45Z | 2026-04-04T00:15Z |
 
 ---
 
@@ -48,6 +49,7 @@
 | 7 | Wire .env.local with 0G deployed addresses + OG_BROKER_PRIVATE_KEY + NEXT_PUBLIC_OG_RPC_URL | `.env.local`, `.env.example` | 2026-04-03 |
 | 7 | Doc fixes: USDC token consistency, Blocky402 status, Arc cleanup, ACTIVE_WORK file ownership | `docs/ARCHITECTURE.md`, `docs/TECHNOLOGY_RESEARCH.md`, `docs/ACTIVE_WORK.md` | 2026-04-03 |
 | 9 | x402 middleware + payment initiation + hire flow | `src/lib/x402-middleware.ts`, `src/app/api/initiate-payment/route.ts`, `src/app/api/payments/route.ts`, `src/app/(protected)/home/marketplace-content.tsx` | 2026-04-03 |
+| 14 | Comprehensive README.md + PENDING_WORK.md gap tracker + package.json rename + Edge agent card fix | `README.md`, `docs/PENDING_WORK.md`, `package.json`, `public/agent-cards/edge.json`, `docs/ACTIVE_WORK.md` | 2026-04-04 |
 
 ---
 
