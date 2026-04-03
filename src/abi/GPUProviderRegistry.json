@@ -1,0 +1,82 @@
+[
+  {
+    "inputs": [
+      { "internalType": "string", "name": "agentURI", "type": "string" },
+      { "internalType": "string", "name": "gpuModel", "type": "string" },
+      { "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" }
+    ],
+    "name": "registerProvider",
+    "outputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "index", "type": "uint256" }
+    ],
+    "name": "getProviderByIndex",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+          { "internalType": "string", "name": "agentURI", "type": "string" },
+          { "internalType": "string", "name": "gpuModel", "type": "string" },
+          { "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" },
+          { "internalType": "bool", "name": "verified", "type": "bool" },
+          { "internalType": "uint256", "name": "registeredAt", "type": "uint256" }
+        ],
+        "internalType": "struct GPUProviderRegistry.Provider",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getProviderCount",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "owner", "type": "address" }
+    ],
+    "name": "getProviderByOwner",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+          { "internalType": "string", "name": "agentURI", "type": "string" },
+          { "internalType": "string", "name": "gpuModel", "type": "string" },
+          { "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" },
+          { "internalType": "bool", "name": "verified", "type": "bool" },
+          { "internalType": "uint256", "name": "registeredAt", "type": "uint256" }
+        ],
+        "internalType": "struct GPUProviderRegistry.Provider",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+      { "indexed": false, "internalType": "string", "name": "gpuModel", "type": "string" }
+    ],
+    "name": "ProviderRegistered",
+    "type": "event"
+  }
+]

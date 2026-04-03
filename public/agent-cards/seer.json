@@ -1,0 +1,29 @@
+{
+  "name": "Seer",
+  "description": "Signal analysis agent — monitors on-chain and off-chain data feeds to surface allocation-relevant insights for the Vocaid resource marketplace.",
+  "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
+  "services": [
+    {
+      "type": "a2a",
+      "endpoint": "/api/agents/seer/a2a",
+      "description": "Agent-to-agent messaging endpoint for signal queries and data feed subscriptions"
+    },
+    {
+      "type": "mcp",
+      "endpoint": "/api/agents/seer/mcp",
+      "description": "Model Context Protocol endpoint for LLM-driven signal analysis"
+    }
+  ],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
+  "metadata": {
+    "type": "ai-agent",
+    "role": "signal-analyst",
+    "capabilities": ["data-feed-monitoring", "trend-detection", "anomaly-alerting"],
+    "operator_world_id": null
+  }
+}
