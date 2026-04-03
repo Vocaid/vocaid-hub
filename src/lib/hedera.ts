@@ -161,6 +161,115 @@ export async function freezeCredential(
 }
 
 // ---------------------------------------------------------------------------
+// HTS — Token Association & NFT Transfer
+// ---------------------------------------------------------------------------
+
+/**
+ * Associate a token with an account. Hedera requires this before an account
+ * can hold any HTS token. The receiving account must sign — here we use
+ * the operator key (works for operator-controlled testnet accounts).
+ */
+export async function associateToken(
+  accountId: string,
+  tokenId: string,
+): Promise<void> {
+  const client = initClient();
+  const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+
+  const tx = new TokenAssociateTransaction()
+    .setAccountId(AccountId.fromString(accountId))
+    .setTokenIds([tokenId])
+    .freezeWith(client);
+
+  const signed = await tx.sign(operatorKey);
+  const response = await signed.execute(client);
+  await response.getReceipt(client);
+}
+
+/**
+ * Transfer an NFT from one account to another.
+ * Operator must be the treasury or have allowance.
+ */
+export async function transferNft(
+  tokenId: string,
+  serialNumber: number,
+  fromAccountId: string,
+  toAccountId: string,
+): Promise<void> {
+  const client = initClient();
+  const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+
+  const tx = new TransferTransaction()
+    .addNftTransfer(
+      new NftId(tokenId, serialNumber),
+      AccountId.fromString(fromAccountId),
+      AccountId.fromString(toAccountId),
+    )
+    .freezeWith(client);
+
+  const signed = await tx.sign(operatorKey);
+  const response = await signed.execute(client);
+  await response.getReceipt(client);
+}
+
+/**
+ * End-to-end credential issuance: associate token → grant KYC → mint → transfer.
+ * Returns the minted serial numbers.
+ */
+export async function mintAndTransferCredential(
+  tokenId: string,
+  metadata: Uint8Array[],
+  recipientAccountId: string,
+): Promise<number[]> {
+  // Associate (catches "already associated" gracefully)
+  try {
+    await associateToken(recipientAccountId, tokenId);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!msg.includes("TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT")) throw err;
+  }
+
+  await grantKyc(recipientAccountId, tokenId);
+  const serials = await mintCredential(tokenId, metadata);
+
+  for (const serial of serials) {
+    await transferNft(tokenId, serial, HEDERA_ACCOUNT_ID, recipientAccountId);
+  }
+
+  return serials;
+}
+
+// ---------------------------------------------------------------------------
+// Scheduled Transactions (3rd native Hedera service for No Solidity track)
+// ---------------------------------------------------------------------------
+
+/**
+ * Wrap any frozen transaction in a ScheduleCreateTransaction.
+ * Adds a 3rd native Hedera service (HTS + HCS + Scheduled Tx).
+ */
+export async function scheduleTransaction(
+  innerTx: Transaction,
+  memo?: string,
+): Promise<string> {
+  const client = initClient();
+  const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+
+  const scheduleTx = new ScheduleCreateTransaction()
+    .setScheduledTransaction(innerTx)
+    .setPayerAccountId(AccountId.fromString(HEDERA_ACCOUNT_ID))
+    .setAdminKey(operatorKey.publicKey);
+
+  if (memo) scheduleTx.setScheduleMemo(memo);
+
+  const response = await scheduleTx.execute(client);
+  const receipt = await response.getReceipt(client);
+
+  const scheduleId = receipt.scheduleId;
+  if (!scheduleId) throw new Error("Schedule creation failed — no scheduleId");
+  return scheduleId.toString();
+}
+
+// ---------------------------------------------------------------------------
 // HCS — Audit Trail
 // ---------------------------------------------------------------------------
 
