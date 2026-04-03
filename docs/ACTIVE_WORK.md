@@ -20,7 +20,7 @@
 
 | Agent | Task | Target Files | Status | Started (UTC) | Completed (UTC) |
 |-------|------|-------------|--------|---------------|-----------------|
-| — | — | — | — | — | — |
+| 6+5 | Wave 2 AgentKit + GPU Portal merge | `src/lib/agentkit.ts`, `src/app/api/agents/*` | in-progress (merge conflicts) | 2026-04-03 | — |
 
 ---
 
@@ -28,7 +28,14 @@
 
 | Agent | Task | Files Modified | Completed (UTC) |
 |-------|------|---------------|-----------------|
-| — | — | — | — |
+| 1 | ERC-8004 contracts on 0G Galileo | `contracts/0g/*`, `scripts/deploy-0g.ts`, `deployments/0g-galileo.json` | 2026-04-03 |
+| 2 | CredentialGate on World Sepolia | `contracts/world/*`, `src/app/api/verify-proof/*`, `scripts/deploy-world.ts` | 2026-04-03 |
+| 3 | Hedera HTS + HCS + Blocky402 | `src/lib/hedera.ts`, `src/lib/blocky402.ts`, `src/app/api/payments/*`, `scripts/setup-hedera.ts` | 2026-04-03 |
+| 4 | OpenClaw 4-agent fleet + scaffold | `agents/*`, `package.json`, `hardhat.config.ts` | 2026-04-03 |
+| 5 | GPU broker SDK + stepper UI + API routes | `src/lib/og-compute.ts`, `src/components/GPUStepper.tsx`, `src/app/api/gpu/*` | 2026-04-03 |
+| 6 | AgentKit + A2A agent cards | `src/lib/agentkit.ts`, `src/app/api/agents/*`, `public/agent-cards/*` | 2026-04-03 |
+| 7 | Marketplace UI + ResourceCard + filters | `src/components/ResourceCard.tsx`, `src/components/ChainBadge.tsx`, `src/components/ReputationBar.tsx`, `src/components/VerificationStatus.tsx`, `src/app/(protected)/home/*` | 2026-04-03 |
+| — | PredictionCard component | `src/components/PredictionCard.tsx`, `src/app/(protected)/predictions/*`, `src/app/api/predictions/*` | 2026-04-03 |
 
 ---
 
@@ -42,7 +49,7 @@ Once the hackathon starts, each agent owns specific files. This map prevents con
 |-------|-----------------|-------------|
 | Agent 1 (0G Contracts) | `contracts/0g/*`, `deployments/0g-galileo.json`, `scripts/deploy-0g.ts` | `app/*`, `agents/*`, `contracts/world/*`, `contracts/hedera/*` |
 | Agent 2 (World) | `contracts/world/*`, `app/api/verify/*`, `deployments/world-sepolia.json` | `contracts/0g/*`, `contracts/hedera/*`, `agents/*` |
-| Agent 3 (Hedera) | `contracts/hedera/*`, `lib/nanopayments.ts`, `deployments/hedera-testnet.json` | `contracts/0g/*`, `contracts/world/*`, `agents/*` |
+| Agent 3 (Hedera) | `lib/hedera.ts`, `lib/blocky402.ts`, `app/api/payments/*`, `scripts/setup-hedera.ts` | `contracts/*` (no Solidity on Hedera), `agents/*` |
 | Agent 4 (Scaffold) | `package.json`, `hardhat.config.ts`, `agents/*`, `.env.example`, `app/layout.tsx`, `app/page.tsx` | `contracts/*`, `deployments/*` |
 
 ### Wave 2 File Ownership
@@ -58,7 +65,7 @@ Once the hackathon starts, each agent owns specific files. This map prevents con
 
 | Agent | Owns These Files | Do NOT Touch |
 |-------|-----------------|-------------|
-| Agent 9 (x402 Payments) | `lib/nanopayments.ts`, `app/api/pay/*`, `components/PaymentConfirmation.tsx` | `app/predictions/*`, `contracts/*` |
+| Agent 9 (x402 Payments) | `lib/blocky402.ts`, `app/api/payments/*`, `components/PaymentConfirmation.tsx` | `app/predictions/*`, `contracts/*` |
 | Agent 10 (Predictions) | `app/predictions/*`, `components/PredictionCard.tsx`, `app/api/predictions/*` | `app/gpu-verify/*`, `contracts/*` |
 | Agent 11 (Reputation) | `agents/skills/reputation.md`, `agents/skills/shield-check.md`, `lib/reputation.ts` | `app/*`, `contracts/*` |
 
