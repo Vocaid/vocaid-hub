@@ -1,7 +1,10 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import { readFileSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 dotenv.config();
 
