@@ -1,12 +1,57 @@
 import GPUProviderRegistryABI from '@/abi/GPUProviderRegistry.json';
+import { addresses, OG_RPC_URL } from '@/lib/contracts';
 import { verifyProvider } from '@/lib/og-compute';
+import { requireWorldId } from '@/lib/world-id';
 import { ethers } from 'ethers';
 import { NextRequest, NextResponse } from 'next/server';
 
-const OG_RPC_URL =
-  process.env.NEXT_PUBLIC_OG_RPC_URL ?? 'https://evmrpc-testnet.0g.ai';
-
-const GPU_REGISTRY_ADDRESS = process.env.GPU_REGISTRY_ADDRESS;
+// Minimal IdentityRegistry ABI for register + event
+const IDENTITY_ABI = [
+  {
+    name: 'register',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'agentURI', type: 'string' },
+      {
+        name: 'metadata',
+        type: 'tuple[]',
+        components: [
+          { name: 'metadataKey', type: 'string' },
+          { name: 'metadataValue', type: 'bytes' },
+        ],
+      },
+    ],
+    outputs: [{ name: 'agentId', type: 'uint256' }],
+  },
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'owner', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'tokenOfOwnerByIndex',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'index', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    anonymous: false,
+    name: 'Registered',
+    type: 'event',
+    inputs: [
+      { indexed: true, name: 'agentId', type: 'uint256' },
+      { indexed: false, name: 'agentURI', type: 'string' },
+      { indexed: true, name: 'owner', type: 'address' },
+    ],
+  },
+];
 
 /**
  * POST /api/gpu/register
@@ -14,10 +59,14 @@ const GPU_REGISTRY_ADDRESS = process.env.GPU_REGISTRY_ADDRESS;
  * Body: { providerAddress, gpuModel, endpoint }
  *
  * 1. Verify the provider via 0G broker TEE attestation
- * 2. Call GPUProviderRegistry.registerProvider() on 0G Chain
- * 3. Return the minted ERC-8004 NFT token ID + tx hash
+ * 2. Find or create ERC-8004 identity for the provider
+ * 3. Call GPUProviderRegistry.registerProvider() on 0G Chain
+ * 4. Return the agentId + tx hash
  */
 export async function POST(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const { providerAddress, gpuModel, endpoint } = await req.json();
 
@@ -25,13 +74,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'providerAddress and gpuModel are required' },
         { status: 400 },
-      );
-    }
-
-    if (!GPU_REGISTRY_ADDRESS) {
-      return NextResponse.json(
-        { error: 'GPU_REGISTRY_ADDRESS not configured' },
-        { status: 500 },
       );
     }
 
@@ -58,50 +100,115 @@ export async function POST(req: NextRequest) {
       ),
     );
 
-    // 2. Register on GPUProviderRegistry (ERC-8004)
+    // 2. Set up wallet + contracts
     const provider = new ethers.JsonRpcProvider(OG_RPC_URL);
     const wallet = new ethers.Wallet(pk, provider);
-    const registry = new ethers.Contract(
-      GPU_REGISTRY_ADDRESS,
+
+    const identityRegistry = new ethers.Contract(
+      addresses.identityRegistry(),
+      IDENTITY_ABI,
+      wallet,
+    );
+
+    const gpuRegistry = new ethers.Contract(
+      addresses.gpuProviderRegistry(),
       GPUProviderRegistryABI,
       wallet,
     );
 
-    const agentURI = endpoint ?? `https://0g-provider.${providerAddress.slice(2, 10)}.eth`;
+    // 3. Find or create ERC-8004 identity for provider
+    let agentId: bigint;
 
-    const tx = await registry.registerProvider(
-      agentURI,
+    const balance = await identityRegistry.balanceOf(providerAddress);
+    if (balance > 0n) {
+      // Provider already has an identity NFT — use first token
+      agentId = await identityRegistry.tokenOfOwnerByIndex(providerAddress, 0);
+    } else {
+      // Register new identity for the GPU provider
+      const agentURI =
+        endpoint ??
+        `https://0g-provider.${providerAddress.slice(2, 10)}.eth`;
+
+      const metadata = [
+        {
+          metadataKey: 'type',
+          metadataValue: ethers.toUtf8Bytes('gpu-provider'),
+        },
+        {
+          metadataKey: 'gpuModel',
+          metadataValue: ethers.toUtf8Bytes(gpuModel),
+        },
+      ];
+
+      const registerTx = await identityRegistry.register(agentURI, metadata);
+      const registerReceipt = await registerTx.wait();
+
+      // Extract agentId from Registered event
+      const registeredEvent = registerReceipt.logs.find(
+        (log: ethers.Log) => {
+          try {
+            return (
+              identityRegistry.interface.parseLog({
+                topics: [...log.topics],
+                data: log.data,
+              })?.name === 'Registered'
+            );
+          } catch {
+            return false;
+          }
+        },
+      );
+
+      if (registeredEvent) {
+        const parsed = identityRegistry.interface.parseLog({
+          topics: [...registeredEvent.topics],
+          data: registeredEvent.data,
+        });
+        agentId = parsed?.args?.[0] ?? 0n;
+      } else {
+        // Fallback: query the balance again
+        agentId = await identityRegistry.tokenOfOwnerByIndex(
+          wallet.address,
+          (await identityRegistry.balanceOf(wallet.address)) - 1n,
+        );
+      }
+    }
+
+    // 4. Register on GPUProviderRegistry (correct 4-arg signature)
+    const tx = await gpuRegistry.registerProvider(
+      agentId,
       gpuModel,
+      'TDX', // Intel TDX — required by 0G compute providers
       attestationHash,
     );
 
     const receipt = await tx.wait();
 
-    // Extract tokenId from ProviderRegistered event
-    const event = receipt.logs.find(
-      (log: ethers.Log) => {
-        try {
-          return registry.interface.parseLog({
+    // Extract provider info from ProviderRegistered event
+    const event = receipt.logs.find((log: ethers.Log) => {
+      try {
+        return (
+          gpuRegistry.interface.parseLog({
             topics: [...log.topics],
             data: log.data,
-          })?.name === 'ProviderRegistered';
-        } catch {
-          return false;
-        }
-      },
-    );
+          })?.name === 'ProviderRegistered'
+        );
+      } catch {
+        return false;
+      }
+    });
 
-    let tokenId = '0';
+    let registeredAgentId = agentId.toString();
     if (event) {
-      const parsed = registry.interface.parseLog({
+      const parsed = gpuRegistry.interface.parseLog({
         topics: [...event.topics],
         data: event.data,
       });
-      tokenId = parsed?.args?.[1]?.toString() ?? '0';
+      registeredAgentId = parsed?.args?.[1]?.toString() ?? agentId.toString();
     }
 
     return NextResponse.json({
-      tokenId,
+      agentId: registeredAgentId,
       txHash: receipt.hash,
       attestationHash,
       verified: verification.success,
