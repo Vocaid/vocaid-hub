@@ -16,8 +16,10 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-const HEDERA_ACCOUNT_ID = process.env.HEDERA_ACCOUNT_ID ?? "0.0.8368570";
+const HEDERA_ACCOUNT_ID =
+  process.env.HEDERA_OPERATOR_ID ?? process.env.HEDERA_ACCOUNT_ID ?? "0.0.8368570";
 const HEDERA_PRIVATE_KEY =
+  process.env.HEDERA_OPERATOR_KEY ??
   process.env.HEDERA_PRIVATE_KEY ??
   "0xf7ea04d37cce8441b89b95c3ded4b3f373f4e1ce70a1619d6a44c1b851a386f4";
 const HEDERA_NETWORK = process.env.HEDERA_NETWORK ?? "testnet";
