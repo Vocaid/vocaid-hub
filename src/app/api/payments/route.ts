@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPayment, settlePayment } from "@/lib/blocky402";
 import { logAuditMessage } from "@/lib/hedera";
+import { executeAgentAction } from "@/lib/hedera-agent";
 
 // USDC token on Hedera testnet
 const USDC_TOKEN_ID = process.env.HEDERA_USDC_TOKEN ?? "0.0.429274";
