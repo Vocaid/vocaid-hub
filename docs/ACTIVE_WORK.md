@@ -20,7 +20,7 @@
 
 | Agent | Task | Target Files | Status | Started (UTC) | Completed (UTC) |
 |-------|------|-------------|--------|---------------|-----------------|
-| 6+5 | Wave 2 AgentKit + GPU Portal merge | `src/lib/agentkit.ts`, `src/app/api/agents/*` | in-progress (merge conflicts) | 2026-04-03 | — |
+| (none active) | — | — | — | — | — |
 
 ---
 
@@ -36,6 +36,10 @@
 | 6 | AgentKit + A2A agent cards | `src/lib/agentkit.ts`, `src/app/api/agents/*`, `public/agent-cards/*` | 2026-04-03 |
 | 7 | Marketplace UI + ResourceCard + filters | `src/components/ResourceCard.tsx`, `src/components/ChainBadge.tsx`, `src/components/ReputationBar.tsx`, `src/components/VerificationStatus.tsx`, `src/app/(protected)/home/*` | 2026-04-03 |
 | — | PredictionCard component | `src/components/PredictionCard.tsx`, `src/app/(protected)/predictions/*`, `src/app/api/predictions/*` | 2026-04-03 |
+| 8 | Wave 3 payments + predictions + hire flow | `src/components/PaymentConfirmation.tsx`, `src/components/PredictionCard.tsx`, `src/app/(protected)/predictions/*`, `src/app/api/predictions/*`, `src/app/(protected)/home/marketplace-content.tsx`, `src/components/ResourceCard.tsx`, `src/app/globals.css` | 2026-04-03 |
+| 8 | Navigation routing + Profile page | `src/components/Navigation/index.tsx`, `src/app/(protected)/profile/*` | 2026-04-03 |
+| 7 | Wire .env.local with 0G deployed addresses + OG_BROKER_PRIVATE_KEY + NEXT_PUBLIC_OG_RPC_URL | `.env.local`, `.env.example` | 2026-04-03 |
+| 7 | Doc fixes: USDC token consistency, Blocky402 status, Arc cleanup, ACTIVE_WORK file ownership | `docs/ARCHITECTURE.md`, `docs/TECHNOLOGY_RESEARCH.md`, `docs/ACTIVE_WORK.md` | 2026-04-03 |
 
 ---
 
