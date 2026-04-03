@@ -21,7 +21,7 @@
 | Agent | Task | Target Files | Status | Started (UTC) | Completed (UTC) |
 |-------|------|-------------|--------|---------------|-----------------|
 | 4 | Fix OpenClaw config: Arc→Hedera env vars | `agents/openclaw.json` | done | 2026-04-03T18:00Z | 2026-04-03T18:10Z |
-| 4 | Update ARCHITECTURE.md with actual codebase structure | `docs/ARCHITECTURE.md` | in-progress | 2026-04-03T22:30Z | — |
+| 4 | Update ARCHITECTURE.md with actual codebase structure | `docs/ARCHITECTURE.md` | done | 2026-04-03T22:30Z | 2026-04-03T22:45Z |
 | 2 | World ID hard gate on all resource API routes + enable auth redirect | `src/app/api/gpu/*`, `src/app/api/predictions/*`, `src/app/api/payments/*`, `src/app/api/reputation/*`, `src/app/(protected)/layout.tsx`, `.env.example` | done | 2026-04-03T20:00Z | 2026-04-03T21:00Z |
 | 3 | Run Hedera setup script, test x402 payment e2e, wire World ID → HTS credential mint | `scripts/setup-hedera.ts`, `src/lib/hedera.ts`, `src/app/api/payments/*`, `deployments/hedera-testnet.json` | in-progress | 2026-04-03T20:30Z | — |
 | 6 | Wave 4: Demo + Polish + Submission | `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/globals.css`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md` | in-progress | 2026-04-03T22:00Z | — |
