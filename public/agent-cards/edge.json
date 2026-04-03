@@ -1,6 +1,6 @@
 {
   "name": "Edge",
-  "description": "Market maker agent — executes trades, manages predictions, and handles nanopayment flows on the Arc network for Vocaid resource allocation.",
+  "description": "Market maker agent — executes trades, manages predictions, and handles nanopayment flows on Hedera via Blocky402 for Vocaid resource allocation.",
   "version": "1.0.0",
   "protocol": "erc-8004-registration-v1",
   "services": [
