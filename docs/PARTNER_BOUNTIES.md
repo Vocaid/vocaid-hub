@@ -29,7 +29,9 @@
 
 **All 0G tracks require:** Contract deployment addresses, public GitHub with README, demo video <3 min, live demo link, list of protocol features/SDKs used, team info (Telegram + X).
 
-### Arc — $15,000 (4 tracks)
+### Arc — $15,000 (4 tracks) — NOT SELECTED
+
+> **Historical reference only.** Arc was evaluated but NOT selected as a partner. See "Partner Selection Analysis" below for rationale. Hedera selected instead.
 
 | Track | Prize | Winners | Requirements |
 |-------|-------|---------|-------------|
@@ -94,16 +96,7 @@
 
 ## Partner Selection Analysis
 
-### Recommended: World + 0G + Arc
-
-| Slot | Partner | Accessible Pool | Strong Fit Tracks |
-|------|---------|-----------------|-------------------|
-| 1 | World | $20k | AgentKit ($8k), World ID ($8k), MiniKit ($4k) |
-| 2 | 0G | $15k | OpenClaw Agent ($6k), Wildcard ($3k), DeFi ($6k stretch) |
-| 3 | Arc | $15k | Agentic Nano ($6k), Prediction Markets ($3k) |
-| **Total** | | **$50k** | **7 strong-fit tracks** |
-
-### Alternative: World + 0G + Hedera
+### Selected: World + 0G + Hedera
 
 | Slot | Partner | Accessible Pool | Strong Fit Tracks |
 |------|---------|-----------------|-------------------|
@@ -112,14 +105,15 @@
 | 3 | Hedera | $15k | AI/Agentic ($6k), No Solidity ($3k), Tokenization ($2.5k) |
 | **Total** | | **$50k** | **8 strong-fit tracks** |
 
-### Trade-off Summary
+### Why Hedera Over Arc
 
-| Factor | Arc (Recommended) | Hedera (Alternative) |
+| Factor | Hedera (Selected) | Arc (Not Selected) |
 |--------|-------------------|---------------------|
-| Prediction Markets | $3k track (recovers key narrative) | No track |
-| Stablecoin pricing | USDC native (correct for resources) | HBAR (volatile) |
-| x402 facilitator | Circle Gateway (production) | None (announced only) |
-| Gas-free payments | Nanopayments (yes) | No |
-| Easy safety win | None | "No Solidity" 3 winners |
-| OpenClaw ACP in rules | No | Yes (explicitly listed) |
-| ERC-8004 in rules | No | Yes (explicitly listed) |
+| Easy safety win | "No Solidity" track — 3 winners ($3k) | None |
+| OpenClaw ACP in rules | Yes (explicitly listed) | No |
+| ERC-8004 in rules | Yes (explicitly listed) | No |
+| x402 facilitator | Blocky402 (https://api.testnet.blocky402.com) | Circle Gateway (production) |
+| USDC payments | USDC token 0.0.429274 ($0.0001 gas) | Gas-free Nanopayments |
+| HTS credential tokens | Non-transferable soulbound tokens | ERC-20 only |
+| HCS audit trail | Immutable consensus logging | No equivalent |
+| Prediction Markets | No dedicated track | $3k track |

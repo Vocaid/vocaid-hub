@@ -78,10 +78,7 @@ When the hackathon starts and the fresh repo is created, install these dependenc
     "@worldcoin/minikit-js": "latest",
     "@0glabs/0g-serving-broker": "^0.6.5",
     "@0glabs/0g-ts-sdk": "^0.3.3",
-    "@circle-fin/x402-batching": "latest",
-    "@x402/fetch": "latest",
-    "@x402/evm": "latest",
-    "@x402/core": "latest",
+    "@hashgraph/sdk": "latest",
     "@openzeppelin/contracts": "^5.0.0",
     "@openzeppelin/contracts-upgradeable": "^5.0.0",
     "ethers": "^6.13.0",
@@ -134,29 +131,29 @@ globs: ["**/*.ts", "**/*.tsx", "**/*.sol"]
 # Project: fin.vocaid.ai — Hybrid Resource Allocation Protocol
 
 ## Architecture
-- Three chains: World Chain (Trust), 0G Chain (Verify), Arc (Trade)
+- Three chains: World Chain (Trust), 0G Chain (Verify), Hedera (Settle)
 - World ID + AgentKit for identity
 - ERC-8004 registries on 0G Chain for agent/provider identity + reputation + validation
-- Circle Nanopayments on Arc for gas-free USDC agent payments
+- Hedera x402 via Blocky402 for USDC agent payments ($0.0001 gas)
 - OpenClaw 4-agent fleet: Seer, Edge, Shield, Lens
 
 ## Tech Stack
 - Frontend: Next.js 15 + MiniKit 2.0 (Mini App inside World App)
 - Contracts: Solidity 0.8.24, Hardhat + Foundry, evmVersion "cancun" for 0G
 - Agent Framework: OpenClaw with 0g-agent-skills
-- Payments: @circle-fin/x402-batching (Arc), @x402/fetch
+- Payments: @hashgraph/sdk for Hedera, x402 via Blocky402
 - Identity: @worldcoin/minikit-js, ERC-8004
 
 ## Chain Configuration
 - 0G Galileo: chainId 16602, RPC https://evmrpc-testnet.0g.ai, evmVersion cancun
-- Arc Testnet: chainId 5042002, RPC https://rpc.testnet.arc.network, USDC 0x3600000000000000000000000000000000000000
+- Hedera Testnet: network hedera-testnet, USDC token 0.0.429274
 - World Chain Sepolia: chainId 4801
 
 ## Coding Standards
 - TypeScript strict mode
 - No any types
 - Use ethers v6 (not v5)
-- Use viem for Arc chain interactions
+- Use @hashgraph/sdk for Hedera interactions
 - Solidity: 0.8.24, optimizer enabled, 200 runs, evmVersion cancun
 - Conventional commits: feat(scope):, fix(scope):, docs:
 - Small focused commits — never batch unrelated changes
@@ -164,7 +161,7 @@ globs: ["**/*.ts", "**/*.tsx", "**/*.sol"]
 ## File Organization
 - contracts/0g/ — ERC-8004 registries, GPUProviderRegistry, MockTEEValidator
 - contracts/world/ — CredentialGate.sol
-- contracts/arc/ — ResourcePrediction.sol, NanopaymentRouter.sol
+- contracts/hedera/ — ResourcePrediction.sol, x402PaymentRouter.sol
 - app/ — Next.js MiniKit Mini App
 - agents/ — OpenClaw agent configs + custom skills
 - scripts/ — Deployment scripts
@@ -201,7 +198,7 @@ globs: ["**/*.sol"]
 
 ## Multi-Chain Awareness
 - 0G Chain (chainId 16602): ERC-8004 registries + GPUProviderRegistry
-- Arc (chainId 5042002): USDC at 0x3600...0000, prediction markets
+- Hedera Testnet: USDC token 0.0.429274, prediction markets
 - World Chain Sepolia (chainId 4801): CredentialGate with World ID
 
 ## ERC-8004 Interfaces
@@ -309,8 +306,8 @@ Add the vocaid-hub docs as indexed documentation in Cursor:
 # 2. External docs (add via @docs in chat)
 # @docs https://docs.world.org                    # World ID / MiniKit
 # @docs https://docs.0g.ai                        # 0G Compute / Storage / Chain
-# @docs https://docs.arc.network                  # Arc chain
-# @docs https://developers.circle.com             # Circle Nanopayments
+# @docs https://docs.hedera.com                    # Hedera network
+# @docs https://docs.blocky402.com                 # Blocky402 x402 facilitator
 # @docs https://eips.ethereum.org/EIPS/eip-8004   # ERC-8004 spec
 # @docs https://docs.openclaw.ai                  # OpenClaw
 # @docs https://hardhat.org/docs                  # Hardhat
@@ -337,10 +334,11 @@ PRIVATE_KEY=0x...  # Wallet private key for 0x58c45613290313c3aeE76c4C4e70E6e6c5
 NEXT_PUBLIC_0G_RPC=https://evmrpc-testnet.0g.ai
 OG_CHAIN_ID=16602
 
-# Arc (Trade Layer)
-NEXT_PUBLIC_ARC_RPC=https://rpc.testnet.arc.network
-ARC_CHAIN_ID=5042002
-ARC_USDC_ADDRESS=0x3600000000000000000000000000000000000000
+# Hedera (Settle Layer)
+HEDERA_NETWORK=testnet
+HEDERA_ACCOUNT_ID=0.0.8368570
+HEDERA_USDC_TOKEN=0.0.429274
+HEDERA_FEE_PAYER=0.0.7162784
 
 # World Chain
 NEXT_PUBLIC_WORLD_RPC=https://worldchain-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
@@ -393,11 +391,7 @@ const config: HardhatUserConfig = {
       chainId: 16602,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
-    "arc-testnet": {
-      url: process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.testnet.arc.network",
-      chainId: 5042002,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-    },
+    // Hedera Testnet: configured via @hashgraph/sdk, not Hardhat network
     "world-sepolia": {
       url: process.env.NEXT_PUBLIC_WORLD_RPC || "",
       chainId: 4801,
@@ -521,10 +515,7 @@ curl -s -X POST https://evmrpc-testnet.0g.ai \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' | grep -o '"result":"[^"]*"'
 
-echo -n "Arc Testnet: "
-curl -s -X POST https://rpc.testnet.arc.network \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' | grep -o '"result":"[^"]*"'
+echo "Hedera Testnet: configured via @hashgraph/sdk (non-EVM)"
 
 echo ""
 echo "=== Reference Repos ==="
@@ -551,7 +542,7 @@ TypeScript: Version 5.x.x
 Git: git version 2.x.x
 
 0G Galileo: "result":"0x40da"
-Arc Testnet: "result":"0x4cef52"
+Hedera Testnet: configured via @hashgraph/sdk (non-EVM)
 
 ERC-8004: 8 contracts
 0G Skills: 4 categories
@@ -571,7 +562,7 @@ ERC-8004: 8 contracts
 | Wallet | `0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE` |
 | World APP_ID | `app_74d7b06d88b9e220ad1cc06e387c55f3` |
 | World RP_ID | `rp_21826eb5449cc811` |
-| Arc USDC | `0x3600000000000000000000000000000000000000` |
+| Hedera USDC Token | `0.0.429274` (testnet) |
 | Vercel URL | `https://vocaid-hub.vercel.app` |
 
 ### Chain IDs
@@ -579,7 +570,7 @@ ERC-8004: 8 contracts
 | Chain | ID | RPC |
 |-------|-----|-----|
 | 0G Galileo | 16602 | `https://evmrpc-testnet.0g.ai` |
-| Arc Testnet | 5042002 | `https://rpc.testnet.arc.network` |
+| Hedera Testnet | hedera-testnet | `@hashgraph/sdk` |
 | World Sepolia | 4801 | `https://worldchain-sepolia.g.alchemy.com/v2/KEY` |
 
 ### Block Explorers
@@ -587,7 +578,7 @@ ERC-8004: 8 contracts
 | Chain | Explorer |
 |-------|---------|
 | 0G | `https://chainscan-galileo.0g.ai` |
-| Arc | `https://testnet.arcscan.app` |
+| Hedera | `https://testnet.hashscan.io` |
 | World | World Chain Sepolia Blockscout |
 
 ### Faucets
@@ -595,7 +586,7 @@ ERC-8004: 8 contracts
 | Chain | URL |
 |-------|-----|
 | 0G | `https://faucet.0g.ai` (0.1 A0GI daily) |
-| Arc | `https://faucet.circle.com` (select Arc Testnet) |
+| Hedera | `https://portal.hedera.com` (Hedera Testnet faucet) |
 | World | Bridge from Sepolia or Alchemy faucet |
 
 ---

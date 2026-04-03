@@ -117,7 +117,7 @@ This is the defining infrastructure problem of 2026. 82% of companies have AI ag
 |------|----------|------------|----------|
 | **TEE attestation broken (TEE.Fail)** | CRITICAL | PROVEN | Peer-reviewed: Intel TDX/AMD SEV-SNP ECDSA keys extracted with $2K briefcase logic analyzer. Forged TDX quotes pass Intel's own DCAP verification |
 | **Oracle manipulation** | CRITICAL | PROVEN | March 2025: UMA whale with 15.6M tokens forced incorrect resolution on $7M Polymarket contract. 2 holders = 50%+ voting power |
-| **Cross-chain bridge failure** | CRITICAL | HIGH | Bridge hacks = 69% of total DeFi funds stolen. Three chains (World + 0G + Arc) = three independent failure domains |
+| **Cross-chain bridge failure** | CRITICAL | HIGH | Bridge hacks = 69% of total DeFi funds stolen. Three chains (World + 0G + Hedera) = three independent failure domains |
 | **ERC-8004 smart contract bugs** | HIGH | MEDIUM | Standard is 3 months old. No extended battle-testing. Security left to individual developers |
 | **Blockchain latency vs centralized** | MEDIUM | CERTAIN | AWS Lambda cold start: 100-500ms. On-chain settlement: seconds to minutes. Real-time allocation requires off-chain with on-chain settlement |
 | **Sybil attacks on reputation** | MEDIUM | HIGH | ERC-8004 feedbackAuth is insufficient — doesn't limit identity count per actor. Requires economic costs the standard doesn't mandate |
@@ -213,7 +213,7 @@ A developer provisioned 128 GPUs from a decentralized marketplace. By day 3, 12 
 No competitor combines all four:
 1. **ERC-8004 identity** — open standard, composable, 30+ chain deployments
 2. **TEE-verified GPU providers** — on-chain attestation (with acknowledged limitations)
-3. **x402/Nanopayment settlement** — gas-free USDC, production SDK
+3. **x402 USDC payments via Blocky402** — $0.0001 gas on Hedera
 4. **Resource prediction markets** — first application of prediction markets to compute/skill pricing
 
 ---
@@ -226,11 +226,11 @@ No competitor combines all four:
 |-----------|----------------------|----------------------|---------|
 | ERC-8004 deployment on 0G | ✅ Straightforward (Hardhat) | ✅ Standard EVM deployment | None |
 | GPU provider verification | ✅ With mock or real DCAP | ⚠️ TEE.Fail undermines trust model | TEE trust |
-| Circle Nanopayments | ✅ Production SDK exists | ✅ Production-ready | None |
+| Hedera x402 via Blocky402 | ✅ Testnet SDK exists | ⚠️ Blocky402 is new | Facilitator maturity |
 | Prediction markets | ✅ ~120 lines Solidity | ⚠️ Oracle manipulation risk | Oracle design |
 | OpenClaw 4-agent fleet | ✅ Single Gateway, ~1GB RAM | ⚠️ Security model insufficient for production | Multi-tenant isolation |
 | World ID + AgentKit | ✅ Well-documented SDKs | ✅ Production-ready | None |
-| Cross-chain (3 chains) | ⚠️ No bridges, manual coordination | ❌ No interop standard | Bridge infrastructure |
+| Cross-chain (3 chains: World+0G+Hedera) | ⚠️ No bridges, manual coordination | ❌ No interop standard | Bridge infrastructure |
 
 ### Market Need Feasibility: VALIDATED
 
@@ -253,7 +253,7 @@ All testnet. Zero real funds at risk. Maximum loss = hackathon time to re-fund f
 ### Strengths
 - First GPU verification on ERC-8004 (confirmed greenfield)
 - Industry-standard tech stack (ERC-8004, x402, OpenClaw, World ID)
-- Three well-funded partner tracks ($50k accessible prize pool)
+- Three well-funded partner tracks ($50k accessible prize pool: World + 0G + Hedera)
 - Real infrastructure gap validated by 0G developers
 - All components individually proven — innovation is the combination
 
@@ -286,7 +286,7 @@ All testnet. Zero real funds at risk. Maximum loss = hackathon time to re-fund f
 
 1. **Lead with GPU verification** — this is the genuine innovation. Demo the ERC-8004 + DCAP flow prominently
 2. **Acknowledge TEE limitations transparently** — judges respect honesty about attack vectors. Frame reputation as the complementary trust signal
-3. **Show prediction markets as novel** — no one has built resource pricing markets. The Arc judges are looking for new asset classes
+3. **Show prediction markets as novel** — no one has built resource pricing markets. The Hedera judges are looking for new asset classes
 4. **Keep cross-chain minimal** — don't demo bridging. Show each chain's role independently
 
 ### For Post-Hackathon (If Pursuing Further)
@@ -294,7 +294,7 @@ All testnet. Zero real funds at risk. Maximum loss = hackathon time to re-fund f
 1. **Solve the oracle problem first** — resource pricing prediction markets need a manipulation-resistant resolution mechanism. Explore Chainlink DECO or multi-oracle designs
 2. **Target agent-native companies** — don't try to migrate enterprises from AWS. Target CrewAI, LangChain, AutoGen users who are already building multi-agent systems
 3. **Build reputation before TEE** — on-chain reputation (inference quality, uptime, latency) is more trustworthy than TEE attestation given TEE.Fail. Make reputation the primary signal, TEE the secondary
-4. **Stablecoin pricing is correct** — USDC on Arc validates the design. GPU providers need fiat-stable revenue
+4. **Stablecoin pricing is correct** — USDC on Hedera (token 0.0.429274) validates the design. GPU providers need fiat-stable revenue
 
 ---
 

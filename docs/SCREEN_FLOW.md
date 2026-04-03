@@ -22,15 +22,15 @@
 └─────────┼────────────┼────────────┼─────────────┼────────────────┘
           │            │            │             │
     ┌─────┴─────┐ ┌────┴────┐ ┌────┴────┐ ┌─────┴─────┐
-    │  WORLD    │ │   0G    │ │   ARC   │ │ OPENCLAW  │
-    │  CHAIN    │ │  CHAIN  │ │  CHAIN  │ │  GATEWAY  │
+    │  WORLD    │ │   0G    │ │ HEDERA  │ │ OPENCLAW  │
+    │  CHAIN    │ │  CHAIN  │ │         │ │  GATEWAY  │
     │           │ │         │ │         │ │           │
     │CredGate  │ │ERC-8004 │ │Resource │ │ Seer Edge │
     │.sol      │ │Identity │ │Predict  │ │Shield Lens│
     │          │ │Reputation│ │.sol     │ │           │
     │World ID  │ │Validation│ │         │ │0G Compute │
-    │AgentKit  │ │GPUProvReg│ │Circle   │ │0G Storage │
-    │          │ │          │ │Nanopay  │ │           │
+    │AgentKit  │ │GPUProvReg│ │x402/    │ │0G Storage │
+    │          │ │          │ │Blocky402│ │           │
     └──────────┘ └──────────┘ └─────────┘ └───────────┘
 ```
 
@@ -40,13 +40,13 @@
 |------|----|----------|------|---------|
 | Mini App → World Chain | ethers.js RPC | World ID proof, CredentialGate.verifyAndRegister() | ~2s |
 | Mini App → 0G Chain | ethers.js RPC | ERC-8004 register(), giveFeedback(), validationRequest() | ~1s |
-| Mini App → Arc | viem RPC | ResourcePrediction.createMarket(), placeBet(), USDC approve | ~1s |
+| Mini App → Hedera | @hashgraph/sdk | x402 USDC payment, HTS token ops, HCS messages | ~3-5s |
 | Mini App → 0G Compute | @0glabs/0g-serving-broker | listService(), getServiceMetadata(), inference calls | ~2-5s |
-| Mini App → Circle Gateway | @circle-fin/x402-batching | deposit(), pay(), withdraw() | ~1s |
+| Mini App → Blocky402 | x402 HTTP | x402 payment facilitation via Blocky402 | ~1s |
 | Mini App → OpenClaw | WebSocket :18789 | Agent status, trigger agent actions | ~100ms |
 | OpenClaw → 0G Compute | 0g-agent-skills | Seer/Edge inference, Shield reads Validation | ~2-5s |
 | OpenClaw → 0G Chain | ethers.js | Lens writes Reputation, Edge reads Identity | ~1s |
-| OpenClaw → Arc | x402/fetch | Agent-to-agent USDC payment for compute | ~1s |
+| OpenClaw → Hedera | @hashgraph/sdk | Agent-to-agent USDC payment for compute | ~3-5s |
 
 ---
 
@@ -295,15 +295,15 @@
 
 **Architecture calls:**
 1. Read: `ResourcePrediction.markets(id)` → question, pools, resolution time
-2. Approve: `USDC.approve(predictionContract, amount)` on Arc
-3. Bet: `ResourcePrediction.placeBet(marketId, Outcome.Yes, amount)` on Arc
+2. Approve: USDC token allowance on Hedera (token 0.0.429274)
+3. Bet: ResourcePrediction.placeBet(marketId, Outcome.Yes, amount) on Hedera
 4. UI reads updated pools from contract
 
 **UX critical path:**
 - **Bet amounts pre-set** ($1, $5, $10 buttons — no typing needed during demo)
 - Pool bar updates instantly after bet (optimistic UI, confirm on-chain)
 - USDC balance shown at top of tab
-- "Gas-free" badge visible next to USDC amount
+- "x402 USDC" badge visible next to USDC amount
 - Markets pre-seeded during demo setup (Agent 12, Wave 4)
 
 ---
@@ -323,12 +323,12 @@
 │                         │
 │  Service: AI Inference  │
 │  Rate: $0.05 per call   │
-│  Settlement: USDC on Arc│
+│  Settlement: USDC on Hedera│
 │                         │
 │  ┌───────────────────┐  │
 │  │  Pay $0.05 USDC   │  │
-│  │  ⚡ Gas-free       │  │
-│  │  via Nanopayments  │  │
+│  │  ⚡ $0.0001 gas    │  │
+│  │  via Blocky402 x402│  │
 │  └───────────────────┘  │
 │                         │
 │  ┌───────────────────┐  │
@@ -337,7 +337,7 @@
 │  │ Gas: $0.00          │  │
 │  │ Tx: 0xab3f...      │  │
 │  │ ⚡ Sub-second       │  │
-│  │ View on ArcScan →  │  │
+│  │ View on HashScan →  │  │
 │  └───────────────────┘  │
 └─────────────────────────┘
 ```
@@ -345,13 +345,13 @@
 **Demo step 6 (30s):** Tap "Hire" on a GPU resource → single-tap payment → show $0.00 gas + sub-second settlement.
 
 **Architecture calls:**
-1. `GatewayClient.pay(resourceURL)` → x402 flow: 402 response → EIP-3009 sign → Gateway batches → resource delivered
+1. x402 payment via Blocky402 facilitator (https://api.testnet.blocky402.com) → 402 response → USDC transfer on Hedera → resource delivered
 2. UI shows payment confirmation with tx hash
 
 **UX critical path:**
-- **One tap to pay** — no approval dialogs, no gas estimation
-- "Gas-free" badge prominent
-- Payment confirmation shows within 1 second (sub-second finality on Arc)
+- **One tap to pay** — no approval dialogs, minimal gas ($0.0001)
+- "x402 USDC" badge prominent
+- Payment confirmation shows within 3-5 seconds (Hedera consensus)
 - Block explorer link for judges to verify
 
 ---
@@ -400,7 +400,7 @@
 | 1 | **No loading states defined** | All | User sees blank screen during chain calls (1-5s) | Add skeleton cards + spinner overlay for tx confirmation | Agent 7 (W2) |
 | 2 | **No error states defined** | All | If testnet is slow/down, demo freezes | Add error banner: "Network slow, retrying..." with auto-retry | Agent 7 (W2) |
 | 3 | **World ID flow has no fallback UI** | Screen 0 | If World App not installed, nothing happens | Show "Open World App to verify" deep link + dev mode toggle for testing | Agent 6 (W2) |
-| 4 | **Payment requires prior USDC deposit** | Screen 5 | Demo fails if Gateway Wallet has zero balance | Pre-deposit during demo setup script (Agent 12). Show balance on Screen 4 | Agent 12 (W4) |
+| 4 | **Payment requires funded Hedera account** | Screen 5 | Demo fails if Hedera account has zero USDC | Pre-fund via portal.hedera.com during demo setup (Agent 12). Show balance on Screen 4 | Agent 12 (W4) |
 | 5 | **Prediction market needs pre-seeded data** | Screen 4 | Empty markets = nothing to demo | Seed 2-3 markets with initial liquidity in demo setup script | Agent 12 (W4) |
 | 6 | **Reputation update is async (agent heartbeat)** | Screen 6 | Lens agent may not have written feedback yet during live demo | Trigger Lens feedback manually via API call in demo flow, not heartbeat | Agent 11 (W3) |
 
@@ -420,7 +420,7 @@
 | # | Gap | Impact | Resolution |
 |---|-----|--------|-----------|
 | 13 | No success sound/haptic on payment | Missed sensory feedback | MiniKit may support haptic feedback — check docs |
-| 14 | No "powered by" footer showing chain logos | Judges don't see multi-chain story | Small footer: "World + 0G + Arc" with chain color dots |
+| 14 | No "powered by" footer showing chain logos | Judges don't see multi-chain story | Small footer: "World + 0G + Hedera" with chain color dots |
 | 15 | No confetti or celebration on first verification | Missed delight moment | Simple CSS confetti animation on World ID verify success |
 | 16 | Address truncation not consistent | Looks messy | Use `${addr.slice(0,6)}...${addr.slice(-4)}` everywhere |
 
@@ -435,7 +435,7 @@
 | 1:00-2:00 | Screen 2 (GPU Verify) | 3 taps (connect + verify + register) | "This GPU was verified on-chain. This tool doesn't exist yet." | Testnet latency (~1-3s per step) |
 | 2:00-2:30 | Screen 1 (Marketplace) | 2 taps (filter tabs) | "Humans, GPUs, agents — one marketplace, one protocol" | None (pre-seeded) |
 | 2:30-3:00 | Screen 4 (Predictions) | 2 taps (select market + place bet) | "Will H100 cost drop? The market decides." | USDC approval may need extra tap |
-| 3:00-3:30 | Screen 5 (Payment) | 1 tap (hire) | "Agent pays $0.05 — zero gas — sub-second settlement" | Circle Gateway latency |
+| 3:00-3:30 | Screen 5 (Payment) | 1 tap (hire) | "Agent pays $0.05 — $0.0001 gas — x402 via Blocky402" | Hedera consensus latency |
 | 3:30-4:00 | Screen 1 (Marketplace) | 0 taps (observe) | "Reputation updated automatically by Lens agent" | Lens heartbeat timing |
 
 **Total taps: ~10** across 4 minutes. Each tap has a clear result.
@@ -450,8 +450,8 @@
 | `ChainBadge` | Static (from resource type) | — | — | — |
 | `ReputationBar` | ReputationRegistry.getSummary() | — | 0G | `GET /api/reputation/:agentId` |
 | `VerificationStatus` | ValidationRegistry.getValidationStatus() | — | 0G | `GET /api/validation/:agentId` |
-| `PredictionCard` | ResourcePrediction.markets() | ResourcePrediction.placeBet() | Arc | `GET /api/predictions`, `POST /api/predictions/:id/bet` |
-| `PaymentConfirmation` | Circle Gateway settlement receipt | — | Arc | — (client-side SDK) |
+| `PredictionCard` | ResourcePrediction.markets() | ResourcePrediction.placeBet() | Hedera | `GET /api/predictions`, `POST /api/predictions/:id/bet` |
+| `PaymentConfirmation` | Blocky402 x402 settlement receipt | — | Hedera | — (client-side SDK) |
 | `AgentCard` | IdentityRegistry, AgentKit status | — | 0G + World | `GET /api/agents` |
 | `GPUStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |
 | `WorldIDVerify` | — | CredentialGate.verifyAndRegister() | World | `POST /api/verify` |
@@ -466,7 +466,7 @@ The demo setup script (`scripts/seed-demo-data.ts`) must create:
 |------|-------|-------|------|
 | GPU providers | 2 | 0G | "GPU-Alpha" (H100, verified), "GPU-Beta" (H200, pending) |
 | Agent identities | 4 | 0G | Seer, Edge, Shield, Lens with ERC-8004 IDs |
-| Prediction markets | 3 | Arc | GPU pricing, Rust demand, EU capacity |
-| USDC deposit | $50 | Arc | Pre-deposit to Gateway Wallet for demo payments |
+| Prediction markets | 3 | Hedera | GPU pricing, Rust demand, EU capacity |
+| USDC funding | 20 USDC | Hedera | Pre-fund account 0.0.8368570 for demo payments |
 | Reputation scores | 6 | 0G | 3 per GPU provider (quality, uptime, latency) |
 | World ID verification | 1 | World | Operator verified (or dev mode token) |
