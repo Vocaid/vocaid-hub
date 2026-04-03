@@ -1,11 +1,9 @@
 import {
-  HederaAgentAPI,
+  HederaAIToolkit,
   coreTokenPlugin,
   coreConsensusPlugin,
   coreConsensusQueryPlugin,
   coreTokenQueryPlugin,
-  type Context,
-  type Plugin,
   AgentMode,
 } from "@hashgraph/hedera-agent-kit";
 import { initClient } from "./hedera";
@@ -21,34 +19,35 @@ import { initClient } from "./hedera";
 const HEDERA_ACCOUNT_ID =
   process.env.HEDERA_OPERATOR_ID ?? process.env.HEDERA_ACCOUNT_ID ?? "0.0.8368570";
 
-let _agent: HederaAgentAPI | null = null;
+let _toolkit: HederaAIToolkit | null = null;
 
 /**
- * Returns a singleton HederaAgentAPI with HTS + Consensus plugins loaded.
+ * Returns a singleton HederaAIToolkit with HTS + Consensus plugins loaded.
  * The agent operates in AUTONOMOUS mode (executes transactions directly).
  */
-export function getHederaAgent(): HederaAgentAPI {
-  if (_agent) return _agent;
+export function getHederaToolkit(): HederaAIToolkit {
+  if (_toolkit) return _toolkit;
 
   const client = initClient();
 
-  const context: Context = {
-    accountId: HEDERA_ACCOUNT_ID,
-    mode: AgentMode.AUTONOMOUS,
-  };
+  _toolkit = new HederaAIToolkit({
+    // Cast needed: root @hashgraph/sdk and agent-kit's bundled version have duplicate private types
+    client: client as unknown as ConstructorParameters<typeof HederaAIToolkit>[0]["client"],
+    configuration: {
+      context: {
+        accountId: HEDERA_ACCOUNT_ID,
+        mode: AgentMode.AUTONOMOUS,
+      },
+      plugins: [
+        coreTokenPlugin,
+        coreTokenQueryPlugin,
+        coreConsensusPlugin,
+        coreConsensusQueryPlugin,
+      ],
+    },
+  });
 
-  const plugins: Plugin[] = [
-    coreTokenPlugin,
-    coreTokenQueryPlugin,
-    coreConsensusPlugin,
-    coreConsensusQueryPlugin,
-  ];
-
-  // Collect tools from all plugins
-  const tools = plugins.flatMap((p) => p.tools);
-
-  _agent = new HederaAgentAPI(client, context, tools);
-  return _agent;
+  return _toolkit;
 }
 
 /**
@@ -62,8 +61,10 @@ export function getHederaAgent(): HederaAgentAPI {
  */
 export async function executeAgentAction(
   method: string,
-  params: unknown,
-): Promise<string> {
-  const agent = getHederaAgent();
-  return agent.run(method, params);
+  params: Record<string, unknown>,
+): Promise<unknown> {
+  const toolkit = getHederaToolkit();
+  const tool = (toolkit.tools as unknown as Record<string, (p: Record<string, unknown>) => unknown>)[method];
+  if (!tool) throw new Error(`Unknown agent-kit method: ${method}`);
+  return tool(params);
 }

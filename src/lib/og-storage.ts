@@ -1,6 +1,7 @@
-import { ethers } from "ethers";
+// TODO: Wire to @0glabs/0g-ts-sdk when available
+// import { ethers } from "ethers";
 
-const OG_RPC_URL =
+const _OG_RPC_URL = // eslint-disable-line @typescript-eslint/no-unused-vars
   process.env.OG_RPC_URL ?? "https://evmrpc-testnet.0g.ai";
 
 /**
