@@ -8,8 +8,13 @@ import {
   TokenMintTransaction,
   TokenGrantKycTransaction,
   TokenFreezeTransaction,
+  TokenAssociateTransaction,
+  TransferTransaction,
+  ScheduleCreateTransaction,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
+  Transaction,
+  NftId,
 } from "@hashgraph/sdk";
 
 // ---------------------------------------------------------------------------
