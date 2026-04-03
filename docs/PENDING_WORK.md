@@ -35,10 +35,10 @@
 
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
-| P-010 | Missing `error.tsx` for gpu-verify | unclaimed | — | `src/app/gpu-verify/error.tsx` | [ARCHITECTURE.md](ARCHITECTURE.md) — error boundaries per route |
+| P-010 | Missing `error.tsx` for gpu-verify | ✅ done | Agent 7 | `src/app/gpu-verify/error.tsx` | Created with retry button |
 | P-011 | Missing `loading.tsx` for gpu-verify | ✅ done | Agent 6 | `src/app/gpu-verify/loading.tsx` | File exists |
-| P-012 | Missing root `error.tsx` | unclaimed | — | `src/app/error.tsx` | Next.js best practice — global error boundary |
-| P-013 | Missing root `loading.tsx` | unclaimed | — | `src/app/loading.tsx` | Next.js best practice — global loading shell |
+| P-012 | Missing root `error.tsx` | ✅ done | Agent 7 | `src/app/error.tsx` | Global error boundary with retry |
+| P-013 | Missing root `loading.tsx` | ✅ done | Agent 7 | `src/app/loading.tsx` | Global loading shell with pulse animation |
 | P-014 | Demo seed data script verification | ✅ done | Agent 8 | `scripts/seed-demo-data.ts` | [ACTIVE_WORK.md](ACTIVE_WORK.md) — Agent 8 completed |
 | P-015 | Demo flow script | ✅ done | Agent 8 | `scripts/demo-flow.md` | [ACTIVE_WORK.md](ACTIVE_WORK.md) — Agent 8 completed |
 
@@ -51,7 +51,7 @@
 | P-020 | Zero test files in project | unclaimed | — | `src/**/*.test.ts`, `contracts/**/*.test.ts` | No `*.test.*` or `*.spec.*` files found anywhere |
 | P-021 | TODO in `src/auth/index.ts` (`@ts-expect-error`) | unclaimed | — | `src/auth/index.ts` (line 38) | `// @ts-expect-error TODO` — needs proper typing |
 | P-022 | Agent directory verification | ✅ done | Agent 4 | `agents/.agents/*/soul.md` | All 4 soul.md files exist (seer, edge, shield, lens) |
-| P-023 | Hedera deployment verification via Mirror Node | unclaimed | — | `src/app/api/hedera/audit/route.ts` | Verify HTS token + HCS topic exist on-chain via `testnet.hashscan.io` |
+| P-023 | Hedera deployment verification via Mirror Node | ✅ done | Agent 3 | `src/app/api/hedera/audit/route.ts` | Verified: VCRED token 0.0.8499633 + topic 0.0.8499635 confirmed on Mirror Node |
 
 ---
 
@@ -61,7 +61,7 @@
 |----|------|--------|-------|-------------|-----------|
 | P-030 | Package name still `@worldcoin/next-15-template` | ✅ done | Agent 14 | `package.json` | Fixed to `vocaid-hub` |
 | P-031 | Favicon + OG images need branding | unclaimed | — | `public/favicon.ico`, `public/og-image.png`, `src/app/layout.tsx` | Default World template assets |
-| P-032 | `README-minikit.md` leftover from scaffold | unclaimed | — | `README-minikit.md` | Delete or archive — replaced by comprehensive README.md |
+| P-032 | `README-minikit.md` leftover from scaffold | ✅ done | Agent 7 | `README-minikit.md` | Deleted |
 
 ---
 
