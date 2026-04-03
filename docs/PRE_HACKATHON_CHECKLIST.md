@@ -1,8 +1,8 @@
 # fin.vocaid.ai — Pre-Hackathon Checklist (Hybrid Resource Allocation)
 
 **Hackathon:** ETHGlobal Cannes, April 3-5, 2026 (in-person)
-**Architecture:** World Chain (Trust) + 0G Chain (Verify) + Arc (Trade)
-**Partners:** World ($20k) + 0G ($15k) + Arc ($15k) = $50k accessible
+**Architecture:** World Chain (Trust) + 0G Chain (Verify) + Hedera (Settle)
+**Partners:** World ($20k) + 0G ($15k) + Hedera ($15k) = $50k accessible
 **Total pre-work:** ~3-4 hours
 **Last updated:** 2026-04-02
 
@@ -52,21 +52,22 @@ Without these, you cannot start deploying contracts on Day 1.
   # Expected: {"result":"0x40da"} (16602 in hex)
   ```
 
-### Arc (Trade Layer)
+### Hedera (Settle Layer)
 
-- [ ] **Get Arc testnet USDC** — Visit `https://faucet.circle.com`. Select "Arc Testnet" network. Request testnet USDC. (5 min)
-  - Arc Chain ID: `5042002`
-  - USDC address: `0x3600000000000000000000000000000000000000`
-  - Block explorer: `https://testnet.arcscan.app`
+- [ ] **Get Hedera testnet HBAR** — Visit `https://portal.hedera.com`. Request testnet HBAR for account 0.0.8368570. (5 min)
+  - Network: hedera-testnet
+  - Account: 0.0.8368570
+  - USDC token: 0.0.429274
+  - Fee payer: 0.0.7162784
+  - Block explorer: `https://testnet.hashscan.io`
 
-- [ ] **Verify Arc testnet RPC works** — (2 min)
+- [ ] **Verify Hedera testnet works** — (2 min)
   ```bash
-  curl -X POST https://rpc.testnet.arc.network -H "Content-Type: application/json" \
-    -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}'
-  # Expected: {"result":"0x4cf5d2"} (5042002 in hex)
+  # Verify via @hashgraph/sdk or check balance on testnet.hashscan.io
+  # Account 0.0.8368570 should show HBAR balance
   ```
 
-- [ ] **Circle Developer account** — `https://developers.circle.com` → Get API credentials for Circle Nanopayments. May need approval. (15 min)
+- [ ] **Verify Blocky402 facilitator** — `https://api.testnet.blocky402.com` → Check x402 facilitator is responding. (5 min)
 
 ### Tooling
 
@@ -96,7 +97,7 @@ Without these, you cannot start deploying contracts on Day 1.
 
 Confirms the SDKs install and testnets respond. Do this at home, not at the venue.
 
-- [ ] **Test Hardhat multi-chain config** — Create a minimal `hardhat.config.ts` with 0G + Arc + World networks. Run `npx hardhat compile` with an empty contract. Verify it compiles with `evmVersion: "cancun"`. (10 min)
+- [ ] **Test Hardhat multi-chain config** — Create a minimal `hardhat.config.ts` with 0G + World networks. Run `npx hardhat compile` with an empty contract. Verify it compiles with `evmVersion: "cancun"`. Hedera uses @hashgraph/sdk, not Hardhat. (10 min)
 
 - [ ] **Test 0G broker SDK** — (15 min)
   ```bash
@@ -106,11 +107,11 @@ Confirms the SDKs install and testnets respond. Do this at home, not at the venu
   # Call broker.inference.listService() → should return provider list (may be empty on testnet)
   ```
 
-- [ ] **Test Circle Nanopayments SDK** — (15 min)
+- [ ] **Test @hashgraph/sdk** — (15 min)
   ```bash
-  npm install @circle-fin/x402-batching viem
-  # Write a test script that creates a GatewayClient with arcTestnet
-  # Verify it initializes and can check balances
+  npm install @hashgraph/sdk
+  # Write a test script that creates a Client.forTestnet()
+  # Verify it initializes and can check HBAR balance for 0.0.8368570
   ```
 
 - [ ] **Test World MiniKit dev mode** — (10 min)
@@ -151,11 +152,11 @@ Confirms the SDKs install and testnets respond. Do this at home, not at the venu
 
 - [ ] Join 0G Discord (`discord.gg/0glabs`) — Ask about serving contract addresses + TEE attestation data access
 - [ ] Join World Discord (`discord.gg/worldcoin`) — Ask about AgentKit best practices
-- [ ] Join Arc Discord or Circle Developer community — Ask about Nanopayments testnet limits
+- [ ] Join Hedera Discord — Ask about Blocky402 x402 facilitator status and HTS best practices
 - [ ] Clone Automata DCAP contracts — `git clone https://github.com/automata-network/automata-dcap-attestation.git`
 - [ ] Clone RiscZero Ethereum contracts — `git clone https://github.com/risc0/risc0-ethereum.git`
 - [ ] Read ERC-8004 spec thoroughly — `https://eips.ethereum.org/EIPS/eip-8004`
-- [ ] Read Circle Nanopayments buyer/seller quickstart docs
+- [ ] Read @hashgraph/sdk docs and Blocky402 x402 integration guide
 
 ---
 
@@ -186,9 +187,11 @@ NEXT_PUBLIC_0G_RPC=https://evmrpc-testnet.0g.ai
 BONSAI_API_KEY=...                             # RiscZero Bonsai (for ZK proofs)
 BONSAI_API_URL=https://api.bonsai.xyz
 
-# Arc (Trade Layer)
-NEXT_PUBLIC_ARC_RPC=https://rpc.testnet.arc.network
-CIRCLE_API_KEY=...                             # Circle Developer API
+# Hedera (Settle Layer)
+HEDERA_NETWORK=testnet
+HEDERA_ACCOUNT_ID=0.0.8368570
+HEDERA_USDC_TOKEN=0.0.429274
+HEDERA_FEE_PAYER=0.0.7162784
 
 # Optional fallbacks
 ANTHROPIC_API_KEY=...                          # If 0G compute is down
@@ -211,7 +214,7 @@ RESOURCE_PREDICTION=
 |--------|--------|
 | 0-15 | Set up workspace. Connect WiFi + test mobile hotspot. Verify `.env` is loaded. |
 | 15-30 | **Find 0G sponsor rep.** Ask: "We're building GPU provider verification on ERC-8004 — your confirmed gap. We need serving contract addresses on Galileo and access to TEE attestation data. Can you help?" (See `DEVELOPER_CONVERSATIONS.md` for full talking points) |
-| 30-45 | **Find Arc sponsor rep.** Ask: "We're building resource prediction markets — GPU pricing, skill demand. Using Circle Nanopayments for agent-to-agent settlement. Any Arc testnet gotchas?" (See `DEVELOPER_CONVERSATIONS.md`) |
+| 30-45 | **Find Hedera sponsor rep.** Ask: "We're building x402 USDC payments via Blocky402 + HTS credential tokens + HCS audit trail. Pure @hashgraph/sdk, no Solidity. Any testnet gotchas?" (See `DEVELOPER_CONVERSATIONS.md`) |
 | 45-60 | **Find World sponsor rep.** Ask: "4 OpenClaw agents registered via AgentKit + World ID as hard gate for all resource access. Deep enough for AgentKit $8k?" |
 | 60-90 | Create public GitHub repo. Push initial scaffold commit. Start Wave 1 contract deployments. |
 | 90-120 | Wave 1 deploying: ERC-8004 on 0G, CredentialGate on World, start Automata DCAP (if feasible). |
@@ -232,7 +235,7 @@ RESOURCE_PREDICTION=
 | Service | Cost | Notes |
 |---------|------|-------|
 | 0G testnet | $0 | Free from faucet |
-| Arc testnet | $0 | Free USDC from Circle faucet |
+| Hedera testnet | $0 | Free HBAR from portal.hedera.com |
 | World Chain Sepolia | $0 | Free testnet ETH |
 | RiscZero Bonsai | $0-10 | Free tier for proof generation |
 | Anthropic fallback | $10-50 | Only if 0G compute is down |

@@ -40,9 +40,9 @@ Once the hackathon starts, each agent owns specific files. This map prevents con
 
 | Agent | Owns These Files | Do NOT Touch |
 |-------|-----------------|-------------|
-| Agent 1 (0G Contracts) | `contracts/0g/*`, `deployments/0g-galileo.json`, `scripts/deploy-0g.ts` | `app/*`, `agents/*`, `contracts/world/*`, `contracts/arc/*` |
-| Agent 2 (World) | `contracts/world/*`, `app/api/verify/*`, `deployments/world-sepolia.json` | `contracts/0g/*`, `contracts/arc/*`, `agents/*` |
-| Agent 3 (Arc) | `contracts/arc/*`, `lib/nanopayments.ts`, `deployments/arc-testnet.json` | `contracts/0g/*`, `contracts/world/*`, `agents/*` |
+| Agent 1 (0G Contracts) | `contracts/0g/*`, `deployments/0g-galileo.json`, `scripts/deploy-0g.ts` | `app/*`, `agents/*`, `contracts/world/*`, `contracts/hedera/*` |
+| Agent 2 (World) | `contracts/world/*`, `app/api/verify/*`, `deployments/world-sepolia.json` | `contracts/0g/*`, `contracts/hedera/*`, `agents/*` |
+| Agent 3 (Hedera) | `contracts/hedera/*`, `lib/nanopayments.ts`, `deployments/hedera-testnet.json` | `contracts/0g/*`, `contracts/world/*`, `agents/*` |
 | Agent 4 (Scaffold) | `package.json`, `hardhat.config.ts`, `agents/*`, `.env.example`, `app/layout.tsx`, `app/page.tsx` | `contracts/*`, `deployments/*` |
 
 ### Wave 2 File Ownership
@@ -58,7 +58,7 @@ Once the hackathon starts, each agent owns specific files. This map prevents con
 
 | Agent | Owns These Files | Do NOT Touch |
 |-------|-----------------|-------------|
-| Agent 9 (Nanopayments) | `lib/nanopayments.ts`, `app/api/pay/*`, `components/PaymentConfirmation.tsx` | `app/predictions/*`, `contracts/*` |
+| Agent 9 (x402 Payments) | `lib/nanopayments.ts`, `app/api/pay/*`, `components/PaymentConfirmation.tsx` | `app/predictions/*`, `contracts/*` |
 | Agent 10 (Predictions) | `app/predictions/*`, `components/PredictionCard.tsx`, `app/api/predictions/*` | `app/gpu-verify/*`, `contracts/*` |
 | Agent 11 (Reputation) | `agents/skills/reputation.md`, `agents/skills/shield-check.md`, `lib/reputation.ts` | `app/*`, `contracts/*` |
 

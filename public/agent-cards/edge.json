@@ -1,0 +1,29 @@
+{
+  "name": "Edge",
+  "description": "Market maker agent — executes trades, manages predictions, and handles nanopayment flows on the Arc network for Vocaid resource allocation.",
+  "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
+  "services": [
+    {
+      "type": "a2a",
+      "endpoint": "/api/agents/edge/a2a",
+      "description": "Agent-to-agent messaging endpoint for trade negotiation and order routing"
+    },
+    {
+      "type": "mcp",
+      "endpoint": "/api/agents/edge/mcp",
+      "description": "Model Context Protocol endpoint for market-making strategy execution"
+    }
+  ],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
+  "metadata": {
+    "type": "ai-agent",
+    "role": "market-maker",
+    "capabilities": ["trade-execution", "price-prediction", "nanopayment-settlement"],
+    "operator_world_id": null
+  }
+}

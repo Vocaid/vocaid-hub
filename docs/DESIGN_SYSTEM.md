@@ -25,7 +25,7 @@
 |-------|-------|-----|-------|
 | World | Blue | `#3B82F6` | World ID verified badges, trust indicators |
 | 0G | Green | `#10B981` | GPU verification, compute indicators |
-| Arc | Violet | `#8B5CF6` | USDC payments, prediction markets |
+| Hedera | Purple | `#8247E5` | USDC payments, prediction markets |
 
 ### Status Colors
 
@@ -47,7 +47,7 @@
         chain: {
           world: '#3B82F6',
           og: '#10B981',
-          arc: '#8B5CF6',
+          hedera: '#8247E5',
         },
         status: {
           verified: '#10B981',
@@ -85,11 +85,11 @@
 | Component | Location | Description |
 |-----------|----------|-------------|
 | `ResourceCard` | `components/ResourceCard.tsx` | Unified card for human, GPU, agent resources. Shows identity, reputation, chain badge |
-| `ChainBadge` | `components/ChainBadge.tsx` | Small colored pill showing World/0G/Arc origin |
+| `ChainBadge` | `components/ChainBadge.tsx` | Small colored pill showing World/0G/Hedera origin |
 | `ReputationBar` | `components/ReputationBar.tsx` | Horizontal bar (0-100) with color gradient |
 | `VerificationStatus` | `components/VerificationStatus.tsx` | Icon + text for TEE/World ID status |
 | `PredictionCard` | `components/PredictionCard.tsx` | Market question, yes/no pools, odds, bet button |
-| `PaymentConfirmation` | `components/PaymentConfirmation.tsx` | USDC amount, gas-free badge, tx hash |
+| `PaymentConfirmation` | `components/PaymentConfirmation.tsx` | USDC amount, x402 payment badge, tx hash |
 | `AgentCard` | `components/AgentCard.tsx` | Agent identity, role (Seer/Edge/Shield/Lens), ERC-8004 ID |
 
 ---
@@ -147,7 +147,7 @@ npm install lucide-react  # ~30KB gzipped, tree-shakeable
 |---------|-------------|--------|
 | World Chain / World ID | `Globe` | `import { Globe } from 'lucide-react'` |
 | 0G Chain / Compute | `Zap` | `import { Zap } from 'lucide-react'` |
-| Arc / USDC / Payments | `CircleDollarSign` | `import { CircleDollarSign } from 'lucide-react'` |
+| Hedera / USDC / Payments | `CircleDollarSign` | `import { CircleDollarSign } from 'lucide-react'` |
 | Verified | `ShieldCheck` | `import { ShieldCheck } from 'lucide-react'` |
 | Seer agent | `Eye` | `import { Eye } from 'lucide-react'` |
 | Reputation score | `BarChart3` | `import { BarChart3 } from 'lucide-react'` |

@@ -51,8 +51,8 @@ npm install ethers@^6.13.0 viem@^2.0.0 @openzeppelin/contracts@^5.0.0
 # 0G SDK
 npm install @0glabs/0g-serving-broker@^0.6.5 @0glabs/0g-ts-sdk@^0.3.3
 
-# Circle Nanopayments (Arc)
-npm install @circle-fin/x402-batching @x402/fetch @x402/evm @x402/core
+# Hedera SDK (x402 payments via Blocky402)
+npm install @hashgraph/sdk
 
 # Hardhat (Solidity development)
 npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox
@@ -85,11 +85,7 @@ const config: HardhatUserConfig = {
       chainId: 16602,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
-    "arc-testnet": {
-      url: "https://rpc.testnet.arc.network",
-      chainId: 5042002,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-    },
+    // Hedera Testnet: configured via @hashgraph/sdk, not Hardhat network
     "world-sepolia": {
       url: process.env.WORLD_RPC || "",
       chainId: 4801,
@@ -103,7 +99,7 @@ export default config;
 ## Step 5: Create Contract Directories
 
 ```bash
-mkdir -p contracts/0g contracts/world contracts/arc
+mkdir -p contracts/0g contracts/world contracts/hedera
 mkdir -p deployments scripts
 ```
 
@@ -137,11 +133,11 @@ git commit -m "init: scaffold Mini App with World MiniKit starter kit"
 
 # Add Hardhat config
 git add hardhat.config.ts contracts/ deployments/ scripts/
-git commit -m "init: add multi-chain Hardhat config (0G + Arc + World)"
+git commit -m "init: add multi-chain Hardhat config (0G + Hedera + World)"
 
 # Add .env.example
 git add .env.example
-git commit -m "init: add .env.example with World + 0G + Arc variables"
+git commit -m "init: add .env.example with World + 0G + Hedera variables"
 ```
 
 ## Step 9: Verify
@@ -180,10 +176,10 @@ The official starter kit already includes:
 | ERC-8004 contract interfaces | `contracts/0g/` | Agent 1 (Wave 1) |
 | GPUProviderRegistry.sol | `contracts/0g/` | Agent 5 (Wave 2) |
 | CredentialGate.sol | `contracts/world/` | Agent 2 (Wave 1) |
-| ResourcePrediction.sol | `contracts/arc/` | Agent 3 (Wave 1) |
+| ResourcePrediction.sol | `contracts/hedera/` | Agent 3 (Wave 1) |
 | GPU provider portal page | `app/gpu-verify/` | Agent 5 (Wave 2) |
 | Resource marketplace page | `app/marketplace/` | Agent 7 (Wave 2) |
 | Prediction market page | `app/predictions/` | Agent 10 (Wave 3) |
 | OpenClaw agent configs | `agents/` | Agent 4 (Wave 1) |
-| Circle Nanopayments lib | `lib/nanopayments.ts` | Agent 9 (Wave 3) |
+| Hedera x402 payments lib | `lib/nanopayments.ts` | Agent 9 (Wave 3) |
 | AgentKit registration | `app/api/agents/` | Agent 6 (Wave 2) |

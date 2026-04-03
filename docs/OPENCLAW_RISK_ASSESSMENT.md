@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-02
 **Context:** Running 4 OpenClaw agents on MacBook Pro M3 Max (48GB) at ETHGlobal Cannes 2026
-**Agents:** Seer, Edge, Shield, Lens — handling wallet keys for 0G Chain, Arc, World Chain
+**Agents:** Seer, Edge, Shield, Lens — handling wallet keys for 0G Chain, Hedera, World Chain
 **Risk Level:** HIGH without mitigations, MEDIUM with recommended controls
 
 ---
@@ -47,7 +47,7 @@
 
 **What they steal:** Crypto exchange API keys, wallet private keys, SSH credentials, browser passwords, Keychain data, Telegram sessions.
 
-**Our risk:** If ANY ClawHub skill is installed without audit, all wallet keys (0G, Arc, World) are exposed.
+**Our risk:** If ANY ClawHub skill is installed without audit, all wallet keys (0G, Hedera, World) are exposed.
 
 **Mitigation:**
 - **NEVER install skills from ClawHub** for this hackathon
@@ -97,7 +97,7 @@
 
 **Our RPC endpoints:**
 - 0G: `https://evmrpc-testnet.0g.ai` — HTTPS ✅
-- Arc: `https://rpc.testnet.arc.network` — HTTPS ✅
+- Hedera: via @hashgraph/sdk (gRPC/TLS) ✅
 - World: `https://worldchain-sepolia.g.alchemy.com` — HTTPS ✅
 - 0G Compute: TLS (broker SDK uses HTTPS) ✅
 
@@ -117,14 +117,14 @@ All blockchain RPCs use HTTPS. The main risk is non-TLS connections from skills 
 | **ERC-8004 registration** | Shell execution + ethers.js | None — can call contracts via node scripts | Use allowlisted node commands |
 | **0G inference calls** | 0g-agent-skills has `streaming-chat`, `provider-discovery` | None — production skills from 0G Foundation | Audit skill code before loading |
 | **Agent-to-agent coordination** | `agentToAgent` tool (local mode) | None — built-in, zero setup | Works in single Gateway process |
-| **Circle Nanopayments** | Shell execution + TypeScript SDK | Need custom skill wrapping `@circle-fin/x402-batching` | Write custom skill (~30 lines) |
+| **Hedera x402 Payments** | Shell execution + TypeScript SDK | Need custom skill wrapping `@hashgraph/sdk` | Write custom skill (~30 lines) |
 | **Reputation feedback** | Shell execution + ethers.js | Need custom skill calling ReputationRegistry | Write custom skill (~40 lines) |
 | **Prediction market interaction** | Shell execution + ethers.js | Need custom skill calling ResourcePrediction.sol | Write custom skill (~40 lines) |
 | **World ID verification** | Not native to OpenClaw | Agent doesn't verify World ID — the Mini App frontend does | No gap — different layer |
 | **Persistent state** | OpenClaw has markdown-based memory | 0G Storage KV preferred for on-chain persistence | Custom skill for 0G Storage (~30 lines) |
 | **Wallet key isolation** | Single process, shared env | All keys accessible to all agents | Use low-balance wallets + Option D |
 
-**Total custom skills needed:** 4 (Nanopayments, Reputation, Prediction Market, 0G Storage)
+**Total custom skills needed:** 4 (Hedera x402 Payments, Reputation, Prediction Market, 0G Storage)
 **LOE for custom skills:** ~2-3 hours total
 
 ---
@@ -191,7 +191,7 @@ All blockchain RPCs use HTTPS. The main risk is non-TLS connections from skills 
 | Chain | Wallet | Balance | Purpose |
 |-------|--------|---------|---------|
 | 0G Galileo | `0x1B506fA...` | ~10 A0GI | Contract deployment + inference |
-| Arc Testnet | Same or separate | ~100 USDC | Prediction markets + nanopayments |
+| Hedera Testnet | 0.0.8368570 | 1,098 HBAR + 20 USDC | Prediction markets + x402 payments |
 | World Sepolia | Same or separate | ~0.1 ETH | CredentialGate deployment |
 
 **All testnet tokens.** Zero real funds. If keys are compromised, maximum loss = hackathon time to re-fund from faucets.
@@ -214,7 +214,7 @@ All blockchain RPCs use HTTPS. The main risk is non-TLS connections from skills 
 
 | Task | Hours | When |
 |------|-------|------|
-| Write 4 custom OpenClaw skills (Nanopayments, Reputation, Prediction, 0G Storage) | 2-3 | Wave 2 |
+| Write 4 custom OpenClaw skills (Hedera x402 Payments, Reputation, Prediction, 0G Storage) | 2-3 | Wave 2 |
 | Security hardening (config, allowlist, audit 0g-skills) | 1 | Wave 1 |
 | Kaspersky compatibility test | 0.5 | Pre-hackathon |
 | Docker isolation per agent (optional, if time) | 3-4 | Wave 1 |

@@ -283,9 +283,89 @@ openclaw skills install erc-8004
 
 ---
 
-## 4. Arc Chain + Circle Nanopayments
+## 4. Hedera — Settle Layer (SELECTED) + Arc Chain (NOT SELECTED — Historical Reference)
 
-### Arc Testnet Configuration
+### Hedera Testnet Configuration (SELECTED)
+
+| Parameter | Value |
+|-----------|-------|
+| Network | hedera-testnet |
+| Account | 0.0.8368570 |
+| Fee Payer | 0.0.7162784 |
+| USDC Token | 0.0.429274 |
+| HBAR Balance | 1,098 |
+| USDC Balance | 20 |
+| Block Explorer | `https://testnet.hashscan.io` |
+| Faucet | `https://portal.hedera.com` |
+| SDK | `@hashgraph/sdk` |
+| x402 Facilitator | Blocky402 (`https://api.testnet.blocky402.com`) |
+
+### Hedera x402 Integration via Blocky402
+
+**x402 Flow on Hedera:**
+1. Buyer has USDC (token 0.0.429274) in Hedera account
+2. Buyer requests paid resource -> seller responds `402 Payment Required`
+3. Buyer signs USDC transfer authorization via @hashgraph/sdk
+4. Blocky402 facilitator processes payment ($0.0001 gas)
+5. Seller verifies payment, serves resource
+
+**SDK:**
+```bash
+npm install @hashgraph/sdk
+```
+
+```typescript
+import { Client, TransferTransaction, Hbar, AccountId, TokenId } from "@hashgraph/sdk";
+
+const client = Client.forTestnet();
+client.setOperator(AccountId.fromString("0.0.8368570"), privateKey);
+
+// Transfer USDC for resource payment
+const tx = new TransferTransaction()
+  .addTokenTransfer(TokenId.fromString("0.0.429274"), "0.0.8368570", -amount)
+  .addTokenTransfer(TokenId.fromString("0.0.429274"), sellerAccount, amount);
+await tx.execute(client);
+```
+
+### HTS Credential Tokens (Non-Transferable)
+
+```typescript
+import { TokenCreateTransaction, TokenType, TokenSupplyType } from "@hashgraph/sdk";
+
+// Create non-transferable credential token
+const tx = new TokenCreateTransaction()
+  .setTokenName("Vocaid GPU Verified")
+  .setTokenSymbol("VGPU")
+  .setTokenType(TokenType.NonFungibleUnique)
+  .setSupplyType(TokenSupplyType.Infinite)
+  .setTreasuryAccountId(treasuryId)
+  .setFreezeDefault(true); // Non-transferable
+await tx.execute(client);
+```
+
+### HCS Audit Trail
+
+```typescript
+import { TopicCreateTransaction, TopicMessageSubmitTransaction } from "@hashgraph/sdk";
+
+// Create audit topic
+const topicTx = new TopicCreateTransaction().setAdminKey(adminKey);
+const topicId = (await topicTx.execute(client)).getReceipt(client).topicId;
+
+// Log verification event
+const msgTx = new TopicMessageSubmitTransaction()
+  .setTopicId(topicId)
+  .setMessage(JSON.stringify({ type: "gpu-verified", agentId: 42, timestamp: Date.now() }));
+await msgTx.execute(client);
+```
+
+---
+
+### Arc Chain + Circle Nanopayments (NOT SELECTED — Historical Reference)
+
+> **Arc was evaluated but NOT selected as the 3rd partner. Hedera was selected instead.** This section is retained for historical reference only.
+
+### Arc Testnet Configuration (NOT SELECTED)
 
 | Parameter | Value |
 |-----------|-------|
@@ -395,8 +475,8 @@ Oracle resolution: Read price from 0G marketplace (or Chainlink feed), resolve i
 | **Polygon** | Production | RelAI, Bitrefill | ~2s | Very low | Yes | No partner |
 | **Avalanche** | Production | Available | ~1s | Low | Yes | No partner |
 | **Stellar** | Production | OpenZeppelin | ~5s | Near-zero | No | No partner |
-| **Arc** | Circle Gateway | Circle Nanopayments | Sub-second (batched) | $0 per-payment | Yes | $15k |
-| **Hedera** | Announced only | **NONE** | ~3-5s | $0.0001 | Yes | $15k |
+| **Arc** | Circle Gateway | Circle Nanopayments | Sub-second (batched) | $0 per-payment | Yes | NOT SELECTED |
+| **Hedera** | Blocky402 | x402 USDC via Blocky402 | ~3-5s | $0.0001 | Yes | $15k (SELECTED) |
 | **0G** | **NOT x402** | **NONE** | Own mechanism | Unknown | Deployable | $15k |
 
 **0G does NOT have native x402.** 0G uses its own payment mechanism: `ServingBroker.depositFund()` + batch settlement. Separate from x402 protocol.
@@ -409,8 +489,8 @@ Oracle resolution: Read price from 0G marketplace (or Chainlink feed), resolve i
 | **ACP** | Checkout | Fiat via Stripe | Shopping agents (irrelevant for us) |
 | **AP2** | Authorization | Processor-defined | Enterprise auditable payments |
 | **MPP** | Session | Stablecoins on Tempo | Streaming micropayments |
-| **OpenClaw ACP** | Agent coordination | Hedera HBAR | Hedera-specific agent payments |
-| **Circle Nanopayments** | Batched | USDC (gas-free) | Sub-cent agent payments, high frequency |
+| **OpenClaw ACP** | Agent coordination | Hedera HBAR | Hedera-specific agent payments (SELECTED) |
+| **Circle Nanopayments** | Batched | USDC (gas-free) | Sub-cent agent payments, high frequency (NOT SELECTED — Arc) |
 
 ---
 
@@ -442,7 +522,7 @@ Google's protocol for agentic commerce, NOT Hedera-specific. Chain-agnostic. Bui
 
 ### Recommendation on Hedera
 
-Hedera as 4th non-prize chain = **complexity tax without proportional reward**. No bridge to World Chain means two siloed deployments. Every hour on Hedera is an hour not spent polishing the core demo. Keep Hedera as a potential FUTURE integration, not a hackathon deliverable.
+**SELECTED as 3rd partner (replacing Arc).** Hedera provides 8 strong-fit tracks vs Arc's 7, explicit ERC-8004 and OpenClaw ACP in bounty rules, and the "No Solidity" track is an easy safety win ($3k, 3 winners). x402 USDC payments via Blocky402 facilitator at https://api.testnet.blocky402.com. HTS for non-transferable credential tokens. HCS for audit trail.
 
 ---
 
@@ -464,7 +544,7 @@ Hedera as 4th non-prize chain = **complexity tax without proportional reward**. 
 |-----------|---------------|----------|
 | **ERC-8004 GPU Provider Verification** | Nobody has used Validation Registry for compute verification. 0G confirmed this gap | awesome-erc8004: 0 of 40+ projects do GPU verification |
 | **Multi-Resource Marketplace** | Same protocol for humans + GPUs + agents + DePIN | Existing projects are siloed by resource type |
-| **Resource Prediction Markets** | Prediction markets for GPU pricing, skill demand, availability | Arc track lists "jobs, GDP" — no one has built resource pricing markets |
+| **Resource Prediction Markets** | Prediction markets for GPU pricing, skill demand, availability | No one has built resource pricing markets for the agentic economy |
 | **Triple-Verified Agent Identity** | World ID (human) + AgentKit (ownership) + ERC-8004 (on-chain) | No project combines all three |
 | **0G + OpenClaw + ERC-8004 + x402** | This protocol stack combination doesn't exist | Each piece exists separately |
 

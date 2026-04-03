@@ -1,0 +1,29 @@
+{
+  "name": "Shield",
+  "description": "Risk management agent — validates GPU providers via TEE attestation, enforces risk gates, and monitors reputation scores across the Vocaid network.",
+  "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
+  "services": [
+    {
+      "type": "a2a",
+      "endpoint": "/api/agents/shield/a2a",
+      "description": "Agent-to-agent messaging endpoint for risk assessments and provider validation requests"
+    },
+    {
+      "type": "mcp",
+      "endpoint": "/api/agents/shield/mcp",
+      "description": "Model Context Protocol endpoint for automated risk scoring and gate enforcement"
+    }
+  ],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
+  "metadata": {
+    "type": "ai-agent",
+    "role": "risk-manager",
+    "capabilities": ["tee-validation", "reputation-monitoring", "risk-gate-enforcement"],
+    "operator_world_id": null
+  }
+}

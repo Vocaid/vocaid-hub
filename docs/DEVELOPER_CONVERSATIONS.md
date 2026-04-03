@@ -1,6 +1,6 @@
 # Developer Conversation Decks — ETHGlobal Cannes 2026
 
-**Purpose:** Structured talking points for 0G and Arc developer conversations at the hackathon.
+**Purpose:** Structured talking points for 0G and Hedera developer conversations at the hackathon.
 
 ---
 
@@ -76,79 +76,71 @@
 
 ---
 
-## 2. Arc Developers: Resource Prediction Markets
+## 2. Hedera Developers: x402 USDC + HTS Tokens + HCS Audit + "No Solidity" Track
 
 ### Opening
 
-*"We're building prediction markets for a new asset class that nobody has tokenized: the price of computation and human skill. Not crypto prices, not elections — the price of H100 inference time, the demand for Rust developers, GPU availability by region."*
+*"We're building the settlement and credential layer for an agentic resource marketplace — x402 USDC payments via Blocky402, non-transferable HTS credential tokens, and HCS audit trails. Zero Solidity on Hedera — pure @hashgraph/sdk."*
 
-### Why This Fits Arc
+### Why This Fits Hedera
 
-Arc's Prediction Markets track lists: *"Macroeconomic data markets (CPI, Fed decisions, **jobs**, GDP)"*
+Hedera's bounty tracks match our architecture perfectly:
 
-Our resource pricing IS a jobs/compute market forecast:
-
-| Market | Question | Resolution Source |
-|--------|----------|-----------------|
-| **GPU Pricing** | "H100 inference < $0.005/token by May?" | 0G Service Contract pricing (on-chain) |
-| **Skill Demand** | "Rust developer demand +15% in Q2?" | Public hiring APIs + assessment data |
-| **Resource Availability** | "EU GPU capacity > 1000 nodes by June?" | ERC-8004 Identity Registry count |
-| **Agent Performance** | "Agent X maintains >95% success rate?" | ERC-8004 Reputation Registry (on-chain) |
-
-*"All resolution sources are either on-chain (0G contracts, ERC-8004 registries) or verifiable via oracle. These aren't speculation markets — they're real-world signal markets for the inputs to the agentic economy."*
-
-### Why USDC on Arc
-
-*"Resource providers need fiat-stable income. A GPU operator paying electricity bills can't accept volatile tokens. A developer pricing their time needs stable value. USDC on Arc means:*
-- *Providers paid in stable value*
-- *Prediction markets denominate in real dollars*
-- *Agent payments gas-free via Nanopayments ($0.000001 minimum)*
-- *Deterministic sub-second settlement — agents pay and receive in one round-trip"*
+| Track | Our Fit | Prize |
+|-------|---------|-------|
+| **AI & Agentic Payments** | x402 USDC payments via Blocky402 facilitator for agent-to-agent resource payments | $6k |
+| **Tokenization** | HTS non-transferable credential tokens for verified humans/GPUs/agents | $2.5k |
+| **No Solidity Allowed** | Pure @hashgraph/sdk — HTS + HCS, zero Solidity | $3k |
 
 ### Technical Integration
 
-**Three Arc technologies:**
+**Four Hedera technologies:**
 
-1. **Circle Nanopayments** (`@circle-fin/x402-batching`):
-   - Agent-to-agent USDC payments for resource allocation
-   - EIP-3009 offchain signing → Gateway batches → zero per-payment gas
-   - Buyer SDK: `client.pay("http://api/inference")` — automatic 402 handling
+1. **x402 USDC via Blocky402** (`@hashgraph/sdk`):
+   - Agent-to-agent USDC payments (token 0.0.429274) for resource allocation
+   - Blocky402 facilitator at https://api.testnet.blocky402.com
+   - Fee payer: 0.0.7162784, $0.0001 gas per payment
 
-2. **PredictionMarket.sol on Arc** (~120 lines):
-   - USDC-denominated (arc USDC: `0x3600...0000`)
-   - `createMarket()`, `placeBet()`, `resolveMarket()`, `claimWinnings()`
-   - Oracle resolution reads from 0G on-chain pricing or ERC-8004 reputation data
+2. **HTS Non-Transferable Tokens**:
+   - Credential tokens for verified humans, GPUs, agents
+   - Non-transferable = soulbound verification badges
+   - Created via @hashgraph/sdk TokenCreateTransaction
 
-3. **On-chain settlement** (Arc Chain ID `5042002`):
-   - Sub-second deterministic finality
-   - Create market → place bet → resolve → claim — all within a single demo
+3. **HCS Audit Trail**:
+   - Every verification, payment, and reputation update logged to HCS topic
+   - Immutable audit trail for compliance
+   - Mirror Node queries for historical data
 
-### What We Need From Arc/Circle
+4. **"No Solidity" Architecture**:
+   - At least 2 native Hedera services: HTS + HCS
+   - Pure @hashgraph/sdk, zero Solidity contracts
+   - Qualifies for "No Solidity Allowed" track ($3k, 3 winners)
 
-**Request 1: Arc testnet USDC faucet**
-*"faucet.circle.com provides testnet USDC on Arc (Chain ID 5042002)? We need enough for demo: create markets, place bets, pay for agent services."*
+### What We Need From Hedera
 
-**Request 2: Nanopayments minimum deposit**
-*"What's the minimum Gateway Wallet deposit for demo purposes? We need to show agent-to-agent payments of $0.01-$0.10."*
+**Request 1: Testnet HBAR faucet**
+*"portal.hedera.com provides testnet HBAR? We have account 0.0.8368570 with 1,098 HBAR. Need enough for HTS token creation + HCS messages during demo."*
 
-**Request 3: ERC-8004 on Arc testnet**
-*"ERC-8004 is already deployed on Arc Testnet. Can we use the existing deployment or should we deploy fresh instances?"*
+**Request 2: Blocky402 testnet status**
+*"We're using Blocky402 facilitator at https://api.testnet.blocky402.com for x402 payments. Is the testnet facilitator stable for demo purposes?"*
 
-### Why Arc Should Care
+**Request 3: HTS + HCS best practices**
+*"We're creating non-transferable HTS tokens for credentials and logging to HCS for audit. Any gotchas with combining these on testnet?"*
 
-*"Polymarket does elections ($40B+ volume in 2025). Augur does sports. Nobody does the price of computation and human skill — the two inputs to the agentic economy.*
+### Why Hedera Should Care
 
-*We demonstrate Arc as the settlement layer for the machine economy:*
-- *Resource pricing in stablecoins (USDC)*
-- *Gas-free high-frequency agent payments (Nanopayments)*
-- *Deterministic finality for real-time market resolution*
-- *A new asset class that grows with AI adoption"*
+*"We demonstrate Hedera as the settlement layer for the machine economy:*
+- *x402 USDC payments for agent services ($0.0001 gas)*
+- *HTS soulbound tokens for verifiable credentials*
+- *HCS audit trail for compliance and transparency*
+- *Zero Solidity — pure native Hedera services*
+- *A new asset class (resource pricing) that grows with AI adoption"*
 
 ### The Agentic Economy Narrative
 
-*"Every AI company in 2026 needs two things: compute and skills. Both are scarce, both fluctuate in price, both lack transparent market mechanisms. Our prediction markets create price discovery for these resources — and Arc's stablecoin-native architecture is the natural settlement layer.*
+*"Every AI company in 2026 needs two things: compute and skills. Both are scarce, both fluctuate in price, both lack transparent market mechanisms. Our resource marketplace creates price discovery for these resources — and Hedera's low-cost, high-throughput architecture is the natural settlement layer.*
 
-*The same way Polymarket changed how people bet on elections, resource prediction markets change how agentic companies plan and allocate. And it runs on Arc."*
+*x402 payments, soulbound credentials, immutable audit trails — all on Hedera, all without Solidity."*
 
 ---
 

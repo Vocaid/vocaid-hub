@@ -1,0 +1,29 @@
+{
+  "name": "Lens",
+  "description": "Discovery and transparency agent — indexes registered agents, surfaces provider metadata, and provides a unified view of the Vocaid agent ecosystem.",
+  "version": "1.0.0",
+  "protocol": "erc-8004-registration-v1",
+  "services": [
+    {
+      "type": "a2a",
+      "endpoint": "/api/agents/lens/a2a",
+      "description": "Agent-to-agent messaging endpoint for agent discovery queries and metadata lookups"
+    },
+    {
+      "type": "mcp",
+      "endpoint": "/api/agents/lens/mcp",
+      "description": "Model Context Protocol endpoint for ecosystem-wide agent search and filtering"
+    }
+  ],
+  "supportedTrust": {
+    "worldId": true,
+    "erc8004": true,
+    "operatorVerification": "world-id-v4"
+  },
+  "metadata": {
+    "type": "ai-agent",
+    "role": "discovery",
+    "capabilities": ["agent-indexing", "metadata-aggregation", "ecosystem-monitoring"],
+    "operator_world_id": null
+  }
+}

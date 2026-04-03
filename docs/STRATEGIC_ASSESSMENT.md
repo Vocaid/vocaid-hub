@@ -13,20 +13,20 @@ Based on conversations with 0G and World developers at pre-hackathon meetings:
 
 - **0G developer confirmed** they have NO GPU provider verification/advertising tool — we are building their missing infrastructure
 - **World developer said** skill-trading Mini Apps already exist; they have more interest in **Hybrid Resource Allocation for Agentic Companies**
-- **Hedera dropped** — no formal World-Hedera partnership exists, building x402 facilitator = 10-17h (too expensive), Arc provides same prize ceiling with production SDK
-- **Arc added** — USDC Nanopayments (gas-free, production SDK), Prediction Markets track ($3k), stablecoin pricing for resources
+- **Arc dropped** — Hedera provides more track opportunities (8 vs 7), explicit ERC-8004 and OpenClaw ACP in bounty rules, "No Solidity" track is easy safety win
+- **Hedera selected** — x402 USDC via Blocky402 ($0.0001 gas), HTS soulbound credential tokens, HCS audit trail, "No Solidity" track ($3k)
 
 ### One Sentence
 
-A protocol where verified humans and AI agents discover, verify, price, and trade ANY resource (human skills, GPU compute, agent capabilities, DePIN hardware) through ERC-8004 registries on 0G Chain, with x402 USDC nanopayments on Arc and resource prediction markets — all inside World App.
+A protocol where verified humans and AI agents discover, verify, price, and trade ANY resource (human skills, GPU compute, agent capabilities, DePIN hardware) through ERC-8004 registries on 0G Chain, with x402 USDC payments on Hedera via Blocky402, HTS credential tokens, and HCS audit trail — all inside World App.
 
-### Partner Selection: World + 0G + Arc
+### Partner Selection: World + 0G + Hedera
 
 | Partner | Pool | Tracks | Innovation |
 |---------|------|--------|-----------|
 | World | $20k | AgentKit ($8k), World ID ($8k), MiniKit ($4k) | Triple-verified agent identity |
 | 0G | $15k | OpenClaw Agent ($6k), DeFi ($6k), Wildcard ($3k) | GPU provider verification (greenfield) |
-| Arc | $15k | Agentic Nano ($6k), Prediction Markets ($3k), Smart Contracts ($3k), Chain Abstracted ($3k) | Resource prediction markets |
+| Hedera | $15k | AI/Agentic ($6k), No Solidity ($3k), Tokenization ($2.5k) | x402 USDC + HTS credentials + HCS audit |
 
 ### Key Technologies
 
@@ -35,7 +35,7 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 | ERC-8004 | Agent/provider identity + reputation + validation | 0G Chain |
 | Automata DCAP | ZK proof of TDX attestation (~500K gas) | 0G Chain |
 | OpenClaw | 4-agent fleet (Seer, Edge, Shield, Lens) | 0G Compute |
-| Circle Nanopayments | Gas-free USDC agent payments | Arc |
+| Hedera x402 via Blocky402 | x402 USDC agent payments ($0.0001 gas) | Hedera |
 | World ID + AgentKit | Human verification + agent ownership | World Chain |
 | MiniKit 2.0 | Mini App in World App | World Chain |
 
@@ -49,10 +49,10 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 |-----|---------|---------|
 | `ACTIVE_WORK.md` | WIP tracker, file ownership map, conflict prevention | ALL agents (read FIRST) |
 | `WAVE_EXECUTION_PLAN.md` | 14-agent build plan, cross-references, skill ownership, demo script | All agents |
-| `TECHNOLOGY_RESEARCH.md` | ERC-8004, OpenClaw, 0G, Arc, x402, Automata DCAP deep dive | Wave 1-3 |
+| `TECHNOLOGY_RESEARCH.md` | ERC-8004, OpenClaw, 0G, Hedera, x402, Automata DCAP deep dive | Wave 1-3 |
 | `DESIGN_SYSTEM.md` | Color palette, typography, components, mobile constraints | UI agents (W2, W4) |
 | `PARTNER_BOUNTIES.md` | All 12 partner prize tracks with exact requirements | Wave 4 (submission) |
-| `DEVELOPER_CONVERSATIONS.md` | Talking points for 0G, Arc, World sponsor booths | Hour 0 meetings |
+| `DEVELOPER_CONVERSATIONS.md` | Talking points for 0G, Hedera, World sponsor booths | Hour 0 meetings |
 | `OPENCLAW_RISK_ASSESSMENT.md` | 5 attack surfaces, 9 CVEs, security hardening | Wave 1 (Agent 4) |
 | `MARKET_RISK_ASSESSMENT.md` | Market size, 15 companies, risks, SWOT, TEE.Fail | Wave 4 (README) |
 | `MINIKIT_SCAFFOLD.md` | Day 1 scaffold commands using World official starter kit | Wave 1 (Agent 4) |
