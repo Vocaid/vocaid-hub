@@ -1,0 +1,33 @@
+{
+  "network": "hedera-testnet",
+  "operatorId": "0.0.8368570",
+  "setupAt": "2026-04-03T20:00:00.000Z",
+  "tokens": {
+    "credentialToken": {
+      "id": "PENDING_SETUP",
+      "name": "VocaidCredential",
+      "symbol": "VCRED",
+      "type": "NON_FUNGIBLE_UNIQUE",
+      "supplyType": "INFINITE",
+      "kycRequired": true,
+      "freezeDefault": false,
+      "note": "Run `npx tsx scripts/setup-hedera.ts` to create and fill this ID"
+    },
+    "usdc": {
+      "id": "0.0.429274",
+      "note": "Native Circle USDC on Hedera testnet"
+    }
+  },
+  "topics": {
+    "auditTrail": {
+      "id": "PENDING_SETUP",
+      "memo": "Vocaid Hub — Agent Decision Audit Trail",
+      "note": "Run `npx tsx scripts/setup-hedera.ts` to create and fill this ID"
+    }
+  },
+  "facilitator": {
+    "blocky402Url": "https://api.testnet.blocky402.com",
+    "feePayer": "0.0.7162784"
+  },
+  "explorer": "https://testnet.hashscan.io"
+}
