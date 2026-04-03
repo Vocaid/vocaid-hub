@@ -16,6 +16,7 @@ export interface ResourceCardProps {
   price: string;
   verificationType?: VerificationType;
   subtitle?: string;
+  onHire?: (resource: { name: string; price: string; type: ResourceType }) => void;
 }
 
 const typeConfig: Record<ResourceType, { icon: typeof Cpu; label: string }> = {
@@ -33,6 +34,7 @@ export function ResourceCard({
   price,
   verificationType,
   subtitle,
+  onHire,
 }: ResourceCardProps) {
   const { icon: TypeIcon, label } = typeConfig[type];
 
@@ -63,7 +65,10 @@ export function ResourceCard({
           <span className="text-xs text-secondary capitalize">{label}</span>
           <VerificationStatus verified={verified} type={verificationType} />
         </div>
-        <button className="min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg bg-primary-accent text-white text-sm font-semibold active:scale-95 transition-transform">
+        <button
+          onClick={() => onHire?.({ name, price, type })}
+          className="min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg bg-primary-accent text-white text-sm font-semibold active:scale-95 transition-transform"
+        >
           Hire {price}
         </button>
       </div>
