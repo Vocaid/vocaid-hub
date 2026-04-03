@@ -10,7 +10,7 @@ export const OG_RPC_URL = process.env.OG_RPC_URL || "https://evmrpc-testnet.0g.a
 
 // --- Contract addresses ---
 
-export function getAddress(envVar: string, name: string): Address {
+export function getAddress(envVar: string): Address {
   const addr = process.env[envVar];
   if (!addr) throw new Error(`${envVar} env not set — run deploy-0g.ts and update .env`);
   return addr as Address;

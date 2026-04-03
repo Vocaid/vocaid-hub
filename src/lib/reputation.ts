@@ -1,4 +1,4 @@
-import { type Address, type Hex, keccak256, toBytes } from "viem";
+import { keccak256, toBytes } from "viem";
 import { addresses, REPUTATION_REGISTRY_ABI } from "./contracts";
 import { getPublicClient, getWalletClient, getReputationSummary } from "./og-chain";
 
