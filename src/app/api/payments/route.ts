@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorldId } from "@/lib/world-id";
 import { verifyPayment, settlePayment } from "@/lib/blocky402";
 import { logAuditMessage } from "@/lib/hedera";
 import { executeAgentAction } from "@/lib/hedera-agent";
@@ -6,6 +7,28 @@ import { executeAgentAction } from "@/lib/hedera-agent";
 // USDC token on Hedera testnet
 const USDC_TOKEN_ID = process.env.HEDERA_USDC_TOKEN ?? "0.0.429274";
 const AUDIT_TOPIC_ID = process.env.HEDERA_AUDIT_TOPIC ?? "";
+
+// In-memory payment ledger for demo (resets on server restart)
+interface PaymentRecord {
+  id: string;
+  payer: string;
+  amount: string;
+  resource: string;
+  txHash: string;
+  network: string;
+  settledAt: string;
+}
+
+const recentPayments: PaymentRecord[] = [];
+const MAX_PAYMENTS = 50;
+
+// ---------------------------------------------------------------------------
+// GET /api/payments — List recent payments (demo ledger)
+// ---------------------------------------------------------------------------
+
+export async function GET() {
+  return NextResponse.json({ payments: recentPayments });
+}
 
 // ---------------------------------------------------------------------------
 // POST /api/payments — x402 USDC payment via Blocky402 facilitator
@@ -19,6 +42,9 @@ const AUDIT_TOPIC_ID = process.env.HEDERA_AUDIT_TOPIC ?? "";
 // ---------------------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   const paymentHeader = req.headers.get("X-PAYMENT");
 
   // No payment header → 402 Payment Required (x402 protocol)
@@ -47,6 +73,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Parse optional body for resource metadata
+    let body: { resourceName?: string } | null = null;
+    try {
+      body = await req.json();
+    } catch {
+      // Body is optional — payment header is what matters
+    }
+
     // Step 1: Verify the payment with Blocky402
     const verification = await verifyPayment(paymentHeader);
 
@@ -83,7 +117,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Step 4: Return the paid resource
+    // Step 4: Record in demo ledger
+    const record: PaymentRecord = {
+      id: crypto.randomUUID(),
+      payer: verification.payer,
+      amount: verification.amount,
+      resource: body?.resourceName ?? "unknown",
+      txHash: settlement.txHash,
+      network: verification.network,
+      settledAt: new Date().toISOString(),
+    };
+    recentPayments.unshift(record);
+    if (recentPayments.length > MAX_PAYMENTS) recentPayments.pop();
+
+    // Step 5: Return the paid resource
     return NextResponse.json({
       success: true,
       payment: {

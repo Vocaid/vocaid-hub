@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireWorldId } from "@/lib/world-id";
 import { getReputation, getAllReputationScores, giveFeedback } from "@/lib/reputation";
 import type { ReputationTag } from "@/lib/reputation";
 
@@ -7,6 +8,9 @@ import type { ReputationTag } from "@/lib/reputation";
  * Returns reputation score(s) for an agent from ERC-8004 ReputationRegistry.
  */
 export async function GET(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   const agentId = req.nextUrl.searchParams.get("agentId");
   const tag = req.nextUrl.searchParams.get("tag") || "";
 
@@ -43,6 +47,9 @@ export async function GET(req: NextRequest) {
  * Body: { agentId, value, tag1, tag2?, endpoint?, feedbackURI? }
  */
 export async function POST(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const body = await req.json();
     const { agentId, value, tag1, tag2, endpoint, feedbackURI } = body;

@@ -1,4 +1,5 @@
 import { listProviders, getProviderMetadata, verifyProvider } from '@/lib/og-compute';
+import { requireWorldId } from '@/lib/world-id';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -9,6 +10,9 @@ import { NextRequest, NextResponse } from 'next/server';
  *   (no address)   — return all services from the 0G compute network
  */
 export async function GET(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const address = req.nextUrl.searchParams.get('address');
 

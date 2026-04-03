@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWorldId } from '@/lib/world-id';
 import { ethers } from 'ethers';
 
 const RESOURCE_PREDICTION_ABI = [
@@ -23,6 +24,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const { id } = await params;
     const marketId = parseInt(id, 10);

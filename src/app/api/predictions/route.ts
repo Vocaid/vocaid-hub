@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireWorldId } from '@/lib/world-id';
 import { ethers } from 'ethers';
 
 const RESOURCE_PREDICTION_ABI = [
@@ -16,6 +17,9 @@ function getContract() {
 }
 
 export async function GET() {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const contract = getContract();
     const nextId = await contract.nextMarketId();
