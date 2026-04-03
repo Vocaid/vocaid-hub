@@ -22,10 +22,12 @@
 |-------|------|-------------|--------|---------------|-----------------|
 | 4 | Fix OpenClaw config: Arc→Hedera env vars | `agents/openclaw.json` | done | 2026-04-03T18:00Z | 2026-04-03T18:10Z |
 | 4 | Update ARCHITECTURE.md with actual codebase structure | `docs/ARCHITECTURE.md` | done | 2026-04-03T22:30Z | 2026-04-03T22:45Z |
+| 7 | Wave 4: Polish + Submission + Demo (all 3 tracks) | `src/app/**/*.tsx`, `globals.css`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | active | 2026-04-03 | — |
 | 2 | World ID hard gate on all resource API routes + enable auth redirect | `src/app/api/gpu/*`, `src/app/api/predictions/*`, `src/app/api/payments/*`, `src/app/api/reputation/*`, `src/app/(protected)/layout.tsx`, `.env.example` | done | 2026-04-03T20:00Z | 2026-04-03T21:00Z |
-| 3 | Run Hedera setup script, test x402 payment e2e, wire World ID → HTS credential mint | `scripts/setup-hedera.ts`, `src/lib/hedera.ts`, `src/app/api/payments/*`, `deployments/hedera-testnet.json` | in-progress | 2026-04-03T20:30Z | — |
+| 3 | Run Hedera setup script, test x402 payment e2e, wire World ID → HTS credential mint | `scripts/setup-hedera.ts`, `src/lib/hedera.ts`, `src/app/api/verify-proof/route.ts`, `deployments/hedera-testnet.json` | done | 2026-04-03T20:30Z | 2026-04-03T21:00Z |
 | 6 | Wave 4: Demo + Polish + Submission | `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/globals.css`, `scripts/seed-demo-data.ts`, `scripts/demo-flow.md`, `README.md`, `SUBMISSION.md`, `AI_ATTRIBUTION.md` | in-progress | 2026-04-03T22:00Z | — |
 | 9 | x402 middleware + payment initiation + hire flow | `src/lib/x402-middleware.ts` (new), `src/app/api/initiate-payment/route.ts`, `src/app/api/payments/route.ts` (GET only), `src/app/(protected)/home/marketplace-content.tsx` (handleHire only) | done | 2026-04-03T22:30Z | 2026-04-03T23:00Z |
+| 8 | Demo seed data script + demo flow doc | `scripts/seed-demo-data.ts`, `scripts/demo-flow.md` | in-progress | 2026-04-03T23:00Z | — |
 
 ---
 
