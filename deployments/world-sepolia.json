@@ -1,0 +1,10 @@
+{
+  "network": "world-sepolia",
+  "chainId": 4801,
+  "CredentialGate": "",
+  "worldIdRouter": "",
+  "appId": "app_74d7b06d88b9e220ad1cc06e387c55f3",
+  "actionId": "verify-human",
+  "deployer": "0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE",
+  "deployedAt": ""
+}
