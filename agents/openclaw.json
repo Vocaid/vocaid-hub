@@ -1,0 +1,94 @@
+{
+  "gateway": {
+    "bindAddress": "127.0.0.1",
+    "port": 18789,
+    "authToken": "${OPENCLAW_AUTH_TOKEN}",
+    "autoApproveLocalhost": false,
+    "rateLimit": {
+      "windowMs": 60000,
+      "maxRequests": 30
+    }
+  },
+  "exec": {
+    "mode": "allowlist",
+    "allowedCommands": [
+      "node",
+      "npx",
+      "curl"
+    ]
+  },
+  "skills": {
+    "autoDiscovery": false,
+    "trustedSources": [
+      "./.agents/seer/skills/",
+      "./.agents/edge/skills/",
+      "./.agents/shield/skills/",
+      "./.agents/lens/skills/"
+    ]
+  },
+  "agents": [
+    {
+      "name": "seer",
+      "soulPath": "./.agents/seer/soul.md",
+      "skillsDir": "./.agents/seer/skills/",
+      "model": {
+        "provider": "0g-compute",
+        "fallback": "anthropic"
+      },
+      "env": [
+        "OG_RPC_URL",
+        "OG_COMPUTE_BROKER_URL",
+        "WALLET_PRIVATE_KEY"
+      ]
+    },
+    {
+      "name": "edge",
+      "soulPath": "./.agents/edge/soul.md",
+      "skillsDir": "./.agents/edge/skills/",
+      "model": {
+        "provider": "0g-compute",
+        "fallback": "anthropic"
+      },
+      "env": [
+        "OG_RPC_URL",
+        "ARC_RPC_URL",
+        "WALLET_PRIVATE_KEY"
+      ]
+    },
+    {
+      "name": "shield",
+      "soulPath": "./.agents/shield/soul.md",
+      "skillsDir": "./.agents/shield/skills/",
+      "model": {
+        "provider": "0g-compute",
+        "fallback": "anthropic"
+      },
+      "env": [
+        "OG_RPC_URL",
+        "WALLET_PRIVATE_KEY"
+      ]
+    },
+    {
+      "name": "lens",
+      "soulPath": "./.agents/lens/soul.md",
+      "skillsDir": "./.agents/lens/skills/",
+      "model": {
+        "provider": "0g-compute",
+        "fallback": "anthropic"
+      },
+      "env": [
+        "OG_RPC_URL",
+        "WALLET_PRIVATE_KEY"
+      ]
+    }
+  ],
+  "security": {
+    "extensions": {
+      "autoLoad": false,
+      "directory": ""
+    },
+    "network": {
+      "requireTLS": true
+    }
+  }
+}

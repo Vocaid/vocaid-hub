@@ -9,3 +9,6 @@ cache/
 artifacts/
 typechain-types/
 coverage/
+
+# OpenClaw
+agents/.0g-skills/node_modules/
