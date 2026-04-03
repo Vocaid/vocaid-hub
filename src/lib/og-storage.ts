@@ -76,12 +76,10 @@ export async function getAgentState(
 
     if (!result || !result.data) return null;
 
-    const data =
-      result.data instanceof Uint8Array
-        ? result.data
-        : new Uint8Array(result.data as ArrayBuffer);
+    const raw = result.data;
+    const text = typeof raw === 'string' ? raw : decoder.decode(raw as unknown as Uint8Array);
 
-    const parsed = JSON.parse(decoder.decode(data)) as AgentState;
+    const parsed = JSON.parse(text) as AgentState;
     stateStore.set(stateKey(agentId, key), parsed);
     return parsed;
   } catch {
