@@ -87,6 +87,86 @@ export async function getAgentValidations(agentId: bigint) {
   }) as Promise<Hex[]>;
 }
 
+// --- GPU Provider Registry reads ---
+
+const GPU_PROVIDER_REGISTRY_ABI = [
+  {
+    name: "getActiveProviders",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "active", type: "address[]" }],
+  },
+  {
+    name: "getProvider",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "provider", type: "address" }],
+    outputs: [
+      {
+        components: [
+          { name: "agentId", type: "uint256" },
+          { name: "gpuModel", type: "string" },
+          { name: "teeType", type: "string" },
+          { name: "attestationHash", type: "bytes32" },
+          { name: "registeredAt", type: "uint256" },
+          { name: "active", type: "bool" },
+        ],
+        type: "tuple",
+      },
+    ],
+  },
+] as const;
+
+export interface OnChainGPUProvider {
+  address: string;
+  agentId: string;
+  gpuModel: string;
+  teeType: string;
+  registeredAt: number;
+  active: boolean;
+}
+
+export async function getRegisteredProviders(): Promise<OnChainGPUProvider[]> {
+  const client = getPublicClient();
+  const registryAddr = addresses.gpuProviderRegistry();
+
+  const activeAddrs = (await client.readContract({
+    address: registryAddr,
+    abi: GPU_PROVIDER_REGISTRY_ABI,
+    functionName: "getActiveProviders",
+  })) as readonly Address[];
+
+  const providers = await Promise.all(
+    activeAddrs.map(async (addr) => {
+      const data = (await client.readContract({
+        address: registryAddr,
+        abi: GPU_PROVIDER_REGISTRY_ABI,
+        functionName: "getProvider",
+        args: [addr],
+      })) as {
+        agentId: bigint;
+        gpuModel: string;
+        teeType: string;
+        attestationHash: string;
+        registeredAt: bigint;
+        active: boolean;
+      };
+
+      return {
+        address: addr,
+        agentId: data.agentId.toString(),
+        gpuModel: data.gpuModel,
+        teeType: data.teeType,
+        registeredAt: Number(data.registeredAt),
+        active: data.active,
+      };
+    }),
+  );
+
+  return providers;
+}
+
 // --- MockTEE validation submit ---
 
 export async function submitMockTEEValidation(

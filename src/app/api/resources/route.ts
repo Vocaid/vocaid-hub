@@ -1,27 +1,40 @@
 import { NextResponse } from "next/server";
 import { requireWorldId } from "@/lib/world-id";
 import type { ResourceCardProps } from "@/components/ResourceCard";
+import type { OGServiceInfo } from "@/lib/og-compute";
+import type { OnChainGPUProvider } from "@/lib/og-chain";
 
 /**
  * GET /api/resources
  *
  * Unified resource listing — aggregates agents + GPU providers.
- * Gated behind World ID verification. Unverified users get 403.
+ * Calls library functions directly (no HTTP self-fetch to other routes).
+ * Gated behind World ID verification.
  */
 export async function GET() {
   const gate = await requireWorldId();
   if (gate instanceof NextResponse) return gate;
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const [agentsRes, gpuRes] = await Promise.all([
-      fetch(`${baseUrl}/api/agents`).then((r) => (r.ok ? r.json() : { agents: [] })),
-      fetch(`${baseUrl}/api/gpu/list`).then((r) => (r.ok ? r.json() : { providers: [] })),
+    // Dynamic imports to avoid SSG initialization failures
+    const { listRegisteredAgents } = await import("@/lib/agentkit");
+    const { listProviders } = await import("@/lib/og-compute");
+    const { getRegisteredProviders } = await import("@/lib/og-chain");
+
+    // Fetch from all sources in parallel — each can fail independently
+    const [agentsResult, brokerResult, onChainResult] = await Promise.allSettled([
+      listRegisteredAgents(),
+      listProviders(),
+      getRegisteredProviders(),
     ]);
 
+    const agents = agentsResult.status === "fulfilled" ? agentsResult.value : [];
+    const broker = brokerResult.status === "fulfilled" ? brokerResult.value : [];
+    const onChain = onChainResult.status === "fulfilled" ? onChainResult.value : [];
+
     const resources: ResourceCardProps[] = [
-      ...mapAgentsToResources(agentsRes.agents ?? []),
-      ...mapGpuToResources(gpuRes.providers ?? []),
+      ...mapAgentsToResources(agents),
+      ...mapGpuToResources(broker, onChain),
     ];
 
     return NextResponse.json(resources);
@@ -31,8 +44,10 @@ export async function GET() {
   }
 }
 
+// --- Mappers ---
+
 interface AgentData {
-  agentId: string;
+  agentId: bigint | string;
   owner: string;
   agentURI: string;
   wallet: string;
@@ -41,17 +56,12 @@ interface AgentData {
   type: string;
 }
 
-interface GpuProvider {
-  provider: string;
-  model?: string;
-  url?: string;
-  teeSignerAcknowledged?: boolean;
-}
-
 function mapAgentsToResources(agents: AgentData[]): ResourceCardProps[] {
   return agents.map((a) => ({
     type: "agent" as const,
-    name: a.role ? `${a.role.charAt(0).toUpperCase()}${a.role.slice(1)} Agent` : `Agent #${a.agentId}`,
+    name: a.role
+      ? `${a.role.charAt(0).toUpperCase()}${a.role.slice(1)} Agent`
+      : `Agent #${a.agentId}`,
     subtitle: a.agentURI || a.type || "AI Agent",
     reputation: 85,
     verified: !!a.operatorWorldId,
@@ -61,15 +71,49 @@ function mapAgentsToResources(agents: AgentData[]): ResourceCardProps[] {
   }));
 }
 
-function mapGpuToResources(providers: GpuProvider[]): ResourceCardProps[] {
-  return providers.map((p) => ({
-    type: "gpu" as const,
-    name: p.model || "GPU Provider",
-    subtitle: p.url || p.provider.slice(0, 10) + "...",
-    reputation: 75,
-    verified: !!p.teeSignerAcknowledged,
-    chain: "0g" as const,
-    price: "$0.05/call",
-    verificationType: "tee" as const,
-  }));
+function mapGpuToResources(
+  broker: OGServiceInfo[],
+  onChain: OnChainGPUProvider[],
+): ResourceCardProps[] {
+  // Merge: on-chain providers first, enriched with broker data where available
+  const brokerByAddr = new Map(
+    broker.map((b) => [b.provider.toLowerCase(), b]),
+  );
+  const seen = new Set<string>();
+  const resources: ResourceCardProps[] = [];
+
+  // On-chain registered providers (from GPUProviderRegistry)
+  for (const p of onChain) {
+    const addr = p.address.toLowerCase();
+    seen.add(addr);
+    const b = brokerByAddr.get(addr);
+
+    resources.push({
+      type: "gpu" as const,
+      name: b?.model || p.gpuModel || "GPU Provider",
+      subtitle: b?.url || `${p.teeType} · Agent #${p.agentId}`,
+      reputation: 75,
+      verified: b?.teeSignerAcknowledged ?? true,
+      chain: "0g" as const,
+      price: "$0.05/call",
+      verificationType: "tee" as const,
+    });
+  }
+
+  // Broker-only providers (not registered via our stepper)
+  for (const b of broker) {
+    if (seen.has(b.provider.toLowerCase())) continue;
+    resources.push({
+      type: "gpu" as const,
+      name: b.model || "GPU Provider",
+      subtitle: b.url || b.provider.slice(0, 10) + "...",
+      reputation: 75,
+      verified: !!b.teeSignerAcknowledged,
+      chain: "0g" as const,
+      price: "$0.05/call",
+      verificationType: "tee" as const,
+    });
+  }
+
+  return resources;
 }
