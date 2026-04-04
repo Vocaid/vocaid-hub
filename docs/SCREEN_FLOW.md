@@ -468,7 +468,7 @@
 | `PredictionCard` | ResourcePrediction.markets() | ResourcePrediction.placeBet() | Hedera | `GET /api/predictions`, `POST /api/predictions/:id/bet` |
 | `PaymentConfirmation` | Blocky402 x402 settlement receipt | — | Hedera | — (client-side SDK) |
 | `AgentCard` | IdentityRegistry, AgentKit status | — | 0G + World | `GET /api/agents` |
-| `GPUStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |
+| `ResourceStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |
 | `WorldIDVerify` | — | CredentialGate.verifyAndRegister() | World | `POST /api/verify` |
 
 ---
