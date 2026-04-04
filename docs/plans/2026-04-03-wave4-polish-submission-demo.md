@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 To:
 ```typescript
 export const metadata: Metadata = {
-  title: 'Vocaid Hub — Hybrid Resource Allocation',
+  title: 'Vocaid Hub — Reliable Resources for the Agentic Economy',
   description: 'Discover, verify, and trade any resource — human skills, GPU compute, AI agents — across World, 0G, and Hedera.',
 };
 ```
@@ -498,7 +498,7 @@ Contract addresses from deployment JSONs:
 - Hedera Testnet: Operator `0.0.8368570`, VCRED token `0.0.8499633`, Audit topic `0.0.8499635`, USDC `0.0.429274`
 
 ```markdown
-# Vocaid Hub — Hybrid Resource Allocation Protocol
+# Vocaid Hub — Reliable Resources for the Agentic Economy Protocol
 
 A protocol where verified humans and AI agents discover, verify, price, and trade ANY resource (human skills, GPU compute, agent capabilities) through ERC-8004 registries on 0G Chain, with x402 USDC payments on Hedera via Blocky402 — all inside World App.
 
@@ -665,7 +665,7 @@ git commit -m "docs: comprehensive README with architecture, setup, and contract
 
 ## Project
 
-**Name:** Vocaid Hub — Hybrid Resource Allocation Protocol
+**Name:** Vocaid Hub — Reliable Resources for the Agentic Economy Protocol
 
 **One-liner:** Verified humans and AI agents discover, verify, price, and trade any resource through ERC-8004 on 0G, x402 USDC on Hedera, and World ID — inside World App.
 

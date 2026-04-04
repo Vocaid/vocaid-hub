@@ -330,7 +330,7 @@ git commit -m "docs(demo): add 7-step demo flow with pre-flight checklist and fa
 **Step 2: Verify markdown renders**
 
 Run: `head -5 README.md` to confirm header
-Expected: `# Vocaid Hub — Hybrid Resource Allocation`
+Expected: `# Vocaid Hub — Reliable Resources for the Agentic Economy`
 
 **Step 3: Commit**
 
