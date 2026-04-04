@@ -122,6 +122,13 @@ vocaid-hub/
 │   ├── VerificationStatus.tsx # TEE/World ID verification badge
 │   └── Verify/               # MiniKit verify command wrapper
 │
+├── auth/                      # NextAuth configuration
+│   ├── index.ts               # NextAuth + World App Wallet provider
+│   └── wallet/                # SIWE helpers (client + server)
+│
+├── providers/                 # React context providers
+│   └── index.tsx              # MiniKit + NextAuth + Eruda
+│
 ├── public/                    # Static assets
 │   └── agent-cards/           # ERC-8004 agent card JSONs
 │       ├── seer.json
@@ -131,15 +138,21 @@ vocaid-hub/
 │
 ├── contracts/                 # Solidity (0G Chain + World Chain ONLY)
 │   ├── 0g/
+│   │   ├── IdentityRegistryUpgradeable.sol
+│   │   ├── ReputationRegistryUpgradeable.sol
+│   │   ├── ValidationRegistryUpgradeable.sol
 │   │   ├── GPUProviderRegistry.sol
 │   │   ├── ResourcePrediction.sol
 │   │   ├── MockTEEValidator.sol
+│   │   ├── ERC1967Proxy.sol
 │   │   └── interfaces/
 │   │       ├── IIdentityRegistry.sol
 │   │       ├── IReputationRegistry.sol
 │   │       └── IValidationRegistry.sol
 │   └── world/
-│       └── CredentialGate.sol
+│       ├── CredentialGate.sol
+│       ├── IWorldID.sol
+│       └── ByteHasher.sol
 │
 ├── agents/                    # OpenClaw agent configs
 │   ├── openclaw.json          # Gateway config
@@ -175,7 +188,8 @@ vocaid-hub/
 ├── hardhat.config.ts          # Multi-chain Hardhat config
 ├── .env.example               # Environment variables template
 ├── next.config.ts             # Next.js config with MiniKit
-├── tailwind.config.ts         # Design system colors
+├── vitest.config.ts           # Test runner configuration
+├── middleware.ts               # NextAuth session middleware
 ├── package.json
 ├── tsconfig.json
 └── docs/                      # Planning documentation (this folder)
