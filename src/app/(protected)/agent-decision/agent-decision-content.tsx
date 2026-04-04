@@ -24,7 +24,7 @@ interface DecisionData {
 }
 
 const STEPS = [
-  { icon: Search, label: 'Discover', desc: 'Scan 0G network for GPU providers' },
+  { icon: Search, label: 'Discover', desc: 'Scan network for all resources' },
   { icon: BarChart3, label: 'Rank', desc: 'Score by reputation signals' },
   { icon: ShieldCheck, label: 'Verify', desc: 'Check TEE attestation via Shield' },
   { icon: CheckCircle, label: 'Select', desc: 'Choose optimal provider' },
@@ -49,12 +49,12 @@ export function AgentDecisionContent({ decision }: { decision: DecisionData | nu
     <div className="flex flex-col gap-6">
       {/* Agent Header */}
       <div className="flex items-center gap-3 p-4 rounded-xl bg-surface border border-border-card">
-        <div className="w-10 h-10 rounded-full bg-chain-world/10 flex items-center justify-center">
-          <Eye className="w-5 h-5 text-chain-world" />
+        <div className="w-10 h-10 rounded-full bg-primary-accent/10 flex items-center justify-center">
+          <Eye className="w-5 h-5 text-primary-accent" />
         </div>
         <div className="flex-1">
           <p className="font-semibold text-primary">Seer Agent</p>
-          <p className="text-xs text-secondary">Signal Analyst — finding optimal GPU compute</p>
+          <p className="text-xs text-secondary">Signal Analyst — finding optimal resources</p>
         </div>
         <button
           onClick={() => { setCurrentStep(0); setAutoPlay(true); }}
@@ -115,7 +115,7 @@ function DiscoverStep({ providers }: { providers: Provider[] }) {
       {providers.map((p, i) => (
         <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border-card animate-fade-in"
           style={{ animationDelay: `${i * 200}ms` }}>
-          <Cpu className="w-5 h-5 text-chain-og" />
+          <Cpu className="w-5 h-5 text-primary-accent" />
           <div className="flex-1">
             <p className="text-sm font-medium text-primary">{p.gpuModel}</p>
             <p className="text-xs text-secondary">{p.teeType || 'No TEE'} · Agent #{p.agentId}</p>
@@ -203,8 +203,8 @@ function SelectStep({ provider, reasoning }: { provider: Provider; reasoning: De
       />
       <div className="p-4 rounded-xl border-2 border-status-verified bg-status-verified/5">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-xl bg-chain-og/10 flex items-center justify-center">
-            <Cpu className="w-6 h-6 text-chain-og" />
+          <div className="w-12 h-12 rounded-xl bg-primary-accent/10 flex items-center justify-center">
+            <Cpu className="w-6 h-6 text-primary-accent" />
           </div>
           <div className="flex-1">
             <p className="font-semibold text-primary">{provider.gpuModel}</p>
