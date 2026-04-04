@@ -40,6 +40,19 @@ export function getWalletClient() {
   });
 }
 
+/** Demo wallet — used for reputation feedback & multi-provider registration (avoids self-feedback restriction) */
+export function getDemoWalletClient() {
+  if (!process.env.DEMO_WALLET_KEY) throw new Error("DEMO_WALLET_KEY not set");
+  const account = privateKeyToAccount(
+    `0x${process.env.DEMO_WALLET_KEY.replace(/^0x/, "")}` as Hex,
+  );
+  return createWalletClient({
+    account,
+    chain: ogGalileo,
+    transport: http(OG_RPC_URL),
+  });
+}
+
 // --- Reputation reads ---
 
 export async function getReputationSummary(agentId: bigint, tag1 = "", tag2 = "") {

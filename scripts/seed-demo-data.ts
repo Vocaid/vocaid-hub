@@ -15,7 +15,7 @@ config();
 
 import {
   createPublicClient, createWalletClient, http, parseEther,
-  keccak256, encodePacked, toHex, decodeEventLog, type Hex,
+  keccak256, encodePacked, toHex, type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { readFileSync } from "fs";
@@ -42,12 +42,6 @@ const C = deployment.contracts as Record<string, `0x${string}`>;
 const identityABI = [
   { name: "register", type: "function", stateMutability: "nonpayable",
     inputs: [{ name: "agentURI", type: "string" }], outputs: [{ name: "agentId", type: "uint256" }] },
-  { name: "Registered", type: "event",
-    inputs: [
-      { name: "agentId", type: "uint256", indexed: true },
-      { name: "agentURI", type: "string", indexed: false },
-      { name: "owner", type: "address", indexed: true },
-    ] },
 ] as const;
 
 const gpuProviderABI = [
@@ -82,17 +76,6 @@ const predictionABI = [
   { name: "nextMarketId", type: "function", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
   { name: "placeBet", type: "function", stateMutability: "payable",
     inputs: [{ name: "marketId", type: "uint256" }, { name: "side", type: "uint8" }], outputs: [] },
-] as const;
-
-const reputationABI = [
-  { name: "giveFeedback", type: "function", stateMutability: "nonpayable",
-    inputs: [
-      { name: "agentId", type: "uint256" }, { name: "value", type: "uint256" },
-      { name: "valueDecimals", type: "uint8" },
-      { name: "tag1", type: "string" }, { name: "tag2", type: "string" },
-      { name: "endpoint", type: "string" },
-      { name: "feedbackURI", type: "string" }, { name: "feedbackHash", type: "bytes32" },
-    ], outputs: [] },
 ] as const;
 
 // ── Constants ─────────────────────────────────────────────
@@ -134,9 +117,13 @@ async function main() {
       address: C.IdentityRegistry, abi: identityABI, functionName: "register", args: [agent.uri], chain: ogGalileo,
     });
     const receipt = await publicClient.waitForTransactionReceipt({ hash, ...WAIT_OPTS });
-    const log = receipt.logs.find((l: any) => l.address.toLowerCase() === C.IdentityRegistry.toLowerCase());
-    const decoded = decodeEventLog({ abi: identityABI, data: log!.data, topics: log!.topics });
-    const agentId = (decoded.args as any).agentId as bigint;
+    // Filter for Registered event (skip ERC-721 Transfer event from same contract)
+    const registeredTopic = keccak256(toHex("Registered(uint256,string,address)"));
+    const log = receipt.logs.find((l: any) =>
+      l.address.toLowerCase() === C.IdentityRegistry.toLowerCase() &&
+      l.topics[0] === registeredTopic
+    );
+    const agentId = BigInt(log!.topics[1] as string);
     agentIds.push(agentId);
     console.log(`  ${agent.label}: agentId ${agentId}`);
   }
@@ -218,27 +205,62 @@ async function main() {
     console.log(`  Market ${mId}: ${yesAmt} A0GI Yes, ${noAmt} A0GI No`);
   }
 
-  // ── Phase 6: Seed reputation scores ───────────────────
-  console.log("\nPhase 6: Seeding reputation scores...");
-  const feedbacks: { id: bigint; tag: string; value: number }[] = [
-    { id: agentIds[0], tag: "starred",     value: 82 },   // GPU-Alpha
-    { id: agentIds[2], tag: "starred",     value: 95 },   // Seer
-    { id: agentIds[3], tag: "starred",     value: 88 },   // Edge
-    { id: agentIds[2], tag: "uptime",      value: 99 },   // Seer uptime
-    { id: agentIds[3], tag: "successRate", value: 91 },   // Edge success
-  ];
-  for (const fb of feedbacks) {
-    const fbHash = keccak256(toHex(`seed-${fb.id}-${fb.tag}-${Date.now()}`));
-    const h = await walletClient.writeContract({
-      address: C.ReputationRegistry, abi: reputationABI, functionName: "giveFeedback",
-      args: [fb.id, BigInt(fb.value * 100), 2, fb.tag, "", "/seed", `seed:${fb.tag}`, fbHash],
-      chain: ogGalileo,
-    });
-    await publicClient.waitForTransactionReceipt({ hash: h, ...WAIT_OPTS });
-    console.log(`  Agent ${fb.id} ${fb.tag}: ${fb.value}`);
+  // ── Phase 6: Demo wallet — reputation feedback + GPU-Beta ──
+  const demoPk = process.env.DEMO_WALLET_KEY;
+  if (demoPk) {
+    console.log("\nPhase 6: Seeding reputation + GPU-Beta (demo wallet)...");
+    const demoAccount = privateKeyToAccount(demoPk as `0x${string}`);
+    const demoWallet = createWalletClient({ account: demoAccount, chain: ogGalileo, transport: http(rpcUrl, { timeout: 60_000 }) });
+
+    const reputationABI = [
+      { name: "giveFeedback", type: "function", stateMutability: "nonpayable",
+        inputs: [
+          { name: "agentId", type: "uint256" }, { name: "value", type: "int128" },
+          { name: "valueDecimals", type: "uint8" }, { name: "tag1", type: "string" },
+          { name: "tag2", type: "string" }, { name: "endpoint", type: "string" },
+          { name: "feedbackURI", type: "string" }, { name: "feedbackHash", type: "bytes32" },
+        ], outputs: [] },
+    ] as const;
+
+    // Give reputation feedback to first 4 agents (demo wallet != owner, so allowed)
+    const feedbacks = [
+      { agentId: agentIds[0], value: 85n, tag1: "uptime", tag2: "gpu" },
+      { agentId: agentIds[1], value: 92n, tag1: "responseTime", tag2: "gpu" },
+      { agentId: agentIds[2], value: 78n, tag1: "successRate", tag2: "inference" },
+      { agentId: agentIds[3], value: 88n, tag1: "uptime", tag2: "settlement" },
+    ];
+
+    for (const fb of feedbacks) {
+      try {
+        const h = await demoWallet.writeContract({
+          address: C.ReputationRegistry, abi: reputationABI, functionName: "giveFeedback",
+          args: [fb.agentId, fb.value, 2, fb.tag1, fb.tag2, "", "", keccak256(toHex(`feedback-${fb.agentId}`))],
+          chain: ogGalileo,
+        });
+        await publicClient.waitForTransactionReceipt({ hash: h, ...WAIT_OPTS });
+        console.log(`  Agent ${fb.agentId}: feedback ${fb.value}/100 (${fb.tag1})`);
+      } catch (e: any) {
+        console.log(`  Agent ${fb.agentId}: feedback skipped (${e.message?.slice(0, 60)})`);
+      }
+    }
+
+    // Register GPU-Beta with demo wallet (different address = no AlreadyRegistered)
+    try {
+      const betaHash = keccak256(toHex("gpu-beta-attestation"));
+      const h = await demoWallet.writeContract({
+        address: C.GPUProviderRegistry, abi: gpuProviderABI, functionName: "registerProvider",
+        args: [agentIds[1], "NVIDIA H200 141GB", "AMD SEV", betaHash], chain: ogGalileo,
+      });
+      await publicClient.waitForTransactionReceipt({ hash: h, ...WAIT_OPTS });
+      console.log("  GPU-Beta registered (H200 / AMD SEV)");
+    } catch (e: any) {
+      console.log(`  GPU-Beta: skipped (${e.message?.slice(0, 60)})`);
+    }
+  } else {
+    console.log("\nPhase 6: Skipped (no DEMO_WALLET_KEY — reputation uses mock fallback)");
   }
 
-  // ── Phase 7: Log seed event to Hedera HCS ─────────────
+  // ── Phase 7: Log seed event to Hedera HCS (optional) ──
   const auditTopic = process.env.HEDERA_AUDIT_TOPIC;
   if (auditTopic) {
     console.log("\nPhase 7: Logging seed event to Hedera HCS...");
@@ -249,7 +271,6 @@ async function main() {
       type: "demo_seed_complete",
       agentIds: agentIds.map(String),
       markets: 3,
-      feedbacks: feedbacks.length,
       timestamp: new Date().toISOString(),
     }));
     console.log("  Seed event logged to HCS topic " + auditTopic);
