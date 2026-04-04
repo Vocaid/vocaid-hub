@@ -7,6 +7,7 @@ import {
   giveFeedback,
   type ReputationTag,
 } from '@/lib/reputation';
+import { sendRateLimited } from '../plugins/rate-limit';
 
 const ReputationQuerySchema = z.object({
   agentId: z.coerce.number().int().min(0),
@@ -73,6 +74,10 @@ export default async function reputationRoutes(app: FastifyInstance) {
       preHandler: [app.requireWorldId],
     },
     async (request, reply) => {
+      // R3: Rate limit
+      const rl = app.checkRateLimit(request.ip, '/api/reputation', 10, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { agentId, value, tag1, tag2, endpoint, feedbackURI } = request.body;
 

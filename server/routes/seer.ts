@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { listProviders } from '@/lib/og-compute';
 import { callInference } from '@/lib/og-broker';
 import { logAuditMessage } from '@/lib/hedera';
+import { sendRateLimited } from '../plugins/rate-limit';
 
 const AUDIT_TOPIC = process.env.HEDERA_AUDIT_TOPIC ?? '';
 
@@ -25,6 +26,10 @@ export default async function seerRoutes(app: FastifyInstance) {
       preHandler: [app.requireWorldId],
     },
     async (request, reply) => {
+      // R3: Rate limit
+      const rl = app.checkRateLimit(request.ip, '/api/seer/inference', 10, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       const { prompt } = request.body;
 
       try {
@@ -71,7 +76,7 @@ export default async function seerRoutes(app: FastifyInstance) {
           response: `[Seer Analysis] Based on current market conditions, H100 inference pricing shows moderate demand. Provider discovery returned 0 active providers on 0G Galileo testnet — production deployment would connect to mainnet operators.`,
           provider: 'mock-seer-fallback',
           model: 'seer-analysis-v1',
-          verified: null,
+          verified: false,
           _demo: true,
           _reason:
             '0G Galileo testnet has no registered inference providers. SDK integration is production-ready.',

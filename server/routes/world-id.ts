@@ -177,6 +177,9 @@ function decodeProof(
   proof: string,
 ): readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint] {
   const packed = proof.startsWith('0x') ? proof.slice(2) : proof;
+  if (packed.length !== 512 || !/^[0-9a-fA-F]+$/.test(packed)) {
+    throw new Error('Invalid proof: expected 512 hex characters');
+  }
   const result: bigint[] = [];
   for (let i = 0; i < 8; i++) {
     result.push(BigInt('0x' + packed.slice(i * 64, (i + 1) * 64)));

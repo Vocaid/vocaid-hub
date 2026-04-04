@@ -4,7 +4,26 @@ import { ethers } from 'ethers';
 import GPUProviderRegistryABI from '@/abi/GPUProviderRegistry.json';
 import { addresses, OG_RPC_URL } from '@/lib/contracts';
 import { listProviders, getProviderMetadata, verifyProvider } from '@/lib/og-compute';
+import { sendRateLimited } from '../plugins/rate-limit';
 import { GpuRegisterSchema, GpuListQuerySchema } from '../schemas/gpu';
+
+// R1: Singleton provider — avoid per-request socket leaks
+let _ogProvider: ethers.JsonRpcProvider | null = null;
+function getOgProvider(): ethers.JsonRpcProvider {
+  if (!_ogProvider) _ogProvider = new ethers.JsonRpcProvider(OG_RPC_URL);
+  return _ogProvider;
+}
+
+// R2: Timeout wrapper for tx.wait()
+const TX_TIMEOUT_MS = 60_000;
+function waitWithTimeout(tx: ethers.ContractTransactionResponse, ms = TX_TIMEOUT_MS) {
+  return Promise.race([
+    tx.wait(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Transaction confirmation timed out')), ms),
+    ),
+  ]);
+}
 
 // Minimal IdentityRegistry ABI for register + event
 const IDENTITY_ABI = [
@@ -134,6 +153,10 @@ export default async function gpuRoutes(app: FastifyInstance) {
       preHandler: [app.requireWorldId],
     },
     async (request, reply) => {
+      // R3: Rate limit
+      const rl = app.checkRateLimit(request.ip, '/api/gpu/register', 3, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { providerAddress, gpuModel, endpoint } = request.body;
 
@@ -171,7 +194,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
         let chainResult: { agentId: string; txHash: string; demo: boolean };
 
         try {
-          const provider = new ethers.JsonRpcProvider(OG_RPC_URL);
+          const provider = getOgProvider();
           const wallet = new ethers.Wallet(pk, provider);
 
           const identityRegistry = new ethers.Contract(
@@ -202,9 +225,9 @@ export default async function gpuRoutes(app: FastifyInstance) {
             ];
 
             const registerTx = await identityRegistry.register(agentURI, metadata);
-            const registerReceipt = await registerTx.wait();
+            const registerReceipt = await waitWithTimeout(registerTx);
 
-            const registeredEvent = registerReceipt.logs.find((log: ethers.Log) => {
+            const registeredEvent = registerReceipt!.logs.find((log: ethers.Log) => {
               try {
                 return (
                   identityRegistry.interface.parseLog({
@@ -239,9 +262,9 @@ export default async function gpuRoutes(app: FastifyInstance) {
             attestationHash,
           );
 
-          const receipt = await tx.wait();
+          const receipt = await waitWithTimeout(tx);
 
-          const event = receipt.logs.find((log: ethers.Log) => {
+          const event = receipt!.logs.find((log: ethers.Log) => {
             try {
               return (
                 gpuRegistry.interface.parseLog({
@@ -263,7 +286,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
             registeredAgentId = parsed?.args?.[1]?.toString() ?? agentId.toString();
           }
 
-          chainResult = { agentId: registeredAgentId, txHash: receipt.hash, demo: false };
+          chainResult = { agentId: registeredAgentId, txHash: receipt!.hash, demo: false };
         } catch (chainErr) {
           request.log.warn({ err: chainErr }, 'Chain unreachable, using demo fallback');
           const mockAgentId = String(Math.floor(Math.random() * 1000) + 100);

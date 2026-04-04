@@ -8,13 +8,13 @@ export const RpSignatureBodySchema = z.object({
 
 /** POST /api/verify-proof */
 export const VerifyProofBodySchema = z.object({
-  payload: z
-    .object({
-      merkle_root: z.string().optional(),
-      nullifier_hash: z.string().optional(),
-      proof: z.string().optional(),
-    })
-    .passthrough(),
+  payload: z.object({
+    merkle_root: z.string().optional(),
+    nullifier_hash: z.string().optional(),
+    proof: z.string().optional(),
+    verification_level: z.string().optional(),
+    credential_type: z.string().optional(),
+  }),
   action: z.string(),
   signal: z.string().optional(),
 });

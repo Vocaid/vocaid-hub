@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ethers } from 'ethers';
 import { logAuditMessage } from '@/lib/hedera';
+import { sendRateLimited } from '../plugins/rate-limit';
 import {
   CreateMarketSchema,
   PlaceBetSchema,
@@ -19,17 +20,38 @@ const RESOURCE_PREDICTION_ABI = [
   'function resolveMarket(uint256,uint8)',
 ] as const;
 
-function getContract(withSigner = false) {
-  const rpc = process.env.OG_RPC_URL;
-  const address = process.env.RESOURCE_PREDICTION;
-  if (!rpc || !address) throw new Error('Missing OG_RPC_URL or RESOURCE_PREDICTION env');
+// R1: Singleton provider — avoid per-request socket leaks
+let _provider: ethers.JsonRpcProvider | null = null;
+function getProvider() {
+  if (!_provider) {
+    const rpc = process.env.OG_RPC_URL;
+    if (!rpc) throw new Error('Missing OG_RPC_URL env');
+    _provider = new ethers.JsonRpcProvider(rpc);
+  }
+  return _provider;
+}
 
-  const provider = new ethers.JsonRpcProvider(rpc);
+function getContract(withSigner = false) {
+  const address = process.env.RESOURCE_PREDICTION;
+  if (!address) throw new Error('Missing RESOURCE_PREDICTION env');
+
+  const provider = getProvider();
   if (withSigner) {
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
     return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, signer);
   }
   return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, provider);
+}
+
+// R2: Timeout wrapper for tx.wait() — prevents indefinite hangs
+const TX_TIMEOUT_MS = 60_000;
+function waitWithTimeout(tx: ethers.ContractTransactionResponse, ms = TX_TIMEOUT_MS) {
+  return Promise.race([
+    tx.wait(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Transaction confirmation timed out')), ms),
+    ),
+  ]);
 }
 
 /**
@@ -67,7 +89,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
     } catch (error) {
       request.log.error({ err: error }, 'Failed to fetch prediction markets');
 
-      // Fallback demo data
+      // C1: Fallback demo data with _demo flag
       return [
         {
           id: 0,
@@ -78,6 +100,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
           yesPool: '62000000000000000000',
           noPool: '38000000000000000000',
           creator: '0x0000000000000000000000000000000000000000',
+          _demo: true,
         },
         {
           id: 1,
@@ -88,6 +111,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
           yesPool: '45000000000000000000',
           noPool: '55000000000000000000',
           creator: '0x0000000000000000000000000000000000000000',
+          _demo: true,
         },
         {
           id: 2,
@@ -98,6 +122,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
           yesPool: '30000000000000000000',
           noPool: '70000000000000000000',
           creator: '0x0000000000000000000000000000000000000000',
+          _demo: true,
         },
       ];
     }
@@ -108,6 +133,10 @@ export default async function predictionRoutes(app: FastifyInstance) {
     '/predictions',
     { schema: { body: CreateMarketSchema } },
     async (request, reply) => {
+      // R3: Rate limit
+      const rl = app.checkRateLimit(request.ip, '/api/predictions', 5, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { question, resolutionTime, initialSide, initialAmount } = request.body;
 
@@ -117,7 +146,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
 
         const contract = getContract(true);
         const createTx = await contract.createMarket(question, resolutionTime);
-        const createReceipt = await createTx.wait();
+        const createReceipt = await waitWithTimeout(createTx);
 
         const nextId = await contract.nextMarketId();
         const marketId = Number(nextId) - 1;
@@ -128,11 +157,11 @@ export default async function predictionRoutes(app: FastifyInstance) {
           const betTx = await contract.placeBet(marketId, outcomeEnum, {
             value: ethers.parseEther(String(initialAmount)),
           });
-          const betReceipt = await betTx.wait();
-          betTxHash = betReceipt.hash;
+          const betReceipt = await waitWithTimeout(betTx);
+          betTxHash = betReceipt!.hash;
         }
 
-        return { success: true, marketId, txHash: createReceipt.hash, betTxHash };
+        return { success: true, marketId, txHash: createReceipt!.hash, betTxHash };
       } catch (err) {
         request.log.error({ err }, 'Failed to create market');
         return reply.code(500).send({ error: 'Failed to create market' });
@@ -145,6 +174,9 @@ export default async function predictionRoutes(app: FastifyInstance) {
     '/predictions/:id/bet',
     { schema: { params: MarketIdParamsSchema, body: PlaceBetSchema } },
     async (request, reply) => {
+      const rl = app.checkRateLimit(request.ip, '/api/predictions/bet', 10, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { id: marketId } = request.params;
         const { side, amount } = request.body;
@@ -154,11 +186,11 @@ export default async function predictionRoutes(app: FastifyInstance) {
         const value = ethers.parseEther(String(amount));
 
         const tx = await contract.placeBet(marketId, outcomeEnum, { value });
-        const receipt = await tx.wait();
+        const receipt = await waitWithTimeout(tx);
 
         return {
           success: true,
-          txHash: receipt.hash,
+          txHash: receipt!.hash,
           marketId,
           side,
           amount: String(amount),
@@ -175,6 +207,9 @@ export default async function predictionRoutes(app: FastifyInstance) {
     '/predictions/:id/claim',
     { schema: { params: MarketIdParamsSchema } },
     async (request, reply) => {
+      const rl = app.checkRateLimit(request.ip, '/api/predictions/claim', 10, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { id: marketId } = request.params;
         const contract = getContract(true);
@@ -195,8 +230,8 @@ export default async function predictionRoutes(app: FastifyInstance) {
           return reply.code(400).send({ error: 'Market is still active — cannot claim yet' });
         }
 
-        const receipt = await tx.wait();
-        return { success: true, txHash: receipt.hash, marketId, action };
+        const receipt = await waitWithTimeout(tx);
+        return { success: true, txHash: receipt!.hash, marketId, action };
       } catch (err) {
         request.log.error({ err }, 'Failed to claim winnings');
         return reply.code(500).send({ error: 'Failed to claim winnings' });
@@ -209,6 +244,9 @@ export default async function predictionRoutes(app: FastifyInstance) {
     '/predictions/:id/resolve',
     { schema: { params: MarketIdParamsSchema, body: ResolveMarketSchema } },
     async (request, reply) => {
+      const rl = app.checkRateLimit(request.ip, '/api/predictions/resolve', 5, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { id: marketId } = request.params;
         const { outcome } = request.body;
@@ -216,30 +254,32 @@ export default async function predictionRoutes(app: FastifyInstance) {
 
         const contract = getContract(true);
         const tx = await contract.resolveMarket(marketId, outcomeEnum);
-        const receipt = await tx.wait();
+        const receipt = await waitWithTimeout(tx);
 
-        // Cross-chain audit: log resolution to Hedera HCS
-        const auditTopicId = process.env.HEDERA_AUDIT_TOPIC || '0.0.8499635';
-        try {
-          const market = await contract.getMarket(marketId);
-          await logAuditMessage(
-            auditTopicId,
-            JSON.stringify({
-              event: 'market_resolved',
-              marketId,
-              outcome,
-              question: market.question,
-              totalPool: (market.yesPool + market.noPool).toString(),
-              txHash: receipt.hash,
-              chain: '0g-galileo',
-              timestamp: new Date().toISOString(),
-            }),
-          );
-        } catch (hcsErr) {
-          request.log.error({ err: hcsErr }, 'HCS audit failed (non-blocking)');
+        // C3: Cross-chain audit — skip if topic not configured
+        const auditTopicId = process.env.HEDERA_AUDIT_TOPIC;
+        if (auditTopicId) {
+          try {
+            const market = await contract.getMarket(marketId);
+            await logAuditMessage(
+              auditTopicId,
+              JSON.stringify({
+                event: 'market_resolved',
+                marketId,
+                outcome,
+                question: market.question,
+                totalPool: (market.yesPool + market.noPool).toString(),
+                txHash: receipt!.hash,
+                chain: '0g-galileo',
+                timestamp: new Date().toISOString(),
+              }),
+            );
+          } catch (hcsErr) {
+            request.log.error({ err: hcsErr }, 'HCS audit failed (non-blocking)');
+          }
         }
 
-        return { success: true, txHash: receipt.hash, marketId, outcome };
+        return { success: true, txHash: receipt!.hash, marketId, outcome };
       } catch (err) {
         request.log.error({ err }, 'Failed to resolve market');
         return reply.code(500).send({ error: 'Failed to resolve market' });

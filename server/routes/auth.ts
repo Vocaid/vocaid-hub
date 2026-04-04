@@ -17,8 +17,16 @@ export default async function authRoutes(app: FastifyInstance) {
   // ── Proxy all other /api/auth/* to Next.js ──
   app.all('/auth/*', async (request, reply) => {
     const path = (request.params as { '*': string })['*'];
-    // Skip the session endpoint we handle above
-    if (path === 'session') return;
+
+    // Guard against path traversal
+    if (!path || path.includes('..') || path.includes('//') || path.startsWith('/')) {
+      return reply.code(400).send({ error: 'Invalid auth path' });
+    }
+
+    // Non-GET requests to /session get 405; GET is handled by the dedicated route above
+    if (path === 'session') {
+      return reply.code(405).send({ error: 'Use GET /api/auth/session' });
+    }
 
     const targetUrl = `${NEXT_URL}/api/auth/${path}`;
     const headers: Record<string, string> = {};

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { ethers } from 'ethers';
 import { getValidationSummary } from '@/lib/og-chain';
 import { logAuditMessage } from '@/lib/hedera';
+import { sendRateLimited } from '../plugins/rate-limit';
 import { z } from 'zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
@@ -12,17 +13,21 @@ const RESOURCE_PREDICTION_ABI = [
   'function getMarket(uint256 marketId) view returns (string question, uint256 resolutionTime, uint8 state, uint8 winningOutcome, uint256 yesPool, uint256 noPool)',
 ] as const;
 
+// R1: Singleton provider
+let _edgeProvider: ethers.JsonRpcProvider | null = null;
+
 function getContract(withSigner = false) {
   const rpc = process.env.OG_RPC_URL;
   const address = process.env.RESOURCE_PREDICTION;
   if (!rpc || !address) throw new Error('Missing OG_RPC_URL or RESOURCE_PREDICTION env');
 
-  const provider = new ethers.JsonRpcProvider(rpc);
-  if (!withSigner) return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, provider);
+  if (!_edgeProvider) _edgeProvider = new ethers.JsonRpcProvider(rpc);
+
+  if (!withSigner) return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, _edgeProvider);
 
   const pk = process.env.PRIVATE_KEY;
   if (!pk) throw new Error('Missing PRIVATE_KEY env');
-  const signer = new ethers.Wallet(pk, provider);
+  const signer = new ethers.Wallet(pk, _edgeProvider);
   return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, signer);
 }
 
@@ -50,6 +55,10 @@ export default async function edgeRoutes(app: FastifyInstance) {
       preHandler: [app.requireWorldId],
     },
     async (request, reply) => {
+      // R3: Rate limit
+      const rl = app.checkRateLimit(request.ip, '/api/edge/trade', 10, 60_000);
+      if (rl) return sendRateLimited(reply, rl);
+
       try {
         const { method, marketId, side, amount, targetAgentId, reason, resourceName } =
           request.body;
