@@ -48,8 +48,8 @@
 
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
-| P-020 | Zero test files in project | unclaimed | — | `src/**/*.test.ts`, `contracts/**/*.test.ts` | No `*.test.*` or `*.spec.*` files found anywhere |
-| P-021 | TODO in `src/auth/index.ts` (`@ts-expect-error`) | unclaimed | — | `src/auth/index.ts` (line 38) | `// @ts-expect-error TODO` — needs proper typing |
+| P-020 | Zero test files in project | ✅ done | Agent 4 | `src/lib/__tests__/*.test.ts`, `vitest.config.ts` | 22 tests: prediction-math (18) + hedera audit trail (4). Vitest framework |
+| P-021 | TODO in `src/auth/index.ts` (`@ts-expect-error`) | ✅ done | Agent 4 | `src/auth/index.ts` | Fixed: proper `(credentials, _request)` signature matching NextAuth types |
 | P-022 | Agent directory verification | ✅ done | Agent 4 | `agents/.agents/*/soul.md` | All 4 soul.md files exist (seer, edge, shield, lens) |
 | P-023 | Hedera deployment verification via Mirror Node | ✅ done | Agent 3 | `src/app/api/hedera/audit/route.ts` | Verified: VCRED token 0.0.8499633 + topic 0.0.8499635 confirmed on Mirror Node |
 
@@ -69,9 +69,9 @@
 
 | ID | Item | Status | Agent | Bounty at Risk | Target Files | Fix |
 |----|------|--------|-------|---------------|-------------|-----|
-| P-057 | Shield doesn't block unverified providers | unclaimed | — | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | Add ValidationRegistry check before returning resources. ~30 min. |
+| P-057 | Shield doesn't block unverified providers | ✅ done | Agent 6 | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | ValidationRegistry.getSummary() check per GPU provider; unverified show as "Unverified" |
 | P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
-| P-059 | MiniKit.pay() never called | unclaimed | — | World MiniKit $4k | `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Wire MiniKit pay command into hire flow. ~30 min. |
+| P-059 | MiniKit.pay() never called | ✅ done | Agent 7 | World MiniKit $4k | `src/app/(protected)/home/marketplace-content.tsx` | MiniKit.pay() wired with x402 fallback, loading spinner, error toast |
 | P-060 | Seer never runs 0G Compute inference | unclaimed | — | 0G OpenClaw $6k | `src/lib/og-compute.ts`, `agents/.agents/seer/soul.md` | Needs live 0G provider + funded broker. Hard without testnet. |
 | P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
 | P-062 | No agent-to-agent messaging | unclaimed | — | World AgentKit $8k | `agents/openclaw.json` | Add demo script exercising Seer→Edge signal relay. ~45 min. |

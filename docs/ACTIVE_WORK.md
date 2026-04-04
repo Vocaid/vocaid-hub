@@ -40,6 +40,9 @@
 | 2 | MiniKit v2 fix: haptic shim (commands.sendHapticFeedback) + verify wallet auth | `src/providers/index.tsx`, `src/auth/wallet/index.ts` | done | 2026-04-04T05:00Z | 2026-04-04T05:30Z |
 | 3 | P-058: Wire giveFeedback + HCS audit for AI/Agentic track | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
 | 6 | Full gap audit vs SESSION_CONTEXT + doc updates (PENDING_WORK dedup, WAVE_EXECUTION_PLAN status, ARCHITECTURE structure) | `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
+| 6 | P-057: Shield ValidationRegistry check in /api/resources | `src/app/api/resources/route.ts`, `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md` | done | 2026-04-04T11:00Z | 2026-04-04T11:15Z |
+| 7 | P-059 MiniKit.pay() + ResourceCard UX (unverified muted + hire spinner + error toast) | `src/components/ResourceCard.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, `.env.example` | done | 2026-04-04 | 2026-04-04 |
+| 4 | P-020 + P-021: vitest setup + 22 tests + auth type fix | `src/auth/index.ts`, `vitest.config.ts`, `src/lib/__tests__/*.test.ts`, `package.json` | done | 2026-04-04T11:00Z | 2026-04-04T11:30Z |
 
 ---
 
