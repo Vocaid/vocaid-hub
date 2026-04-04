@@ -67,8 +67,8 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
           <div className="flex items-center justify-center w-14 h-14 rounded-full bg-chain-hedera/10">
             <TrendingUp className="w-8 h-8 text-chain-hedera" />
           </div>
-          <h2 className="text-xl font-bold text-primary">New Prediction Market</h2>
-          <p className="text-sm text-secondary">Create a market for any resource</p>
+          <h2 className="text-xl font-bold text-primary">New Prediction</h2>
+          <p className="text-sm text-secondary mt-1">Create a resource prediction market</p>
         </div>
 
         {/* Question */}
@@ -82,7 +82,7 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="e.g. Will H100 spot price drop 20% by June?"
-            className="rounded-xl border border-border-card bg-surface p-3 text-sm text-primary placeholder:text-secondary/50 resize-none focus:outline-none focus:ring-2 focus:ring-chain-hedera/30"
+            className="rounded-xl border border-border-card bg-surface px-4 p-3 text-sm text-primary placeholder:text-secondary/50 resize-none focus:outline-none focus:ring-2 focus:ring-chain-hedera/30"
           />
         </div>
 

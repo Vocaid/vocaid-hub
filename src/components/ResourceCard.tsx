@@ -77,7 +77,7 @@ export function ResourceCard({
           <button
             onClick={() => onHire?.({ name, price, type })}
             disabled={hiring}
-            className={`min-h-11 min-w-11 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            className={`min-h-11 min-w-11 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
               hiring
                 ? 'bg-primary-accent/60 text-white/80 cursor-wait'
                 : 'bg-primary-accent text-white cursor-pointer active:scale-95'
@@ -94,7 +94,7 @@ export function ResourceCard({
           </button>
         ) : (
           <span
-            className="min-h-11 min-w-11 px-4 py-2 rounded-lg bg-status-inactive/20 text-status-inactive text-sm font-semibold flex items-center"
+            className="min-h-11 min-w-11 px-4 py-2 rounded-full bg-status-inactive/20 text-status-inactive text-sm font-semibold flex items-center"
             title="Provider has not passed Shield verification"
           >
             Unverified
