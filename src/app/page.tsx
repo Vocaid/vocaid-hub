@@ -11,8 +11,8 @@ export default function Home() {
           <Image
             src="/app-logo.png"
             alt="Vocaid Hub"
-            width={200}
-            height={67}
+            width={240}
+            height={76}
             priority
           />
           <p className="text-sm text-secondary text-center max-w-[280px]">
