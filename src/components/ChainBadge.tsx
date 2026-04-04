@@ -13,6 +13,6 @@ const chainConfig: Record<Chain, { logo: string; alt: string }> = {
 export function ChainBadge({ chain }: { chain: Chain }) {
   const { logo, alt } = chainConfig[chain];
   return (
-    <Image src={logo} alt={alt} width={28} height={28} className="inline-block shrink-0" />
+    <Image src={logo} alt={alt} width={36} height={36} className="inline-block shrink-0" />
   );
 }

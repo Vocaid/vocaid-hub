@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-04
 **Auditor:** Agent 5 (GPU Portal) — automated security research
-**Scope:** 7 deployed contracts (0G Galileo + World Sepolia) + 19 API routes
+**Scope:** 7 deployed contracts (0G Galileo + World Sepolia) + 24 API routes
 **Context:** ETHGlobal Cannes 2026 hackathon — testnet deployment, zero real funds
 
 ---
@@ -16,7 +16,7 @@
 | Medium | 4 | 3 mitigated (1 fixed in contract), 1 documented |
 | Low | 3 | 2 fixed in contract, 1 documented |
 
-**Total: 15 findings across 7 contracts and 19 API routes.**
+**Total: 15 findings across 7 contracts and 24 API routes.**
 
 All contracts run on testnets with zero real funds. API-layer mitigations applied in Tiers A-C. Solidity fixes deployed in Tier D (2026-04-05): GPUProviderRegistry, ResourcePrediction, CredentialGate redeployed with security hardening.
 

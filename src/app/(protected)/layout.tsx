@@ -13,7 +13,7 @@ export default async function TabsLayout({ children }: { children: React.ReactNo
       <Page.Header className="p-0">
         <TopBar
           endAdornment={
-            <img src="/app-logo.png" alt="Vocaid Hub" className="h-6" />
+            <img src="/app-logo.png" alt="Vocaid Hub" className="h-8" />
           }
           startAdornment={
             <div className="flex items-center gap-2">

@@ -264,7 +264,7 @@ vocaid-hub/
 │   │   │   ├── agent-decision/ # Seer agent GPU selection flow (ISR 30s) — 4-step visual
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
-│   │   └── api/                # 22 server-side API routes
+│   │   └── api/                # 24 server-side API routes
 │   ├── lib/                    # Shared server utilities (19 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import {
-  TrendingUp,
   Clock,
   Loader2,
   Check,
@@ -116,9 +115,6 @@ export function PredictionCard({
     <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3 shadow-sm">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-chain-hedera/10 shrink-0">
-          <TrendingUp className="w-5 h-5 text-chain-hedera" />
-        </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-primary leading-snug">
             {market.question}
@@ -147,7 +143,7 @@ export function PredictionCard({
             />
             {!isResolved && (
               <div
-                className="bg-status-failed rounded-full transition-all duration-500"
+                className="bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${100 - yesPercent}%` }}
               />
             )}
@@ -158,7 +154,7 @@ export function PredictionCard({
             <span>
               <span className="font-medium text-status-verified">YES {yesPercent}%</span>
               <span className="text-secondary mx-1">/</span>
-              <span className="font-medium text-status-failed">NO {100 - yesPercent}%</span>
+              <span className="font-medium text-primary">NO {100 - yesPercent}%</span>
             </span>
             <div className="flex items-center gap-1.5 text-secondary">
               <span className="tabular-nums">{formatPool(String(total))} A0GI</span>
@@ -188,7 +184,7 @@ export function PredictionCard({
               onClick={() => { setSelectedSide('no'); setSelectedAmount(null); }}
               className={`flex-1 min-h-[44px] rounded-lg text-sm font-semibold transition-colors ${
                 selectedSide === 'no'
-                  ? 'bg-status-failed/10 text-status-failed border border-status-failed/30'
+                  ? 'bg-primary/10 text-primary border border-status-failed/30'
                   : 'bg-white border border-border-card text-secondary'
               }`}
             >
@@ -255,7 +251,7 @@ export function PredictionCard({
                   <span
                     className={`w-2 h-2 rounded-full ${
                       blocked
-                        ? 'bg-status-failed'
+                        ? 'bg-primary'
                         : highImpact
                           ? 'bg-status-pending'
                           : 'bg-status-verified'
@@ -264,7 +260,7 @@ export function PredictionCard({
                   <span
                     className={`text-xs ${
                       blocked
-                        ? 'text-status-failed'
+                        ? 'text-primary'
                         : highImpact
                           ? 'text-status-pending'
                           : 'text-status-verified'
@@ -283,11 +279,11 @@ export function PredictionCard({
               )}
 
               {blocked && (
-                <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3 flex items-start gap-2">
-                  <XCircle className="w-4 h-4 text-status-failed shrink-0 mt-0.5" />
+                <div className="rounded-lg bg-primary/10 border border-status-failed/30 p-3 flex items-start gap-2">
+                  <XCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-status-failed">Bet too large for this pool</p>
-                    <p className="text-xs text-status-failed/70">Try a smaller amount</p>
+                    <p className="text-sm font-medium text-primary">Bet too large for this pool</p>
+                    <p className="text-xs text-primary/70">Try a smaller amount</p>
                   </div>
                 </div>
               )}
@@ -337,7 +333,7 @@ export function PredictionCard({
                 <button
                   onClick={() => handleResolve('no')}
                   disabled={resolveLoading !== null}
-                  className="flex-1 min-h-[44px] rounded-lg bg-status-failed/10 text-status-failed border border-status-failed/30 font-semibold text-sm flex items-center justify-center gap-2"
+                  className="flex-1 min-h-[44px] rounded-lg bg-primary/10 text-primary border border-status-failed/30 font-semibold text-sm flex items-center justify-center gap-2"
                 >
                   {resolveLoading === 'no' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -374,8 +370,8 @@ export function PredictionCard({
       )}
 
       {isResolved && !onClaim && (
-        <div className="rounded-lg bg-status-failed/10 p-3 text-center">
-          <span className="text-sm text-status-failed">
+        <div className="rounded-lg bg-primary/10 p-3 text-center">
+          <span className="text-sm text-primary">
             You bet {wonYes ? 'NO' : 'YES'} — Lost
           </span>
         </div>

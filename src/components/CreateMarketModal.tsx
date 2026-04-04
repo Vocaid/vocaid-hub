@@ -126,7 +126,7 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
               onClick={() => setInitialSide(initialSide === 'no' ? null : 'no')}
               className={`flex-1 min-h-[44px] rounded-lg text-sm font-semibold transition-colors ${
                 initialSide === 'no'
-                  ? 'bg-status-failed/10 text-status-failed border border-status-failed/30'
+                  ? 'bg-primary/10 text-primary border border-primary/30'
                   : 'bg-surface border border-border-card text-secondary'
               }`}
             >
@@ -155,7 +155,7 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
 
         {/* Error */}
         {error && (
-          <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3 text-sm text-status-failed">
+          <div className="rounded-lg bg-primary/10 border border-primary/30 p-3 text-sm text-primary">
             {error}
           </div>
         )}

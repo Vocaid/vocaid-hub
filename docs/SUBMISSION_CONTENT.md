@@ -36,7 +36,7 @@ Three chains, each doing what it does best: World (Trust) → 0G (Verify) → He
 
 **How it's made (min 280 chars):**
 ```
-Built as a unified Next.js 15 application (no separate backend) with TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision.
+Built as a unified Next.js 15 application with API routes running on Node.js server-side with TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision.
 
 0G Chain (Galileo, chainId 16602): We deployed ERC-8004 registries (IdentityRegistry, ReputationRegistry, ValidationRegistry) via Hardhat Ignition with evmVersion cancun. GPUProviderRegistry bridges 0G's listService() SDK with ERC-8004 identity. MockTEEValidator provides ECDSA-based TEE verification. ResourcePrediction.sol implements USDC-denominated prediction markets with oracle resolution.
 

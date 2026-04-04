@@ -1,6 +1,5 @@
 import { Page } from '@/components/PageLayout';
 import { AuthButton } from '../components/AuthButton';
-import { Globe, Zap, CircleDollarSign } from 'lucide-react';
 import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
@@ -18,34 +17,11 @@ export default function Home() {
             priority
           />
           <p className="text-sm text-secondary text-center max-w-[280px]">
-            Discover, verify, and trade any resource — human skills, GPU compute, AI agents.
+            Discover, verify, and trade any resource — human skills, GPU compute, AI agents, physical infrastructure.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 animate-fade-in" style={{ animationDelay: '150ms' }}>
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-chain-hedera/10 flex items-center justify-center">
-              <Globe className="w-5 h-5 text-chain-hedera" />
-            </div>
-            <span className="text-xs text-secondary">Trust</span>
-          </div>
-          <div className="w-6 h-px bg-border-card" />
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-chain-hedera/10 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-chain-hedera" />
-            </div>
-            <span className="text-xs text-secondary">Verify</span>
-          </div>
-          <div className="w-6 h-px bg-border-card" />
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-chain-hedera/10 flex items-center justify-center">
-              <CircleDollarSign className="w-5 h-5 text-chain-hedera" />
-            </div>
-            <span className="text-xs text-secondary">Settle</span>
-          </div>
-        </div>
-
-        <div className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
           <AuthButton />
         </div>
       </Page.Main>
