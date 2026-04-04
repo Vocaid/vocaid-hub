@@ -66,14 +66,16 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 **Say:** *"World ID gates everything. Verified. Now I can access resources."*
 
-### 0:45-1:05 — Agent Fleet (Profile Page)
+### 0:45-1:05 — Fleet Deployment + Proposals (Profile Page)
 
 **Action sequence:**
-1. Click "Profile" or "My" tab in navigation
-2. Show 4 agent cards: Seer, Edge, Shield, Lens
-3. Point out "AgentKit ✓" and "ERC-8004 ID" on each card
+1. Click "Profile" tab in navigation
+2. Show "Trading Fleet" section — 4 roles (Seer/Edge/Shield/Lens) with deploy buttons
+3. Click deploy on one if not already deployed — show success
+4. Show "My Agent Fleet" cards with "AgentKit" and "ERC-8004 ID" badges
+5. Show ProposalQueue — Edge proposed a bet, click approve
 
-**Say:** *"Four AI agents. Each registered via AgentKit with on-chain ERC-8004 identity. All linked to my World ID."*
+**Say:** *"My trading fleet — four agents deployed on ERC-8004 via AgentKit. Each linked to my World ID. Edge proposes a trade from Seer's signal — I approve on-chain."*
 
 ### 1:05-2:05 — GPU Verification (KEY MOMENT — 60 seconds)
 
@@ -94,12 +96,13 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 **Action sequence:**
 1. Switch back to Tab 1
-2. Click "Marketplace" tab (or Home)
-3. Show filter tabs: All / GPU / Agent / Human
-4. Click through filters
+2. Click "Market" tab
+3. Show filter tabs: All / GPU / Agent / Human / DePIN
+4. Click through filters — show Tesla Fleet, GridPulse Energy under DePIN
 5. Show ResourceCards with chain badges and reputation bars
+6. Tap "Hire" on a resource — show x402 USDC payment confirmation
 
-**Say:** *"Humans, GPUs, and agents — one marketplace. All verified. All rated. Filter by type, sort by quality or cost."*
+**Say:** *"All verified resources in one marketplace — GPUs, agents, human skills, even a Tesla fleet. Hire with x402 USDC on Hedera — $0.0001 gas."*
 
 ### 2:25-2:45 — Prediction Market
 

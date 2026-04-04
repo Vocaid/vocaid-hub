@@ -75,13 +75,11 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 | Time | Action | Say |
 |------|--------|-----|
 | 0:00 | Tap "Verify with World ID" | *"Everything starts with World ID. No verification, no access."* |
-| 0:25 | Show agent fleet on Profile tab | *"Four AI agents, each registered via AgentKit with on-chain ERC-8004 identity."* |
-| 0:55 | Resources tab → Register → GPU 3-step stepper | *"GPU provider connects, we verify TEE attestation on-chain, register on ERC-8004. This tool doesn't exist in 0G's ecosystem."* |
-| 1:30 | Resources tab → Trading Desk → run 5-step pipeline | *"Now watch the agent pipeline. Shield validates TEE. Lens indexes the ecosystem. Seer ranks by reputation signals. Edge settles the lease."* |
-| 2:10 | Marketplace tab — show all resource types (GPU, Agent, Human, DePIN) | *"Humans, GPUs, agents, and physical infrastructure — one marketplace, one protocol."* |
-| 2:25 | Predictions tab — signal ticker + place bet | *"Will H100 inference cost drop next week? The market decides. USDC on Hedera."* |
-| 2:45 | Tap "Hire" on a resource — show payment + post-hire rating | *"Five cents, $0.0001 gas, sub-second settlement via x402 on Hedera. After hiring, users rate quality — closing the feedback loop."* |
-| 3:05 | Profile tab — show fleet deployment + ProposalQueue | *"My trading fleet — four agents deployed on ERC-8004. Edge proposes a bet based on Seer's signal. Owner approves — on-chain governance."* |
+| 0:25 | Profile → deploy fleet + approve proposal | *"Four agents deployed on ERC-8004 via AgentKit. Edge proposes a trade — owner approves on-chain."* |
+| 0:55 | Resources → GPU 3-step registration | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem."* |
+| 1:55 | Market → browse all types, hire a resource | *"All verified resources in one marketplace. Hire with x402 USDC on Hedera — $0.0001 gas."* |
+| 2:25 | Predictions → signal ticker + place bet | *"Resource pricing prediction markets. Will H100 cost drop? The market decides."* |
+| 2:45 | Block explorer → show 0G contracts + Hedera HCS | *"Real contracts on 0G Chain. Immutable audit trail on Hedera. Three chains, each doing what it does best."* |
 
 ### Slide 8: Close (10 seconds)
 
