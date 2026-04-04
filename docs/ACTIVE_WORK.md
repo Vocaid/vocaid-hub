@@ -67,6 +67,7 @@
 | 5 | SignalTicker + ActivityFeed relocation to Predict page | `src/components/SignalTicker.tsx` (new), `src/components/ActivityFeed.tsx`, `src/app/(protected)/predictions/predictions-content.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, `src/app/api/activity/route.ts`, `src/app/globals.css` | done | 2026-04-05T02:00Z | 2026-04-05T03:00Z |
 | 5 | Contract address updates across 10 docs | `SUBMISSION.md`, `docs/SUBMISSION_CONTENT.md`, `scripts/demo-flow.md`, 4 plan files, `agents/skills/prediction.md`, test file | done | 2026-04-05T01:30Z | 2026-04-05T02:00Z |
 | — | Resources page refactor: Trading Desk tab + agent pipeline + multi-type decision | `src/app/(protected)/gpu-verify/GPUVerifyTabs.tsx`, `src/components/TradingDesk.tsx` (new), `src/app/(protected)/agent-decision/agent-decision-content.tsx` | done | 2026-04-05T03:00Z | 2026-04-05T03:30Z |
+| 5 | P-087/088: Agent Prediction Gateway + Post-Hire Rating loop | `contracts/0g/AgentProposalRegistry.sol` (new), `src/app/api/proposals/route.ts` (new), `src/components/ProposalQueue.tsx` (new), `src/components/PostHireRating.tsx` (new), `profile-content.tsx`, `marketplace-content.tsx`, `.env.local`, `.env.example`, `README.md` | done | 2026-04-05T04:00Z | 2026-04-05T05:00Z |
 
 ---
 

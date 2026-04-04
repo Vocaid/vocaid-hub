@@ -116,17 +116,42 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
         decoded = 'Audit entry';
       }
 
-      // Parse trade events from HCS
+      // Parse structured events from HCS
       let type: ActivityItem['type'] = 'verification';
       let agent = 'System';
       let action = 'logged';
+      let value: string | undefined;
       try {
         const parsed = JSON.parse(decoded);
-        if (parsed.event === 'edge_trade' || parsed.type === 'edge_trade') {
+
+        // Skip seed/demo metadata messages
+        if (parsed.event === 'demo_seed_complete' || parsed.type === 'seed_complete' || parsed.event === 'seed') {
+          type = 'verification';
+          agent = 'Vocaid';
+          action = 'initialized';
+          decoded = `On-chain state provisioned — ${parsed.agents || 6} identities, ${parsed.markets || 2} markets`;
+          value = parsed.txCount ? `${parsed.txCount} txs` : undefined;
+        } else if (parsed.event === 'edge_trade' || parsed.type === 'edge_trade') {
           type = 'trade';
           agent = 'Edge';
           action = `bet ${parsed.side?.toUpperCase() || 'YES'}`;
           decoded = `Market #${parsed.marketId ?? '?'} — ${parsed.amount || '0.01'} A0GI`;
+          value = `${parsed.amount || '0.01'} A0GI`;
+        } else if (parsed.type === 'credential_minted') {
+          type = 'verification';
+          agent = 'Vocaid';
+          action = 'minted VCRED';
+          decoded = `Credential for ${parsed.address?.slice(0, 10) || 'user'}...`;
+          value = `#${parsed.serials?.[0] || '?'}`;
+        } else if (parsed.event === 'market_resolved') {
+          type = 'prediction';
+          agent = 'Oracle';
+          action = `resolved ${parsed.outcome?.toUpperCase() || '?'}`;
+          decoded = parsed.question?.slice(0, 50) || `Market #${parsed.marketId}`;
+          value = parsed.totalPool ? `${(Number(parsed.totalPool) / 1e18).toFixed(3)} A0GI` : undefined;
+        } else {
+          // Generic structured message
+          decoded = parsed.event || parsed.type || decoded.slice(0, 60);
         }
       } catch { /* not JSON, keep defaults */ }
 
@@ -136,6 +161,7 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
         agent,
         action,
         detail: decoded.slice(0, 60),
+        value,
         chain: 'hedera' as const,
         timestamp: new Date(msg.consensus_timestamp.replace('.', '').slice(0, 13)).getTime() || Date.now() - i * 120000,
       };

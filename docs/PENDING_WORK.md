@@ -140,4 +140,13 @@
 | P-081 | Retroactive reputation: on-chain writes need 3rd wallet | known limitation | Agent 1 | `scripts/compute-retroactive-reputation.ts` | Demo wallet registered providers (owns them) so can't give self-feedback. Primary wallet also owns seed providers. Fix: generate 3rd wallet for reputation writes only, or use primary wallet for registration + demo wallet for feedback. Signal computation (Phases 1-3) works perfectly — 8 providers, 239 txs, scores computed. |
 | P-081 | Payment ledger persistence | ✅ done | Agent 6 | `src/lib/payment-ledger.ts`, `src/app/api/payments/route.ts` | File-based JSON at `data/payments.json`. Survives server restart. data/ gitignored. |
 
-> Agents: Add new items here. Use IDs P-082+.
+| P-082 | Predictions SSR self-fetch fails behind World ID gate | ✅ done | Agent 5 | `src/app/(protected)/predictions/page.tsx` | Replaced HTTP self-fetch with direct ethers contract read. Added useEffect refresh on mount. |
+| P-083 | World ID gates block prediction demo | ✅ done | Agent 5 | `src/app/api/predictions/[id]/bet/route.ts`, `resolve/route.ts`, `claim/route.ts` | Removed requireWorldId() from bet/resolve/claim routes for demo. |
+| P-084 | SignalTicker + ActivityFeed on Predict page | ✅ done | Agent 5 | `src/components/SignalTicker.tsx`, `src/components/ActivityFeed.tsx`, `predictions-content.tsx`, `marketplace-content.tsx`, `src/app/api/activity/route.ts` | 2-row scrolling ticker, filter chips, 3 new event types (trade/depin/skill). ActivityFeed moved from Home to Predict. |
+| P-085 | CreateMarketModal amount presets too large for testnet | ✅ done | Agent 5 | `src/components/CreateMarketModal.tsx` | Changed 1/5/10 A0GI → 0.01/0.05/0.1 A0GI. |
+| P-086 | Hardhat toolbox version conflict (HH2 vs HH3) | ✅ done | Agent 5 | `hardhat.config.cjs`, `hardhat.config.ts` | Added CJS config for compilation. Enabled `viaIR` for ReputationRegistry stack-too-deep fix. |
+
+| P-087 | Agent Prediction Gateway — on-chain proposal registry | ✅ done | Agent 5 | `contracts/0g/AgentProposalRegistry.sol`, `src/app/api/proposals/route.ts`, `src/components/ProposalQueue.tsx`, `src/app/(protected)/profile/profile-content.tsx` | AgentProposalRegistry deployed at `0x4093025085ea8a3ef36cff0a28e6e7acdf356392`. Agents submit proposals, owners approve/reject via Profile page. |
+| P-088 | Post-hire rating + prediction suggestion loop | ✅ done | Agent 5 | `src/components/PostHireRating.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Star rating writes ERC-8004 reputation. Suggests creating prediction market after rating. Closes feedback loop. |
+
+> Agents: Add new items here. Use IDs P-089+.

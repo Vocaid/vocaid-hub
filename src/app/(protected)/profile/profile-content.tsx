@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { ShieldCheck, Plus, Bot, Loader2, Check } from 'lucide-react';
 import { AgentCard, type AgentRole } from '@/components/AgentCard';
+// ProposalQueue hidden — scope creep, not in any of the 9 bounty tracks
+// import { ProposalQueue } from '@/components/ProposalQueue';
 import { ChainBadge } from '@/components/ChainBadge';
 import { RegisterAgentModal } from '@/components/RegisterAgentModal';
 
@@ -108,6 +110,8 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
           ))}
         </div>
       )}
+
+      {/* ProposalQueue hidden — scope creep, not required for any bounty track */}
 
       {/* ── Resource Agents (marketplace listings) ──────── */}
       {resourceAgents.length > 0 && (

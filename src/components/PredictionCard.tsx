@@ -312,39 +312,57 @@ export function PredictionCard({
           )}
 
           {/* Oracle controls */}
-          {isOracle && onResolve && (
-            <div className="border-t border-border-card pt-3 mt-1 animate-scale-in">
-              <span className="text-xs text-secondary uppercase tracking-wide">
-                Oracle Controls
-              </span>
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => handleResolve('yes')}
-                  disabled={resolveLoading !== null}
-                  className="flex-1 min-h-[44px] rounded-lg bg-status-verified/10 text-status-verified border border-status-verified/30 font-semibold text-sm flex items-center justify-center gap-2"
-                >
-                  {resolveLoading === 'yes' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Check className="w-4 h-4" />
+          {isOracle && onResolve && (() => {
+            const canResolve = Math.floor(Date.now() / 1000) >= market.resolutionTime;
+            return (
+              <div className="border-t border-border-card pt-3 mt-1 animate-scale-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-secondary uppercase tracking-wide">
+                    Oracle Controls
+                  </span>
+                  {!canResolve && (
+                    <span className="text-[10px] text-secondary/60">
+                      Resolves {formatDate(market.resolutionTime)}
+                    </span>
                   )}
-                  Resolve YES
-                </button>
-                <button
-                  onClick={() => handleResolve('no')}
-                  disabled={resolveLoading !== null}
-                  className="flex-1 min-h-[44px] rounded-lg bg-primary/10 text-primary border border-status-failed/30 font-semibold text-sm flex items-center justify-center gap-2"
-                >
-                  {resolveLoading === 'no' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <X className="w-4 h-4" />
-                  )}
-                  Resolve NO
-                </button>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleResolve('yes')}
+                    disabled={!canResolve || resolveLoading !== null}
+                    className={`flex-1 min-h-[44px] rounded-lg border font-semibold text-sm flex items-center justify-center gap-2 ${
+                      canResolve
+                        ? 'bg-status-verified/10 text-status-verified border-status-verified/30'
+                        : 'bg-surface text-secondary/40 border-border-card cursor-not-allowed'
+                    }`}
+                  >
+                    {resolveLoading === 'yes' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    Resolve YES
+                  </button>
+                  <button
+                    onClick={() => handleResolve('no')}
+                    disabled={!canResolve || resolveLoading !== null}
+                    className={`flex-1 min-h-[44px] rounded-lg border font-semibold text-sm flex items-center justify-center gap-2 ${
+                      canResolve
+                        ? 'bg-primary/10 text-primary border-status-failed/30'
+                        : 'bg-surface text-secondary/40 border-border-card cursor-not-allowed'
+                    }`}
+                  >
+                    {resolveLoading === 'no' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <X className="w-4 h-4" />
+                    )}
+                    Resolve NO
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </>
       )}
 

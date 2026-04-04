@@ -66,18 +66,7 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 **Say:** *"World ID gates everything. Verified. Now I can access resources."*
 
-### 0:45-1:05 — Fleet Deployment + Proposals (Profile Page)
-
-**Action sequence:**
-1. Click "Profile" tab in navigation
-2. Show "Trading Fleet" section — 4 roles (Seer/Edge/Shield/Lens) with deploy buttons
-3. Click deploy on one if not already deployed — show success
-4. Show "My Agent Fleet" cards with "AgentKit" and "ERC-8004 ID" badges
-5. Show ProposalQueue — Edge proposed a bet, click approve
-
-**Say:** *"My trading fleet — four agents deployed on ERC-8004 via AgentKit. Each linked to my World ID. Edge proposes a trade from Seer's signal — I approve on-chain."*
-
-### 1:05-2:05 — GPU Verification (KEY MOMENT — 60 seconds)
+### 0:45-1:45 — GPU Verification (KEY MOMENT — 60 seconds)
 
 **Action sequence:**
 1. Click "Resources" or "GPU" tab
