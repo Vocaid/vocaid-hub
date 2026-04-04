@@ -285,16 +285,16 @@ All agents deploy contracts and set up infrastructure. Zero file overlap.
 - [x] Hedera HTS token (VCRED `0.0.8499633`) + HCS topic (`0.0.8499635`) created
 - [x] OpenClaw gateway config with 4 agents + security hardening applied
 
-### Wave 2 — 5/6 Complete
+### Wave 2 — 6/6 Complete
 
 - [x] GPU provider registration creates ERC-8004 identity NFT on 0G
 - [x] TEE attestation submitted (MockTEEValidator signature-based)
 - [x] World ID blocks unverified users from all resource access
 - [x] 4 agents registered via AgentKit with ERC-8004 identities
 - [x] Marketplace shows GPU providers + agents in unified view
-- [~] 0G inference call — broker SDK wired (`og-compute.ts`) but Seer agent doesn't execute autonomously (P-060)
+- [x] 0G inference call — broker SDK wired (`og-compute.ts`), Seer agent inference via `/api/seer/inference` (P-060)
 
-### Wave 3 — 4/5 Complete
+### Wave 3 — 5/5 Complete
 
 - [x] Agent pays USDC via x402 Blocky402 (x402-middleware.ts + /api/payments)
 - [x] Prediction market created with bets placed (seed-demo-data.ts creates 3 markets)
@@ -302,7 +302,7 @@ All agents deploy contracts and set up infrastructure. Zero file overlap.
 - [x] Shield blocks allocation to unverified providers (P-057 — ValidationRegistry check in /api/resources)
 - [x] x402 402 response returned for unpaid resource queries
 
-### Wave 4 — 3/5 Complete
+### Wave 4 — 4/5 Complete
 
 - [x] Demo flow seed data script complete (`scripts/seed-demo-data.ts`)
 - [x] README + SUBMISSION.md + AI_ATTRIBUTION.md all written

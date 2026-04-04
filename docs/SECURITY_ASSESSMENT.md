@@ -162,7 +162,7 @@ These are accepted risks for a 48-hour hackathon with testnet tokens:
 | **Graceful Shutdown** | `server/index.ts` | SIGTERM handler — drains connections before exit |
 | **Chain Clients** | `server/clients.ts` | Singleton ethers/viem client factories — reused across requests |
 
-All utilities tested with vitest (34 tests across 4 test files in `server/__tests__/`).
+All utilities tested with vitest (125 tests across 12 test files).
 
 ---
 
