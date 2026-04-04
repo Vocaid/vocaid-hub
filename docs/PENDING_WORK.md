@@ -1,7 +1,7 @@
 # Pending Work — Gap Tracker for Agent Coordination
 
 **Purpose:** Structured list of all known gaps, missing files, and incomplete features — prioritized by submission impact.
-**Last Audited:** 2026-04-04T10:00Z
+**Last Audited:** 2026-04-04T12:00Z
 **Cross-Reference:** [`ACTIVE_WORK.md`](ACTIVE_WORK.md) for current ownership claims and file locks.
 
 > **🤖 AGENTS:** This file is your task board. Do NOT start work without checking [`ACTIVE_WORK.md`](ACTIVE_WORK.md) first.
@@ -74,8 +74,9 @@
 | P-059 | MiniKit.pay() never called | ✅ done | Agent 7 | World MiniKit $4k | `src/app/(protected)/home/marketplace-content.tsx` | MiniKit.pay() wired with x402 fallback, loading spinner, error toast |
 | P-060 | Seer never runs 0G Compute inference | unclaimed | — | 0G OpenClaw $6k | `src/lib/og-compute.ts`, `agents/.agents/seer/soul.md` | Needs live 0G provider + funded broker. Hard without testnet. |
 | P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
-| P-062 | No agent-to-agent messaging | unclaimed | — | World AgentKit $8k | `agents/openclaw.json` | Add demo script exercising Seer→Edge signal relay. ~45 min. |
+| P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
+| P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | open | — | World ID $8k | `src/app/api/verify-proof/route.ts` | Action exists in Developer Portal (World ID 4.0) but v2 verify endpoint rejects it. Blocks: CredentialGate registration + VCRED mint. IDKit may work natively in World App. Investigate: v4 API endpoint or staging env. |
 
 ---
 
@@ -92,7 +93,7 @@
 | P-046 | Edge soul.md Arc references | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed |
 | P-047 | Unused scaffold SVGs | ✅ done | Agent 9 | `public/*.svg` | Deleted |
 | P-048 | TECHNOLOGY_RESEARCH Arc references | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Fixed |
-| P-049 | 0G Galileo testnet SSL timeout | mitigated | Agent 5 | `src/app/api/gpu/*` | Demo fallbacks in place |
+| P-049 | 0G Galileo testnet SSL timeout | ✅ resolved | Agent 8 | `~/.zshrc` | Root cause: Anaconda curl uses OpenSSL 3.0.x with broken chain-building. Node.js/viem/ethers all work fine. Fix: `alias curl=/usr/bin/curl` in .zshrc. Testnet fully operational. |
 | P-050 | GPU stepper e2e fallback | ✅ done | Agent 5 | `src/components/GPUStepper.tsx` | Verified |
 | P-051 | `/api/resources` self-fetch hits World ID gate | ✅ done | Agent 5 | `src/app/api/resources/route.ts` | Replaced HTTP self-fetch with direct imports (listProviders, listRegisteredAgents, getRegisteredProviders) |
 | P-052 | GPUProviderRegistry != Broker listing source | ✅ done | Agent 5 | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | Added getRegisteredProviders() to read on-chain registry; resources route merges broker + on-chain data |
@@ -123,4 +124,9 @@
 | P-066 | Brand logo assets untracked in git (broke production) | done | Agent 2 | `public/app-logo.png`, `public/compact-logo.png`, `public/white-favicon.png` | Files existed locally but never git added. |
 | P-067 | Landing page used 3 chain colors (spec requires purple-only) | done | Agent 2 | `src/app/page.tsx` | All 3 chain icon circles changed to chain-hedera (brand purple). |
 
-> Agents: Add new items here. Use IDs P-068+.
+| P-068 | PRIVATE_KEY in .env.local didn't match deployer wallet | ✅ done | Agent 8 | `.env.local` | Agents set a different key during dev. Fixed: restored deployer key (0x58c4...) for seed script. |
+| P-069 | ReputationRegistry self-feedback blocks demo seeding | known-limitation | — | `contracts/0g/ReputationRegistryUpgradeable.sol` | Deployer owns all identities, cannot giveFeedback to self. Mock fallback data in API routes provides scores. Would need 2nd wallet for on-chain reputation. |
+| P-070 | GPUProviderRegistry 1-provider-per-wallet limit | known-limitation | — | `contracts/0g/GPUProviderRegistry.sol` | Only GPU-Alpha registered. GPU-Beta skipped. Would need 2nd wallet address. |
+| P-072 | agents/register 500s on malformed address (no input validation) | unclaimed | — | `src/app/api/agents/register/route.ts` | `isVerifiedOnChain()` throws InvalidAddress instead of returning 400. Low priority — only affects bad input. |
+
+> Agents: Add new items here. Use IDs P-073+.
