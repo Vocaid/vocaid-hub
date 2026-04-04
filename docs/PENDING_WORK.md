@@ -72,9 +72,9 @@
 | P-040 | Edge agent card references "Arc network" | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed to reference Hedera |
 | P-041 | AgentCard.tsx used hardcoded dark theme colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Replaced gray-800/900, blue-400 etc with design system tokens |
 | P-042 | AuthButton error text used hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Changed to text-status-failed |
-| P-043 | predictions/claim and predictions/resolve have no World ID gating | unclaimed | — | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Anyone can resolve markets or claim winnings without verification |
-| P-044 | /api/agents/register has no UI caller | unclaimed | — | `src/app/api/agents/register/route.ts` | Orphaned endpoint — functional but not wired to any frontend component |
-| P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | unclaimed | — | `src/app/api/rp-signature/route.ts`, `.env.local` | World ID 4.0 IDKit verification flow requires RP signing key |
+| P-043 | predictions/claim and predictions/resolve have no World ID gating | ✅ done | Agent 1 | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Added requireWorldId() to both endpoints |
+| P-044 | /api/agents/register has no UI caller | ✅ done | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Added "Register New Agent" button on profile page |
+| P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | ✅ done | Agent 1 | `.env.local` | Set RP_SIGNING_KEY from WORLD_ID_PRIVATE_KEY |
 | P-046 | Edge soul.md references "Arc Testnet" + "Circle x402" | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed: Arc→Hedera, Circle→Blocky402 (3 lines) |
 | P-047 | 5 unused scaffold SVGs in public/ | ✅ done | Agent 9 | `public/*.svg` | Deleted next.svg, vercel.svg, file.svg, globe.svg, window.svg |
 | P-048 | TECHNOLOGY_RESEARCH.md references "Arc Testnet" | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Removed Arc Testnet from ERC-8004 deployment list |
