@@ -102,47 +102,57 @@
 ┌─────────────────────────┐
 │  Vocaid Hub    [🌐 ✓]  │
 ├─────────────────────────┤
-│ [Marketplace] GPU  Pred  My│
+│ [Market] GPU  Pred  Profile│
 ├─────────────────────────┤
+│                         │
+│  ┌─ Seer Agent ────────┐│
+│  │ [Eye] Seer Agent     ││
+│  │ Ranking by signals   ││
+│  │                      ││
+│  │ Type: All GPU Agent..││
+│  │ Signal: Quality Cost.││
+│  │                      ││
+│  │ [Run Seer Decision]  ││
+│  │ O Discover            ││
+│  │ O Rank                ││
+│  │ O Verify              ││
+│  │ O Select              ││
+│  └──────────────────────┘│
+│                         │
 │  ┌─ Filter ────────────┐│
-│  │ All │ GPU │ Agent │ Human││
-│  └─────────────────────┘│
+│  │All│GPU│Agent│Human│DePIN││
+│  └──────────────────────┘│
 │                         │
 │  ┌───────────────────┐  │
-│  │ 🖥️ GPU-Alpha      │  │
+│  │ GPU-Alpha          │  │
 │  │ H100 · 0G Verified │  │
 │  │ ████████░░ 82/100  │  │
 │  │ [Hire $0.05/call]  │  │
 │  └───────────────────┘  │
 │                         │
 │  ┌───────────────────┐  │
-│  │ 🤖 Seer Agent      │  │
-│  │ Signal Analysis    │  │
-│  │ ████████████ 95/100│  │
-│  │ World ID ✓ AgentKit✓│  │
-│  └───────────────────┘  │
-│                         │
-│  ┌───────────────────┐  │
-│  │ 👤 Maria (Rust)    │  │
-│  │ Skill: L4 Verified │  │
+│  │ Maria (Rust L4)    │  │
 │  │ ███████░░░ 78/100  │  │
 │  │ [Hire $25/hr]      │  │
 │  └───────────────────┘  │
 └─────────────────────────┘
 ```
 
-**Demo step 4 (30s):** Show unified marketplace with all resource types. Tap filter tabs. Point out chain badges and reputation bars.
+**Layout:** Seer Agent panel is **always visible** at the top (not collapsible). Users select resource type + signal, then run the 4-step decision engine (Discover → Rank → Verify → Select). Below the Seer panel: filter tabs + resource cards. Only World ID verified agents appear in the marketplace.
+
+**Demo step 4 (30s):** Show Seer panel with signal selector. Tap "Run Seer Decision" — show 4-step auto-play. Point out resource type and signal filters. Switch marketplace filter tabs.
 
 **Architecture calls:**
-1. `GET /api/gpu` → reads `GPUProviderRegistry.getProviderByIndex()` on 0G Chain
-2. `GET /api/agents` → reads `IdentityRegistry` for registered agents
-3. `ReputationRegistry.getSummary(agentId, [], "quality", "")` → reputation scores
+1. `GET /api/resources` → merges agents (IdentityRegistry) + GPUs (broker + GPUProviderRegistry) + humans (mock)
+2. `GET /api/agent-decision` → Seer decision engine data (providers + scoring + reasoning)
+3. `ReputationRegistry.getSummary(agentId, [], tag1, tag2)` → per-provider reputation
 
 **UX critical path:**
-- Filter tabs must respond instantly (client-side filtering, data pre-fetched)
-- ResourceCard component reused across all types (same layout, different badge color)
-- Skeleton loading cards during data fetch
-- "Hire" CTA on each card — triggers payment flow
+- Seer panel always visible — resource type + signal selectors on page load
+- Filter tabs respond instantly (client-side, data pre-fetched via ISR 30s)
+- ResourceCard reused across all 4 types (GPU, Agent, Human, DePIN)
+- Only verified agents shown (unverified filtered out in `/api/resources`)
+- "Hire" CTA triggers MiniKit.pay() with x402 fallback
 
 ---
 

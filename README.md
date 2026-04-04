@@ -260,7 +260,7 @@ vocaid-hub/
 │   │   ├── layout.tsx          # Root layout + MiniKit provider
 │   │   ├── page.tsx            # Landing page
 │   │   ├── (protected)/        # Auth-gated routes (World ID required)
-│   │   │   ├── home/           # Marketplace (ISR 30s) — page, loading, error
+│   │   │   ├── home/           # Marketplace (ISR 30s) — Seer panel + resource cards
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
@@ -298,6 +298,7 @@ vocaid-hub/
 │   │   ├── RegisterAgentModal.tsx # Agent registration with role selector
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card
+│   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization
 │   │   └── Navigation/         # Bottom tab navigation
 │   ├── auth/                   # NextAuth configuration
 │   └── providers/              # React context providers

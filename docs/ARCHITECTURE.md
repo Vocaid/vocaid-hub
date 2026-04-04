@@ -137,6 +137,9 @@ vocaid-hub/
 │   ├── ReputationBar.tsx      # ERC-8004 reputation score bar
 │   ├── ResourceCard.tsx       # Resource listing card with chain badge
 │   ├── ResourceCardSkeleton.tsx # Loading skeleton for ResourceCard
+│   ├── SignalTicker.tsx       # 2-row auto-scrolling market signal ticker
+│   ├── ActivityFeed.tsx       # Live activity feed with filter chips
+│   ├── TradingDesk.tsx        # 5-step agent pipeline visualization (Register→Shield→Lens→Seer→Edge)
 │   ├── VerificationStatus.tsx # TEE/World ID verification badge
 │   └── Verify/               # MiniKit verify command wrapper
 │
