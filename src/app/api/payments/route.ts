@@ -3,6 +3,7 @@ import { requireWorldId } from "@/lib/world-id";
 import { verifyPayment, settlePayment } from "@/lib/blocky402";
 import { logAuditMessage } from "@/lib/hedera";
 import { executeAgentAction } from "@/lib/hedera-agent";
+import { giveFeedback } from "@/lib/reputation";
 
 // USDC token on Hedera testnet
 const USDC_TOKEN_ID = process.env.HEDERA_USDC_TOKEN ?? "0.0.429274";
@@ -130,7 +131,34 @@ export async function POST(req: NextRequest) {
     recentPayments.unshift(record);
     if (recentPayments.length > MAX_PAYMENTS) recentPayments.pop();
 
-    // Step 5: Return the paid resource
+    // Step 5: Lens agent writes reputation feedback for the resource provider
+    // Demonstrates AI agent executing on-chain actions (Hedera AI/Agentic track)
+    try {
+      const feedbackResult = await giveFeedback({
+        agentId: 0n,
+        value: 95,
+        tag1: "starred",
+        tag2: "payment-verified",
+        endpoint: "/api/payments",
+        feedbackURI: `hedera:${settlement.txHash}`,
+      });
+
+      if (AUDIT_TOPIC_ID) {
+        logAuditMessage(AUDIT_TOPIC_ID, JSON.stringify({
+          type: "agent_feedback_submitted",
+          agent: "lens",
+          action: "giveFeedback",
+          feedbackTxHash: feedbackResult.txHash,
+          paymentTxHash: settlement.txHash,
+          timestamp: new Date().toISOString(),
+        })).catch(console.error);
+      }
+    } catch (feedbackErr) {
+      // Non-blocking — payment already settled
+      console.error("Lens agent feedback failed:", feedbackErr);
+    }
+
+    // Step 6: Return the paid resource
     return NextResponse.json({
       success: true,
       payment: {
