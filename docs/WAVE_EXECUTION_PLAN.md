@@ -152,7 +152,7 @@ Every agent should read these docs before starting their wave:
 |-------------|-------------|------|-------|-------------|
 | `skills/nanopayments.md` | Agent 9 | W3 | ~30 | Wraps `@hashgraph/sdk` for x402 USDC payments via Blocky402 |
 | `skills/reputation.md` | Agent 11 | W3 | ~40 | Calls `ReputationRegistry.giveFeedback()` with quality/uptime/latency |
-| `skills/prediction.md` | Agent 10 | W3 | ~40 | Calls `ResourcePrediction.createMarket()` and `placeBet()` |
+| `skills/prediction.md` | Agent 10 | W3 | ~40 | Creates HTS-based prediction tokens + HCS market resolution |
 | `skills/0g-storage.md` | Agent 8 | W2 | ~30 | Wraps `0g-ts-sdk` for agent state persistence |
 
 All 4 custom skills written from scratch. Zero ClawHub dependencies. See `OPENCLAW_RISK_ASSESSMENT.md` for security rationale.
@@ -162,10 +162,9 @@ All 4 custom skills written from scratch. Zero ClawHub dependencies. See `OPENCL
 | Library | Version | Used For | Chain | Why This One |
 |---------|---------|----------|-------|-------------|
 | `ethers` | ^6.13.0 | Contract interaction | 0G, World | Native EVM, best 0G docs compatibility |
-| `@hashgraph/sdk` | latest | Hedera operations | Hedera | Official Hedera SDK for HTS, HCS, transfers |
+| `@hashgraph/sdk` | ^2.81.0 | HTS, HCS, transfers, x402 | Hedera | Official Hedera SDK — all Hedera ops, zero Solidity |
 | `@0glabs/0g-serving-broker` | ^0.6.5 | GPU inference | 0G | Foundation-audited, 0g-agent-skills compatible |
 | `@0glabs/0g-ts-sdk` | ^0.3.3 | Storage, chain ops | 0G | Official SDK |
-| `@hashgraph/sdk` | latest | x402 payments, HTS, HCS | Hedera | Official Hedera SDK |
 | `@worldcoin/minikit-js` | ^1.0.0 | World ID + Mini App | World | Official starter kit |
 | `@openzeppelin/contracts` | ^5.0.0 | Solidity base | All | Industry standard |
 | Tailwind CSS | ^4.0.0 | Styling | Frontend | MiniKit template default. No component library — keeps bundle small |
@@ -271,6 +270,55 @@ All agents deploy contracts and set up infrastructure. Zero file overlap.
 - [ ] Video recorded: <3 min (0G), <5 min (World/Hedera)
 - [ ] README has working setup instructions
 - [ ] SUBMISSION.md covers all 7 bounty tracks with evidence
+
+---
+
+## Wave Verification Status (Audited 2026-04-04T10:00Z)
+
+### Wave 1 — All Complete
+
+- [x] `npm install` succeeds
+- [x] `npm run dev` starts Mini App on :3000
+- [x] ERC-8004 contracts deployed on 0G Galileo (6 contracts in `deployments/0g-galileo.json`)
+- [x] MockTEEValidator deployed (DCAP infeasible on Apple Silicon — expected fallback)
+- [x] CredentialGate deployed on World Chain Sepolia (`0x0AD24...`)
+- [x] Hedera HTS token (VCRED `0.0.8499633`) + HCS topic (`0.0.8499635`) created
+- [x] OpenClaw gateway config with 4 agents + security hardening applied
+
+### Wave 2 — 5/6 Complete
+
+- [x] GPU provider registration creates ERC-8004 identity NFT on 0G
+- [x] TEE attestation submitted (MockTEEValidator signature-based)
+- [x] World ID blocks unverified users from all resource access
+- [x] 4 agents registered via AgentKit with ERC-8004 identities
+- [x] Marketplace shows GPU providers + agents in unified view
+- [~] 0G inference call — broker SDK wired (`og-compute.ts`) but Seer agent doesn't execute autonomously (P-060)
+
+### Wave 3 — 4/5 Complete
+
+- [x] Agent pays USDC via x402 Blocky402 (x402-middleware.ts + /api/payments)
+- [x] Prediction market created with bets placed (seed-demo-data.ts creates 3 markets)
+- [x] Reputation scores visible on GPU provider cards (ReputationBar component)
+- [x] Shield blocks allocation to unverified providers (P-057 — ValidationRegistry check in /api/resources)
+- [x] x402 402 response returned for unpaid resource queries
+
+### Wave 4 — 3/5 Complete
+
+- [x] Demo flow seed data script complete (`scripts/seed-demo-data.ts`)
+- [x] README + SUBMISSION.md + AI_ATTRIBUTION.md all written
+- [x] Loading skeletons + error boundaries + stagger animations on all routes
+- [ ] MiniKit `pay` command not wired — uses x402 headers instead (P-059)
+- [ ] Demo video not recorded (P-063)
+
+### Unplanned Gaps (Agent Autonomy Layer)
+
+Agents exist as OpenClaw configs (soul.md + skills). Most gaps now addressed:
+- P-058: Lens writes `giveFeedback()` — DONE (Agent 3, auto-writes after payment)
+- P-062: Agent-to-agent messaging — DONE (Agent 6, `scripts/demo-agent-fleet.ts` exercises Seer→Edge→Shield→Lens relay)
+- P-060: Seer 0G Compute inference — needs live 0G provider (testnet SSL issues)
+- P-061: Edge trade execution — needs OpenClaw Gateway running
+
+See `docs/PENDING_WORK.md` for full gap list with bounty impact.
 
 ---
 

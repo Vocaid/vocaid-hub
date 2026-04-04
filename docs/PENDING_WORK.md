@@ -73,7 +73,7 @@
 | P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
 | P-059 | MiniKit.pay() never called | ✅ done | Agent 7 | World MiniKit $4k | `src/app/(protected)/home/marketplace-content.tsx` | MiniKit.pay() wired with x402 fallback, loading spinner, error toast |
 | P-060 | Seer never runs 0G Compute inference | ✅ done | Agent 4 | 0G OpenClaw $6k | `src/app/api/seer/inference/route.ts` | API route calls listProviders() + callInference() from SDK. Falls back to mock when testnet empty. Logs to Hedera HCS. |
-| P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
+| P-061 | Edge never executes trades | ✅ done | Agent 6 | 0G OpenClaw $6k | `src/app/api/edge/trade/route.ts` | API route: Shield clearance → placeBet() → HCS audit. Demo fallback when testnet unreachable. Fleet script calls it. |
 | P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
 | P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | ✅ done | Agent 3 | World ID $8k | `src/app/api/verify-proof/route.ts` | Fixed: switched to v4 endpoint (`api/v4/verify/{rp_id}`). Action now recognized. |
@@ -97,7 +97,6 @@
 | P-050 | GPU stepper e2e fallback | ✅ done | Agent 5 | `src/components/GPUStepper.tsx` | Verified |
 | P-051 | `/api/resources` self-fetch hits World ID gate | ✅ done | Agent 5 | `src/app/api/resources/route.ts` | Replaced HTTP self-fetch with direct imports (listProviders, listRegisteredAgents, getRegisteredProviders) |
 | P-052 | GPUProviderRegistry != Broker listing source | ✅ done | Agent 5 | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | Added getRegisteredProviders() to read on-chain registry; resources route merges broker + on-chain data |
-| P-054 | Demo video not recorded | unclaimed | — | — | Wave 4 deliverable. Manual recording needed. |
 
 ---
 
