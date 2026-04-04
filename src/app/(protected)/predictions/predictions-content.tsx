@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { PredictionCard, type PredictionMarket } from '@/components/PredictionCard';
 import { CreateMarketModal } from '@/components/CreateMarketModal';
+import { SignalTicker, type TickerItem } from '@/components/SignalTicker';
+import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -12,18 +14,51 @@ interface PredictionsContentProps {
 export function PredictionsContent({ initialMarkets }: PredictionsContentProps) {
   const [markets, setMarkets] = useState(initialMarkets);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
 
-  // Refresh from API on mount (SSR may have returned stale/empty data)
-  useEffect(() => {
-    refreshMarkets();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function refreshMarkets() {
+  const refreshMarkets = useCallback(async () => {
     try {
       const res = await fetch('/api/predictions');
       if (res.ok) setMarkets(await res.json());
     } catch { /* ISR will catch up */ }
-  }
+  }, []);
+
+  const fetchActivity = useCallback(async () => {
+    try {
+      const res = await fetch('/api/activity');
+      if (res.ok) {
+        const data = await res.json();
+        setActivityItems(data.activities || []);
+      }
+    } catch { /* fallback handled by ActivityFeed */ }
+  }, []);
+
+  // Refresh markets + activity on mount and periodically
+  useEffect(() => {
+    refreshMarkets();
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 15000);
+    return () => clearInterval(interval);
+  }, [refreshMarkets, fetchActivity]);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Ticker gets top 8 items
+  const tickerItems: TickerItem[] = activityItems.slice(0, 8).map((a) => ({
+    id: a.id,
+    type: a.type,
+    agent: a.agent,
+    action: a.action,
+    detail: a.detail,
+    value: a.value,
+    txHash: a.txHash,
+  }));
 
   async function handleBet(marketId: number, side: 'yes' | 'no', amount: number) {
     const res = await fetch(`/api/predictions/${marketId}/bet`, {
@@ -34,22 +69,12 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
 
     if (!res.ok) {
       const err = await res.json();
-      console.error('Bet failed:', err.error);
+      setToast({ message: err.error || 'Bet failed', type: 'error' });
       return;
     }
 
-    // Optimistic UI: update pools locally
-    setMarkets((prev) =>
-      prev.map((m) => {
-        if (m.id !== marketId) return m;
-        const addWei = String(amount * 1e18);
-        return {
-          ...m,
-          yesPool: side === 'yes' ? String(BigInt(m.yesPool) + BigInt(addWei)) : m.yesPool,
-          noPool: side === 'no' ? String(BigInt(m.noPool) + BigInt(addWei)) : m.noPool,
-        };
-      })
-    );
+    setToast({ message: `Bet placed: ${amount} A0GI on ${side.toUpperCase()}`, type: 'success' });
+    await refreshMarkets();
   }
 
   async function handleResolve(marketId: number, outcome: 'yes' | 'no') {
@@ -60,9 +85,10 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
     });
     if (!res.ok) {
       const err = await res.json();
-      console.error('Resolve failed:', err.error);
+      setToast({ message: err.error || 'Resolve failed', type: 'error' });
       return;
     }
+    setToast({ message: `Market resolved: ${outcome.toUpperCase()} wins`, type: 'success' });
     await refreshMarkets();
   }
 
@@ -72,14 +98,32 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
     });
     if (!res.ok) {
       const err = await res.json();
-      console.error('Claim failed:', err.error);
+      setToast({ message: err.error || 'Claim failed', type: 'error' });
       return;
     }
+    setToast({ message: 'Winnings claimed!', type: 'success' });
     await refreshMarkets();
   }
 
   return (
     <>
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg animate-fade-in ${
+            toast.type === 'error'
+              ? 'bg-red-500 text-white'
+              : 'bg-status-verified text-white'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
+      {/* Signal Ticker (2-row marquee) */}
+      <SignalTicker items={tickerItems} />
+
+      {/* Prediction Cards */}
       {markets.length > 0 ? (
         <div className="flex flex-col gap-3 stagger-children">
           {markets.map((market) => (
@@ -111,11 +155,17 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
         Create Market
       </button>
 
+      {/* Full Activity Feed with filter chips */}
+      <div className="border-t border-border-card pt-4 mt-2">
+        <ActivityFeed items={activityItems} maxItems={12} />
+      </div>
+
       {showCreateModal && (
         <CreateMarketModal
           onClose={() => setShowCreateModal(false)}
           onCreated={async () => {
             setShowCreateModal(false);
+            setToast({ message: 'Market created on-chain!', type: 'success' });
             await refreshMarkets();
           }}
         />

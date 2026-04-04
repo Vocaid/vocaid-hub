@@ -37,7 +37,7 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 │                            MINI APP (Next.js 15)                            │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
 │  │    /     │ │/gpu-verify│ │/predict  │ │  /seer   │ │ /profile │         │
-│  │Marketplace│ │GPU Portal│ │Pred Mkt  │ │Agent Dec.│ │  My Hub  │         │
+│  │Marketplace│ │Resources │ │Pred Mkt  │ │Agent Dec.│ │  My Hub  │         │
 │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘         │
 │       │             │            │             │             │               │
 │  ┌────┴─────────────┴────────────┴─────────────┴─────────────┴──────┐       │
@@ -261,9 +261,9 @@ vocaid-hub/
 │   │   ├── (protected)/        # Auth-gated routes (World ID required)
 │   │   │   ├── home/           # Marketplace (ISR 30s) — page, loading, error
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
-│   │   │   ├── agent-decision/ # Seer agent GPU selection flow (ISR 30s) — 4-step visual
+│   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
-│   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
+│   │   ├── gpu-verify/         # Resource registration portal — GPU, Agent, Human, DePIN (SSR)
 │   │   └── api/                # 24 server-side API routes
 │   ├── lib/                    # Shared server utilities (19 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper

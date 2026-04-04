@@ -14,7 +14,7 @@ const DATE_PRESETS = [
   { label: '90 days', days: 90 },
 ];
 
-const AMOUNT_PRESETS = [1, 5, 10];
+const AMOUNT_PRESETS = [0.01, 0.05, 0.1];
 
 export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps) {
   const [question, setQuestion] = useState('');

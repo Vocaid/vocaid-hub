@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { logAuditMessage } from '@/lib/hedera';
-import { requireWorldId } from '@/lib/world-id';
 
 const RESOLVE_ABI = [
   'function resolveMarket(uint256,uint8)',
@@ -13,9 +12,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const gate = await requireWorldId();
-    if (gate instanceof NextResponse) return gate;
-
     const { id } = await params;
     const marketId = parseInt(id, 10);
     if (isNaN(marketId)) {

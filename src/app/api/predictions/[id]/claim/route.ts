@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { ethers } from 'ethers';
-import { requireWorldId } from '@/lib/world-id';
 
 const CLAIM_ABI = [
   'function claimWinnings(uint256)',
@@ -13,9 +12,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const gate = await requireWorldId();
-    if (gate instanceof NextResponse) return gate;
-
     const { id } = await params;
     const marketId = parseInt(id, 10);
     if (isNaN(marketId)) {

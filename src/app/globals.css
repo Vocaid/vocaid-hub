@@ -93,6 +93,25 @@ body {
 .stagger-children > *:nth-child(8) { animation-delay: 420ms; }
 
 /* Page enter animation for route transitions */
+/* Signal ticker marquee animations */
+@keyframes ticker-scroll-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes ticker-scroll-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.ticker-row-left {
+  animation: ticker-scroll-left 25s linear infinite;
+}
+.ticker-row-right {
+  animation: ticker-scroll-right 25s linear infinite;
+}
+.ticker-paused {
+  animation-play-state: paused !important;
+}
+
 @keyframes page-enter {
   from {
     opacity: 0;

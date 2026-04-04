@@ -30,7 +30,7 @@ const STEPS = [
   { icon: CheckCircle, label: 'Select', desc: 'Choose optimal provider' },
 ];
 
-export function AgentDecisionContent({ decision }: { decision: DecisionData | null }) {
+export function AgentDecisionContent({ decision, resourceType, signal }: { decision: DecisionData | null; resourceType?: string; signal?: string }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [autoPlay, setAutoPlay] = useState(false);
   const data = decision ?? getDemoData();
@@ -54,7 +54,11 @@ export function AgentDecisionContent({ decision }: { decision: DecisionData | nu
         </div>
         <div className="flex-1">
           <p className="font-semibold text-primary">Seer Agent</p>
-          <p className="text-xs text-secondary">Signal Analyst — finding optimal resources</p>
+          <p className="text-xs text-secondary">
+            {resourceType && resourceType !== 'all'
+              ? `Ranking ${resourceType === 'depin' ? 'DePIN' : resourceType} by ${signal || 'quality'}`
+              : 'Signal Analyst — finding optimal resources'}
+          </p>
         </div>
         <button
           onClick={() => { setCurrentStep(0); setAutoPlay(true); }}

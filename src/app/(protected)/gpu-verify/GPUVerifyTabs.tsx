@@ -9,6 +9,20 @@ import {
   type ResourceSignals,
 } from '@/components/ReputationSignals';
 
+/* ─── Session helper for registration ──────────── */
+async function getSessionAddress(): Promise<{ address: string; worldId: string } | null> {
+  try {
+    const res = await fetch('/api/auth/session');
+    if (!res.ok) return null;
+    const data = await res.json();
+    const addr = data?.user?.walletAddress || data?.user?.address;
+    if (!addr) return null;
+    return { address: addr, worldId: addr };
+  } catch {
+    return null;
+  }
+}
+
 type Tab = 'dashboard' | 'register';
 
 interface ResourceWithSignals extends ResourceCardProps {
@@ -219,6 +233,9 @@ function AgentRegisterPanel() {
     if (!selectedRole) return;
     setStatus('loading');
     try {
+      const session = await getSessionAddress();
+      if (!session) { setStatus('error'); return; }
+
       const role = TRADING_DESK_AGENTS.find((r) => r.id === selectedRole)!;
       const res = await fetch('/api/agents/register', {
         method: 'POST',
@@ -226,6 +243,8 @@ function AgentRegisterPanel() {
         body: JSON.stringify({
           agentURI: `https://vocaid-hub.vercel.app/agent-cards/${role.label.toLowerCase()}.json`,
           role: selectedRole,
+          operatorWorldId: session.worldId,
+          operatorAddress: session.address,
         }),
       });
       const data = await res.json();
@@ -345,13 +364,17 @@ function HumanRegisterPanel() {
     if (!category || !skillName) return;
     setStatus('loading');
     try {
+      const session = await getSessionAddress();
+      if (!session) { setStatus('error'); return; }
+
       const res = await fetch('/api/agents/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentURI: `human:${category}:${skillName}`,
           role: 'human-provider',
-          metadata: { category, skill: skillName, rate: hourlyRate },
+          operatorWorldId: session.worldId,
+          operatorAddress: session.address,
         }),
       });
       if (!res.ok) throw new Error('Registration failed');
@@ -446,13 +469,17 @@ function DePINRegisterPanel() {
     if (!infraType) return;
     setStatus('loading');
     try {
+      const session = await getSessionAddress();
+      if (!session) { setStatus('error'); return; }
+
       const res = await fetch('/api/agents/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentURI: `depin:${infraType}:${location || 'remote'}`,
           role: 'depin-provider',
-          metadata: { type: infraType, location, capacity },
+          operatorWorldId: session.worldId,
+          operatorAddress: session.address,
         }),
       });
       if (!res.ok) throw new Error('Registration failed');

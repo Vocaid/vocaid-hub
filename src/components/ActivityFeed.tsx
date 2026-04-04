@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Activity, BarChart3, Eye, ShieldCheck, TrendingUp, Zap } from 'lucide-react';
+import {
+  Activity, BarChart3, Eye, ShieldCheck, TrendingUp, Zap,
+  ArrowRightLeft, Cpu, Wrench,
+} from 'lucide-react';
 import Image from 'next/image';
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
-  type: 'reputation' | 'prediction' | 'payment' | 'verification' | 'signal';
+  type: 'reputation' | 'prediction' | 'payment' | 'verification' | 'signal' | 'trade' | 'depin' | 'skill';
   agent: string;
   action: string;
   detail: string;
@@ -16,19 +19,32 @@ interface ActivityItem {
   txHash?: string;
 }
 
-const typeConfig = {
+const typeConfig: Record<string, { icon: typeof Eye; label: string }> = {
   reputation: { icon: Eye, label: 'Reputation' },
   prediction: { icon: TrendingUp, label: 'Prediction' },
   payment: { icon: Zap, label: 'Payment' },
   verification: { icon: ShieldCheck, label: 'Verification' },
   signal: { icon: BarChart3, label: 'Signal' },
-} as const;
+  trade: { icon: ArrowRightLeft, label: 'Trade' },
+  depin: { icon: Cpu, label: 'DePIN' },
+  skill: { icon: Wrench, label: 'Skill' },
+};
 
 const chainLogo: Record<string, string> = {
   world: '/world.png',
   '0g': '/0G.png',
   hedera: '/hedera.png',
 };
+
+const FILTER_CHIPS: { label: string; types: string[] }[] = [
+  { label: 'All', types: [] },
+  { label: 'Agents', types: ['trade', 'signal'] },
+  { label: 'Reputation', types: ['reputation'] },
+  { label: 'GPU', types: ['verification', 'prediction'] },
+  { label: 'DePIN', types: ['depin'] },
+  { label: 'Skills', types: ['skill'] },
+  { label: 'Payments', types: ['payment'] },
+];
 
 function timeAgo(ts: number): string {
   const diff = Math.floor((Date.now() - ts) / 1000);
@@ -38,11 +54,23 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-export function ActivityFeed({ maxItems = 10 }: { maxItems?: number }) {
-  const [items, setItems] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ActivityFeedProps {
+  maxItems?: number;
+  /** If provided, use these items instead of fetching */
+  items?: ActivityItem[];
+}
+
+export function ActivityFeed({ maxItems = 10, items: externalItems }: ActivityFeedProps) {
+  const [items, setItems] = useState<ActivityItem[]>(externalItems || []);
+  const [loading, setLoading] = useState(!externalItems);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
+    if (externalItems) {
+      setItems(externalItems);
+      return;
+    }
+
     async function fetchActivity() {
       try {
         const res = await fetch('/api/activity');
@@ -51,17 +79,23 @@ export function ActivityFeed({ maxItems = 10 }: { maxItems?: number }) {
           setItems(data.activities || []);
         }
       } catch {
-        // Fallback to demo data if API not ready
-        setItems(getDemoActivity());
+        // Will show empty state
       } finally {
         setLoading(false);
       }
     }
 
     fetchActivity();
-    const interval = setInterval(fetchActivity, 10000); // Poll every 10s
+    const interval = setInterval(fetchActivity, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [externalItems]);
+
+  const filteredItems = activeFilter === 'All'
+    ? items
+    : items.filter((item) => {
+        const chip = FILTER_CHIPS.find((c) => c.label === activeFilter);
+        return chip?.types.includes(item.type);
+      });
 
   if (loading) {
     return (
@@ -73,15 +107,6 @@ export function ActivityFeed({ maxItems = 10 }: { maxItems?: number }) {
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed border-border p-6 text-center">
-        <Activity className="mx-auto mb-2 h-6 w-6 text-secondary" />
-        <p className="text-sm text-secondary">No activity yet</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2 mb-2">
@@ -89,111 +114,70 @@ export function ActivityFeed({ maxItems = 10 }: { maxItems?: number }) {
         <h3 className="text-sm font-semibold text-primary">Live Activity</h3>
         <span className="ml-auto flex h-2 w-2 rounded-full bg-status-verified animate-pulse" />
       </div>
-      {items.slice(0, maxItems).map((item) => {
-        const config = typeConfig[item.type];
-        const Icon = config.icon;
-        return (
-          <div
-            key={item.id}
-            className="flex items-start gap-3 rounded-lg bg-surface/50 px-3 py-2.5 transition-colors hover:bg-surface"
+
+      {/* Filter chips */}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
+        {FILTER_CHIPS.map((chip) => (
+          <button
+            key={chip.label}
+            onClick={() => setActiveFilter(chip.label)}
+            className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-colors ${
+              activeFilter === chip.label
+                ? 'bg-chain-hedera text-white'
+                : 'bg-surface border border-border-card text-secondary'
+            }`}
           >
-            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary-accent" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-semibold text-primary truncate">
-                  {item.agent}
-                </span>
-                <span className="text-xs text-secondary">{item.action}</span>
-                <Image
-                  src={chainLogo[item.chain] || '/0G.png'}
-                  alt={item.chain}
-                  width={14}
-                  height={14}
-                  className="shrink-0"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-secondary truncate">
-                  {item.detail}
-                </span>
-                {item.value && (
-                  <span className="text-xs font-medium text-primary-accent">
-                    {item.value}
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      {filteredItems.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border p-4 text-center">
+          <p className="text-xs text-secondary">No {activeFilter.toLowerCase()} activity</p>
+        </div>
+      ) : (
+        filteredItems.slice(0, maxItems).map((item) => {
+          const config = typeConfig[item.type] || typeConfig.signal;
+          const Icon = config.icon;
+          return (
+            <div
+              key={item.id}
+              className="flex items-start gap-3 rounded-lg bg-surface/50 px-3 py-2.5 transition-colors hover:bg-surface"
+            >
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary-accent" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-primary truncate">
+                    {item.agent}
                   </span>
-                )}
+                  <span className="text-xs text-secondary">{item.action}</span>
+                  <Image
+                    src={chainLogo[item.chain] || '/0G.png'}
+                    alt={item.chain}
+                    width={14}
+                    height={14}
+                    className="shrink-0"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-secondary truncate">
+                    {item.detail}
+                  </span>
+                  {item.value && (
+                    <span className="text-xs font-medium text-primary-accent">
+                      {item.value}
+                    </span>
+                  )}
+                </div>
               </div>
+              <span className="shrink-0 text-[10px] text-secondary/60">
+                {timeAgo(item.timestamp)}
+              </span>
             </div>
-            <span className="shrink-0 text-[10px] text-secondary/60">
-              {timeAgo(item.timestamp)}
-            </span>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
-}
-
-function getDemoActivity(): ActivityItem[] {
-  const now = Date.now();
-  return [
-    {
-      id: '1',
-      type: 'reputation',
-      agent: 'Lens',
-      action: 'rated',
-      detail: 'GPU-Alpha quality',
-      value: '92/100',
-      chain: '0g',
-      timestamp: now - 120000,
-    },
-    {
-      id: '2',
-      type: 'prediction',
-      agent: 'Edge',
-      action: 'bet YES',
-      detail: 'H100 cost < $0.03',
-      value: '0.005 A0GI',
-      chain: '0g',
-      timestamp: now - 300000,
-    },
-    {
-      id: '3',
-      type: 'payment',
-      agent: 'User',
-      action: 'hired',
-      detail: 'GPU-Alpha',
-      value: '0.04 USDC',
-      chain: 'hedera',
-      timestamp: now - 480000,
-    },
-    {
-      id: '4',
-      type: 'verification',
-      agent: 'Shield',
-      action: 'verified',
-      detail: 'GPU-Alpha TEE',
-      value: 'PASS',
-      chain: '0g',
-      timestamp: now - 720000,
-    },
-    {
-      id: '5',
-      type: 'signal',
-      agent: 'Seer',
-      action: 'detected',
-      detail: 'GPU demand spike +18%',
-      chain: '0g',
-      timestamp: now - 900000,
-    },
-    {
-      id: '6',
-      type: 'reputation',
-      agent: 'Lens',
-      action: 'rated',
-      detail: 'Seer Agent uptime',
-      value: '99.9%',
-      chain: '0g',
-      timestamp: now - 1200000,
-    },
-  ];
 }

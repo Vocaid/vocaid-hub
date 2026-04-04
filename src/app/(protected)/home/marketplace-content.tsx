@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
-import { ActivityFeed } from '@/components/ActivityFeed';
 import { AgentDecisionContent, type DecisionData } from '@/app/(protected)/agent-decision/agent-decision-content';
 import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
@@ -135,6 +135,9 @@ export function MarketplaceContent({ resources, decision }: { resources: Resourc
 
   return (
     <>
+      {/* Seer Agent Decision Engine — top of marketplace */}
+      <SeerRankingPanel decision={decision ?? null} />
+
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-lg bg-surface border border-border-card" role="tablist">
         {tabs.map((tab) => (
@@ -192,17 +195,6 @@ export function MarketplaceContent({ resources, decision }: { resources: Resourc
         </div>
       )}
 
-      {/* Activity Feed */}
-      <div className="mt-6 border-t border-border pt-4">
-        <ActivityFeed maxItems={6} />
-      </div>
-
-      {/* Agent Decision Engine */}
-      <div className="mt-4 border-t border-border pt-4">
-        <h2 className="text-sm font-bold text-primary mb-3">Agent Decision Engine</h2>
-        <AgentDecisionContent decision={decision ?? null} />
-      </div>
-
       {/* Payment confirmation modal */}
       {paymentResult && (
         <PaymentConfirmation
@@ -213,5 +205,99 @@ export function MarketplaceContent({ resources, decision }: { resources: Resourc
         />
       )}
     </>
+  );
+}
+
+/* ─── Seer Ranking Panel ─────────────────────────── */
+
+const RESOURCE_TYPES = ['all', 'gpu', 'agent', 'human', 'depin'] as const;
+const SIGNAL_OPTIONS = [
+  { id: 'quality', label: 'Quality' },
+  { id: 'cost', label: 'Cost' },
+  { id: 'latency', label: 'Latency' },
+  { id: 'uptime', label: 'Uptime' },
+  { id: 'trust', label: 'Trust' },
+  { id: 'successRate', label: 'Success Rate' },
+  { id: 'responseTime', label: 'Response' },
+  { id: 'accountability', label: 'Accountability' },
+  { id: 'region', label: 'Region' },
+] as const;
+
+function SeerRankingPanel({ decision }: { decision: DecisionData | null }) {
+  const [expanded, setExpanded] = useState(false);
+  const [resourceType, setResourceType] = useState<string>('all');
+  const [signal, setSignal] = useState<string>('quality');
+
+  return (
+    <div className="rounded-xl border border-border-card bg-white overflow-hidden">
+      {/* Collapsed header — always visible */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 p-3"
+      >
+        <div className="w-9 h-9 rounded-full bg-primary-accent/10 flex items-center justify-center shrink-0">
+          <Eye className="w-4.5 h-4.5 text-primary-accent" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="text-sm font-semibold text-primary">Seer Agent</p>
+          <p className="text-[11px] text-secondary">
+            {expanded ? 'Ranking resources by reputation signals' : 'Tap to rank resources by signal'}
+          </p>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4 text-secondary" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-secondary" />
+        )}
+      </button>
+
+      {/* Expanded content */}
+      {expanded && (
+        <div className="px-3 pb-3 space-y-3 animate-fade-in">
+          {/* Resource type selector */}
+          <div>
+            <p className="text-[10px] font-medium text-secondary uppercase tracking-wider mb-1.5">Resource Type</p>
+            <div className="flex gap-1">
+              {RESOURCE_TYPES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setResourceType(t)}
+                  className={`flex-1 rounded-full py-1.5 text-[11px] font-medium transition-colors ${
+                    resourceType === t
+                      ? 'bg-primary-accent text-white'
+                      : 'bg-surface text-secondary hover:text-primary'
+                  }`}
+                >
+                  {t === 'all' ? 'All' : t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Signal selector */}
+          <div>
+            <p className="text-[10px] font-medium text-secondary uppercase tracking-wider mb-1.5">Rank By Signal</p>
+            <div className="flex flex-wrap gap-1">
+              {SIGNAL_OPTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSignal(s.id)}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                    signal === s.id
+                      ? 'bg-primary-accent text-white'
+                      : 'bg-surface text-secondary hover:text-primary border border-border-card'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Decision engine */}
+          <AgentDecisionContent decision={decision} resourceType={resourceType} signal={signal} />
+        </div>
+      )}
+    </div>
   );
 }

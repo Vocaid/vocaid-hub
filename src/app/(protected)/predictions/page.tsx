@@ -48,7 +48,6 @@ export default async function PredictionsPage() {
 
   return (
     <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4 pt-2">
-      <h1 className="text-lg font-bold text-primary">Prediction Markets</h1>
       <PredictionsContent initialMarkets={markets} />
     </Page.Main>
   );

@@ -1,134 +1,92 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 10;
+
 export async function GET() {
   try {
-    const { listProviders } = await import("@/lib/og-compute");
-    const { getRegisteredProviders, getValidationSummary } = await import("@/lib/og-chain");
-    const { getAllReputationScores } = await import("@/lib/reputation");
+    // Fetch ALL resource types (GPU, Agent, Human, DePIN) from unified endpoint
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const resourcesRes = await fetch(`${baseUrl}/api/resources?sort=quality`, {
+      next: { revalidate: 10 },
+    });
 
-    // Phase 1: Discover all providers
-    const [brokerResult, onChainResult] = await Promise.allSettled([
-      listProviders(),
-      getRegisteredProviders(),
-    ]);
+    if (!resourcesRes.ok) {
+      return NextResponse.json(getDemoDecision());
+    }
 
-    const brokerProviders = brokerResult.status === "fulfilled" ? brokerResult.value : [];
-    const onChainProviders = onChainResult.status === "fulfilled" ? onChainResult.value : [];
+    const data = await resourcesRes.json();
+    const resources = data.resources ?? data ?? [];
 
-    // Build provider list with enrichment
-    const providers = onChainProviders.map((p) => {
-      const broker = brokerProviders.find(
-        (b) => b.provider.toLowerCase() === p.address.toLowerCase(),
+    if (!Array.isArray(resources) || resources.length === 0) {
+      return NextResponse.json(getDemoDecision());
+    }
+
+    // Map resources to provider format for AgentDecisionContent
+    const providers = resources.map((r: Record<string, unknown>, i: number) => {
+      const signals = r.signals as Record<string, { value: number }> | undefined;
+      const reputation = {
+        starred: signals?.quality?.value ?? (r.reputation as number) ?? 0,
+        uptime: signals?.uptime?.value ?? 0,
+        successRate: 0,
+        responseTime: signals?.latency?.value ?? 0,
+      };
+
+      const validationScore = r.verified ? 80 : 0;
+      const compositeScore = Math.round(
+        reputation.starred * 0.3 +
+        reputation.uptime * 0.25 +
+        reputation.successRate * 0.25 +
+        (validationScore >= 50 ? 20 : 0),
       );
+
       return {
-        address: p.address,
-        agentId: p.agentId,
-        gpuModel: broker?.model || p.gpuModel,
-        teeType: p.teeType,
-        endpoint: broker?.url || "",
-        inputPrice: broker ? Number(broker.inputPrice) : 0,
-        outputPrice: broker ? Number(broker.outputPrice) : 0,
-        teeVerified: broker?.teeSignerAcknowledged ?? false,
+        address: `${r.type}-${i}`,
+        agentId: String(i + 1),
+        gpuModel: (r.subtitle as string) || (r.name as string) || "Unknown",
+        teeType: r.verified ? "Verified" : "Unverified",
+        teeVerified: Boolean(r.verified),
+        reputation,
+        validationScore,
+        compositeScore,
+        resourceType: r.type as string,
+        resourceName: r.name as string,
+        price: r.price as string,
       };
     });
 
-    // Phase 2: Get reputation scores per provider
-    const enriched = await Promise.all(
-      providers.map(async (p) => {
-        const reputation = { starred: 0, uptime: 0, successRate: 0, responseTime: 0 };
-        let validationScore = 0;
-        try {
-          const scores = await getAllReputationScores(BigInt(p.agentId));
-          for (const s of scores) {
-            reputation[s.tag as keyof typeof reputation] = s.averageValue;
-          }
-        } catch { /* fallback to 0 */ }
-
-        // Phase 3: Shield validation check
-        try {
-          const summary = await getValidationSummary(BigInt(p.agentId), "gpu-tee-attestation");
-          validationScore = Number(summary.count) > 0 ? summary.avgResponse : 0;
-        } catch { /* fallback to 0 */ }
-
-        // Phase 4: Composite ranking score
-        const compositeScore = Math.round(
-          reputation.starred * 0.3 +
-          reputation.uptime * 0.25 +
-          reputation.successRate * 0.25 +
-          (validationScore >= 50 ? 20 : 0),
-        );
-
-        return { ...p, reputation, validationScore, compositeScore };
-      }),
+    const ranked = providers.sort(
+      (a: { compositeScore: number }, b: { compositeScore: number }) =>
+        b.compositeScore - a.compositeScore,
     );
-
-    // Sort by composite score descending
-    const ranked = enriched.sort((a, b) => b.compositeScore - a.compositeScore);
-    const selected = ranked[0] || null;
 
     return NextResponse.json({
       discovered: ranked.length,
       providers: ranked,
-      selected,
+      selected: ranked[0] || null,
       reasoning: {
         weights: { starred: 0.3, uptime: 0.25, successRate: 0.25, teeBonus: 0.2 },
-        formula: "score = starred*0.3 + uptime*0.25 + successRate*0.25 + (TEE ? 20 : 0)",
+        formula: "score = quality*0.3 + uptime*0.25 + successRate*0.25 + (verified ? 20 : 0)",
       },
     });
   } catch {
-    // Fallback: demo providers for when testnets are down
     return NextResponse.json(getDemoDecision());
   }
 }
 
 function getDemoDecision() {
   return {
-    discovered: 3,
+    discovered: 5,
     providers: [
-      {
-        address: "0xGPU1...Alpha",
-        agentId: "7",
-        gpuModel: "NVIDIA H100 80GB",
-        teeType: "Intel TDX",
-        endpoint: "https://0g-provider-alpha.example.com",
-        inputPrice: 500,
-        outputPrice: 1000,
-        teeVerified: true,
-        reputation: { starred: 82, uptime: 99, successRate: 95, responseTime: 45 },
-        validationScore: 100,
-        compositeScore: 89,
-      },
-      {
-        address: "0xGPU2...Beta",
-        agentId: "8",
-        gpuModel: "NVIDIA H200 141GB",
-        teeType: "AMD SEV",
-        endpoint: "https://0g-provider-beta.example.com",
-        inputPrice: 800,
-        outputPrice: 1500,
-        teeVerified: true,
-        reputation: { starred: 64, uptime: 92, successRate: 88, responseTime: 30 },
-        validationScore: 85,
-        compositeScore: 76,
-      },
-      {
-        address: "0xGPU3...Gamma",
-        agentId: "9",
-        gpuModel: "AMD MI300X 192GB",
-        teeType: "None",
-        endpoint: "",
-        inputPrice: 600,
-        outputPrice: 1200,
-        teeVerified: false,
-        reputation: { starred: 45, uptime: 78, successRate: 70, responseTime: 60 },
-        validationScore: 0,
-        compositeScore: 48,
-      },
+      { address: "agent-0", agentId: "27", gpuModel: "Orion · Signal Analysis", teeType: "AgentKit", teeVerified: true, reputation: { starred: 95, uptime: 99, successRate: 98, responseTime: 45 }, validationScore: 90, compositeScore: 91, resourceType: "agent", resourceName: "Orion", price: "$0.01/query" },
+      { address: "gpu-0", agentId: "25", gpuModel: "Nebula-H100 · EU Frankfurt", teeType: "Intel TDX", teeVerified: true, reputation: { starred: 87, uptime: 99, successRate: 95, responseTime: 120 }, validationScore: 100, compositeScore: 89, resourceType: "gpu", resourceName: "Nebula-H100", price: "$0.04/1K tok" },
+      { address: "human-0", agentId: "29", gpuModel: "Camila Torres · Rust L4", teeType: "World ID", teeVerified: true, reputation: { starred: 91, uptime: 0, successRate: 88, responseTime: 0 }, validationScore: 80, compositeScore: 75, resourceType: "human", resourceName: "Camila Torres", price: "$45/hr" },
+      { address: "depin-0", agentId: "31", gpuModel: "Helios Solar Farm · 50kW", teeType: "TEE", teeVerified: true, reputation: { starred: 85, uptime: 97, successRate: 90, responseTime: 0 }, validationScore: 75, compositeScore: 72, resourceType: "depin", resourceName: "Helios Solar Farm", price: "$0.08/kWh" },
+      { address: "human-1", agentId: "30", gpuModel: "Yuki Tanaka · Solidity L5", teeType: "World ID", teeVerified: true, reputation: { starred: 88, uptime: 0, successRate: 85, responseTime: 0 }, validationScore: 80, compositeScore: 70, resourceType: "human", resourceName: "Yuki Tanaka", price: "$55/hr" },
     ],
     selected: null,
     reasoning: {
       weights: { starred: 0.3, uptime: 0.25, successRate: 0.25, teeBonus: 0.2 },
-      formula: "score = starred*0.3 + uptime*0.25 + successRate*0.25 + (TEE ? 20 : 0)",
+      formula: "score = quality*0.3 + uptime*0.25 + successRate*0.25 + (verified ? 20 : 0)",
     },
   };
 }
