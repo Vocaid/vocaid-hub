@@ -172,6 +172,7 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/reputation` | GET | Query ERC-8004 reputation scores | 0G |
 | `/api/resources` | GET | Unified resource listing (all types) | 0G + Hedera |
 | `/api/agent-decision` | GET | Seer agent GPU ranking + selection decision | 0G |
+| `/api/activity` | GET | Live on-chain activity feed (reputation, trades, DePIN, skills, payments) | 0G + Hedera |
 | `/api/agents/[name]/a2a` | GET/POST | A2A capability card + task execution per agent | 0G + Hedera |
 | `/api/agents/[name]/mcp` | GET/POST | MCP tool schema + tool execution per agent | 0G + Hedera |
 
@@ -264,7 +265,7 @@ vocaid-hub/
 │   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
 │   │   ├── gpu-verify/         # Resource registration portal — GPU, Agent, Human, DePIN (SSR)
-│   │   └── api/                # 24 server-side API routes
+│   │   └── api/                # 25 server-side API routes
 │   ├── lib/                    # Shared server utilities (19 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
@@ -290,8 +291,11 @@ vocaid-hub/
 │   ├── components/             # React components
 │   │   ├── ResourceCard.tsx    # Resource listing card
 │   │   ├── PredictionCard.tsx  # Prediction market card
+│   │   ├── SignalTicker.tsx    # 2-row auto-scrolling market signal ticker
+│   │   ├── ActivityFeed.tsx    # Live activity feed with filter chips
 │   │   ├── GPUStepper.tsx      # GPU registration stepper
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
+│   │   ├── RegisterAgentModal.tsx # Agent registration with role selector
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card
 │   │   └── Navigation/         # Bottom tab navigation

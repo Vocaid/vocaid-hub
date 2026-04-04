@@ -248,8 +248,10 @@
 3. A2A Agent Card served at `/.well-known/agent-card.json`
 
 **UX critical path:**
-- 4 agent cards should be pre-populated (registered during demo setup, not live registration)
+- 4 agent cards pre-populated (registered during demo setup)
 - Each card shows dual verification: AgentKit + ERC-8004
+- "Register New Agent" button opens RegisterAgentModal (bottom sheet with role selector: Seer/Edge/Shield/Lens)
+- RegisterAgentModal sends correct payload to `/api/agents/register`: agentURI, operatorWorldId, operatorAddress, role
 - Tapping a card could show the A2A agent card JSON (optional depth)
 
 ---

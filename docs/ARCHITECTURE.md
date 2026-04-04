@@ -42,7 +42,7 @@ vocaid-hub/
 │   │   └── profile/
 │   │       └── page.tsx       # User profile + agent fleet (SSR)
 │   ├── gpu-verify/
-│   │   └── page.tsx           # Resource registration portal — GPU, Agent, Human, DePIN (SSR)
+│   │   └── page.tsx           # Resources hub: Dashboard + Register + Trading Desk (SSR)
 │   ├── .well-known/
 │   │   └── agent-card.json/   # A2A agent card endpoint (ERC-8004)
 │   └── api/                   # Server-side API routes (holds keys)
@@ -128,6 +128,7 @@ vocaid-hub/
 │   ├── AuthButton/            # World ID auth trigger
 │   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
 │   ├── CreateMarketModal.tsx  # Prediction market creation modal
+│   ├── RegisterAgentModal.tsx # Agent registration with role selector
 │   ├── GPUStepper.tsx         # GPU provider registration stepper
 │   ├── Navigation/            # Bottom tab navigation (World App)
 │   ├── PageLayout/            # Page wrapper with header
