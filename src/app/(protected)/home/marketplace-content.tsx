@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { ShieldCheck } from 'lucide-react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
+import { Verify } from '@/components/Verify';
 import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
@@ -28,12 +31,32 @@ function parsePrice(price: string): string {
 }
 
 export function MarketplaceContent({ resources }: { resources: ResourceCardProps[] }) {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [showRating, setShowRating] = useState<{ name: string; agentId?: number } | null>(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [payingResource, setPayingResource] = useState<string | null>(null);
+  const [worldIdVerified, setWorldIdVerified] = useState<boolean | null>(null);
+  const [showVerify, setShowVerify] = useState(false);
+
+  // Check World ID verification status on mount
+  const walletAddress = (session?.user as { walletAddress?: string } | undefined)?.walletAddress;
+  const checkVerification = useCallback(async () => {
+    if (!walletAddress) return;
+    try {
+      const res = await fetch(`/api/world-id/check?address=${walletAddress}`);
+      const data = await res.json();
+      setWorldIdVerified(data.verified === true);
+    } catch {
+      setWorldIdVerified(false);
+    }
+  }, [walletAddress]);
+
+  useEffect(() => {
+    checkVerification();
+  }, [checkVerification]);
 
   const filtered = useMemo(
     () => activeTab === 'all' ? resources : resources.filter((r) => r.type === activeTab),
@@ -42,6 +65,13 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
   async function handleHire(resource: { name: string; price: string; type: ResourceType }) {
     if (paying) return;
+
+    // Gate: require World ID verification before lease
+    if (!worldIdVerified) {
+      setShowVerify(true);
+      return;
+    }
+
     setPaying(true);
     setPayError(null);
     setPayingResource(resource.name);
@@ -73,7 +103,7 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
           reference: initData.paymentId,
           to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
           tokens: [{ symbol: Tokens.USDC, token_amount: initData.requirements.amount }],
-          description: `Hire ${resource.name}`,
+          description: `Lease ${resource.name}`,
           fallback: () => null,
         });
 
@@ -135,6 +165,33 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
   return (
     <>
+      {/* World ID verification banner */}
+      {worldIdVerified === false && !showVerify && (
+        <button
+          onClick={() => setShowVerify(true)}
+          className="flex items-center gap-3 w-full p-3 rounded-xl border border-amber-200 bg-amber-50 text-left animate-fade-in"
+        >
+          <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800">Verify your World ID</p>
+            <p className="text-xs text-amber-600">Required to lease resources. Tap to verify.</p>
+          </div>
+        </button>
+      )}
+
+      {/* World ID verification flow */}
+      {showVerify && (
+        <div className="rounded-xl border border-border bg-white p-4 animate-fade-in">
+          <Verify />
+          <button
+            onClick={() => { setShowVerify(false); checkVerification(); }}
+            className="mt-3 w-full text-xs text-secondary text-center"
+          >
+            Done — check status
+          </button>
+        </div>
+      )}
+
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-lg bg-surface border border-border-card" role="tablist">
         {tabs.map((tab) => (

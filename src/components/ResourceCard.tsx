@@ -90,7 +90,7 @@ export function ResourceCard({
                 Paying...
               </span>
             ) : (
-              `Hire ${price}`
+              `Lease ${price}`
             )}
           </button>
         ) : (
