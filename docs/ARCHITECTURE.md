@@ -564,6 +564,14 @@ No traditional database. No Redis. No Postgres.
 | CredentialGate | `0x6B927bA02FE8E5e15D5d5f742380A49876ad3E02` |
 
 ### 0G Galileo (chainId 16602)
+
+**RPC Fallback Chain** (`server/clients.ts`):
+1. `https://0g-galileo-testnet.drpc.org` — dRPC (~124ms, primary)
+2. `https://evmrpc-testnet.0g.ai` — Official 0G (~470ms, fallback)
+3. `https://16602.rpc.thirdweb.com` — ThirdWeb (~683ms, last resort)
+
+ethers uses `FallbackProvider` (quorum=1, stallTimeout 3s/5s/7s). viem uses `fallback()` transport. Configurable via `OG_RPC_URL`, `OG_RPC_FALLBACK_1`, `OG_RPC_FALLBACK_2`.
+
 | Contract | Address |
 |----------|---------|
 | IdentityRegistry (proxy) | `0xc16cf40a33e85f41bed6c90c710ff8c70b8c79ec` |

@@ -76,7 +76,7 @@
 | P-061 | Edge never executes trades | ✅ done | Agent 6 | 0G OpenClaw $6k | `server/routes/edge.ts` | API route: Shield clearance → placeBet() → HCS audit. Demo fallback when testnet unreachable. Fleet script calls it. |
 | P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
-| P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | ✅ done | Agent 3 | World ID $8k | `src/app/api/verify-proof/route.ts` | Fixed: switched to v4 endpoint (`api/v4/verify/{rp_id}`). Action now recognized. |
+| P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | ✅ done | Agent 3 | World ID $8k | `server/routes/world-id.ts` | Fixed: switched to v4 endpoint (`api/v4/verify/{rp_id}`). Action now recognized. |
 
 ---
 
@@ -87,7 +87,7 @@
 | P-040 | Edge agent card Arc references | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed |
 | P-041 | AgentCard.tsx hardcoded colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Fixed |
 | P-042 | AuthButton hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Fixed |
-| P-043 | predictions resolve/claim no World ID gate | ✅ done | Agent 1 | `src/app/api/predictions/[id]/claim/route.ts`, `resolve/route.ts` | Added requireWorldId() |
+| P-043 | predictions resolve/claim no World ID gate | ✅ done | Agent 1 | `server/routes/predictions.ts` | Added requireWorldId() |
 | P-044 | /api/agents/register no UI caller | ✅ done (superseded by P-099) | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Register button moved to Resources page (ResourceStepper). Profile is fleet-only now. |
 | P-045 | RP_SIGNING_KEY not configured | ✅ done | Agent 1 | `.env.local` | Set from WORLD_ID_PRIVATE_KEY |
 | P-046 | Edge soul.md Arc references | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed |
@@ -127,26 +127,26 @@
 | P-068 | PRIVATE_KEY in .env.local didn't match deployer wallet | ✅ done | Agent 8 | `.env.local` | Agents set a different key during dev. Fixed: restored deployer key (0x58c4...) for seed script. |
 | P-069 | ReputationRegistry self-feedback blocks demo seeding | ✅ done | Agent 4 | `scripts/seed-demo-data.ts` | 2nd wallet (0xf45b...670) bypasses self-feedback check. 4 on-chain reputation scores seeded. |
 | P-070 | GPUProviderRegistry 1-provider-per-wallet limit | ✅ done | Agent 4 | `scripts/seed-demo-data.ts` | 2nd wallet + ERC-721 approve step. GPU-Beta (H200/AMD SEV) registered on-chain. |
-| P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `src/app/api/agents/register/route.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
+| P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `server/routes/agents.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
 | P-073 | README.md missing `/api/edge/trade` route | ✅ done | Agent 9 | `README.md` | Added Edge trade route to API Routes table |
 | P-074 | ARCHITECTURE.md missing `/api/edge/trade` + `prediction-math.ts` | ✅ done | Agent 9 | `docs/ARCHITECTURE.md` | Added edge/trade route tree + prediction-math.ts to lib listing |
-| P-075 | A2A endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/a2a/route.ts` | Dynamic route: GET capability card + POST task execution. Per-agent handlers (seer/edge/shield/lens). Rate limiting, circuit breaker, TTL cache. Edge requires signed payload. |
-| P-076 | MCP endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/mcp/route.ts` | Dynamic route: GET tool schema + POST tool execution. MCP tool schemas per agent. Shared cache/breaker infra with A2A. |
+| P-075 | A2A endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `server/routes/agents.ts` (A2A handler) | Dynamic route: GET capability card + POST task execution. Per-agent handlers (seer/edge/shield/lens). Rate limiting, circuit breaker, TTL cache. Edge requires signed payload. |
+| P-076 | MCP endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `server/routes/agents.ts` (MCP handler) | Dynamic route: GET tool schema + POST tool execution. MCP tool schemas per agent. Shared cache/breaker infra with A2A. |
 
 | P-077 | GPUProviderRegistry: paginated getActiveProviders() | ✅ done | Agent 5 | `contracts/0g/GPUProviderRegistry.sol` | Added `getActiveProvidersPaginated(offset, limit)`. String validation on registerProvider. Redeployed to 0G Galileo: `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
 | P-078 | ResourcePrediction: fix payout rounding with mulDiv | ✅ done | Agent 5 | `contracts/0g/ResourcePrediction.sol` | `Math.mulDiv` payout, `MIN_BET = 0.001 ether`, `cancelStale()` oracle timeout (7 days). Redeployed: `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
 | P-079 | CredentialGate: bind signal to msg.sender | ✅ done | Agent 5 | `contracts/world/CredentialGate.sol` | Added `require(signal == msg.sender)`. Redeployed to World Sepolia: `0x6B927bA02FE8E5e15D5d5f742380A49876ad3E02` |
-| P-080 | Security assessment: error response sanitization | ✅ done | Agent 4 | All `src/app/api/*/route.ts` + `src/lib/agents/*.ts` | 13 catch blocks sanitized: 9 API routes + 2 agent handlers. Removed `details` fields, replaced `err.message` with generic strings. Added `console.error` where missing. |
+| P-080 | Security assessment: error response sanitization | ✅ done | Agent 4 | All `server/routes/*.ts` + `src/lib/agents/*.ts` | 13 catch blocks sanitized: 9 API routes + 2 agent handlers. Removed `details` fields, replaced `err.message` with generic strings. Added `console.error` where missing. |
 | P-081 | Retroactive reputation: on-chain writes need 3rd wallet | known limitation | Agent 1 | `scripts/compute-retroactive-reputation.ts` | Demo wallet registered providers (owns them) so can't give self-feedback. Primary wallet also owns seed providers. Fix: generate 3rd wallet for reputation writes only, or use primary wallet for registration + demo wallet for feedback. Signal computation (Phases 1-3) works perfectly — 8 providers, 239 txs, scores computed. |
 | P-081 | Payment ledger persistence | ✅ done | Agent 6 | `src/lib/payment-ledger.ts`, `server/routes/payments.ts` | File-based JSON at `data/payments.json`. Survives server restart. data/ gitignored. |
 
 | P-082 | Predictions SSR self-fetch fails behind World ID gate | ✅ done | Agent 5 | `src/app/(protected)/predictions/page.tsx` | Replaced HTTP self-fetch with direct ethers contract read. Added useEffect refresh on mount. |
-| P-083 | World ID gates block prediction demo | ✅ done | Agent 5 | `src/app/api/predictions/[id]/bet/route.ts`, `resolve/route.ts`, `claim/route.ts` | Removed requireWorldId() from bet/resolve/claim routes for demo. |
-| P-084 | SignalTicker + ActivityFeed on Predict page | ✅ done | Agent 5 | `src/components/SignalTicker.tsx`, `src/components/ActivityFeed.tsx`, `predictions-content.tsx`, `marketplace-content.tsx`, `src/app/api/activity/route.ts` | 2-row scrolling ticker, filter chips, 3 new event types (trade/depin/skill). ActivityFeed moved from Home to Predict. |
+| P-083 | World ID gates block prediction demo | ✅ done | Agent 5 | `server/routes/predictions.ts` | Removed requireWorldId() from bet/resolve/claim routes for demo. |
+| P-084 | SignalTicker + ActivityFeed on Predict page | ✅ done | Agent 5 | `src/components/SignalTicker.tsx`, `src/components/ActivityFeed.tsx`, `predictions-content.tsx`, `marketplace-content.tsx`, `server/routes/activity.ts` | 2-row scrolling ticker, filter chips, 3 new event types (trade/depin/skill). ActivityFeed moved from Home to Predict. |
 | P-085 | CreateMarketModal amount presets too large for testnet | ✅ done | Agent 5 | `src/components/CreateMarketModal.tsx` | Changed 1/5/10 A0GI → 0.01/0.05/0.1 A0GI. |
 | P-086 | Hardhat toolbox version conflict (HH2 vs HH3) | ✅ done | Agent 5 | `hardhat.config.cjs`, `hardhat.config.ts` | Added CJS config for compilation. Enabled `viaIR` for ReputationRegistry stack-too-deep fix. |
 
-| P-087 | Agent Prediction Gateway — on-chain proposal registry | ✅ done | Agent 5 | `contracts/0g/AgentProposalRegistry.sol`, `src/app/api/proposals/route.ts`, `src/components/ProposalQueue.tsx`, `src/app/(protected)/profile/profile-content.tsx` | AgentProposalRegistry deployed at `0x4093025085ea8a3ef36cff0a28e6e7acdf356392`. Agents submit proposals, owners approve/reject via Profile page. |
+| P-087 | Agent Prediction Gateway — on-chain proposal registry | ✅ done | Agent 5 | `contracts/0g/AgentProposalRegistry.sol`, `server/routes/proposals.ts`, `src/components/ProposalQueue.tsx`, `src/app/(protected)/profile/profile-content.tsx` | AgentProposalRegistry deployed at `0x4093025085ea8a3ef36cff0a28e6e7acdf356392`. Agents submit proposals, owners approve/reject via Profile page. |
 | P-088 | Post-hire rating + prediction suggestion loop | ✅ done | Agent 5 | `src/components/PostHireRating.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Star rating writes ERC-8004 reputation. Suggests creating prediction market after rating. Closes feedback loop. |
 
 | P-089 | Seer panel removed from Market — agents trade via A2A only | ✅ done | — | `marketplace-content.tsx`, `home/page.tsx` | Market = human browsing. Seer responds to agent queries via `/api/agents/seer/a2a`. |
