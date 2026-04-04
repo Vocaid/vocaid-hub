@@ -42,7 +42,7 @@ export default async function ProfilePage() {
   const [session, agents] = await Promise.all([auth(), getAgents()]);
 
   return (
-    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
+    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4 pt-2">
       <ProfileContent
         username={session?.user.username ?? 'Anonymous'}
         walletAddress={session?.user.walletAddress}

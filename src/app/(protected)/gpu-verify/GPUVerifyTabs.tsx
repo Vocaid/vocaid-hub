@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, Cpu, Plus } from 'lucide-react';
+import { BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
 import GPUStepper from '@/components/GPUStepper';
 import { ResourceCard, type ResourceCardProps } from '@/components/ResourceCard';
 import {
@@ -83,16 +83,9 @@ export default function GPUVerifyTabs() {
             ))}
           </div>
           {registerType === 'gpu' && <GPUStepper />}
-          {registerType !== 'gpu' && (
-            <div className="rounded-xl border border-dashed border-border p-8 text-center">
-              <p className="text-sm text-secondary">
-                {registerType === 'agent' ? 'Register an AI agent on ERC-8004' :
-                 registerType === 'human' ? 'Register human skills and availability' :
-                 'Register physical infrastructure (electricity, bandwidth, storage)'}
-              </p>
-              <p className="text-xs text-secondary/60 mt-2">Coming soon — use the Market tab to browse existing resources</p>
-            </div>
-          )}
+          {registerType === 'agent' && <AgentRegisterPanel />}
+          {registerType === 'human' && <HumanRegisterPanel />}
+          {registerType === 'depin' && <DePINRegisterPanel />}
         </>
       )}
 
@@ -180,6 +173,297 @@ export default function GPUVerifyTabs() {
           onBack={() => setSelectedResource(null)}
         />
       )}
+    </div>
+  );
+}
+
+/* ─── Agent Registration Panel ───────────────────── */
+
+const AGENT_ROLES = [
+  { id: 'signal-analyst', label: 'Seer', icon: '🔮', desc: 'Signal analysis & trend detection' },
+  { id: 'market-maker', label: 'Edge', icon: '⚡', desc: 'Trade execution & market pricing' },
+  { id: 'risk-manager', label: 'Shield', icon: '🛡️', desc: 'Risk management & TEE validation' },
+  { id: 'discovery', label: 'Lens', icon: '🔍', desc: 'Discovery & reputation monitoring' },
+];
+
+function AgentRegisterPanel() {
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [result, setResult] = useState<{ agentId?: string; txHash?: string } | null>(null);
+
+  async function handleRegister() {
+    if (!selectedRole) return;
+    setStatus('loading');
+    try {
+      const role = AGENT_ROLES.find((r) => r.id === selectedRole)!;
+      const res = await fetch('/api/agents/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentURI: `https://vocaid-hub.vercel.app/agent-cards/${role.label.toLowerCase()}.json`,
+          role: selectedRole,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setResult(data);
+      setStatus('success');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border border-border bg-white p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Bot className="h-5 w-5 text-chain-world" />
+          <h3 className="font-semibold text-primary">Register AI Agent</h3>
+        </div>
+        <p className="text-xs text-secondary mb-4">Register an autonomous agent with ERC-8004 identity on 0G Chain, linked to your World ID.</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {AGENT_ROLES.map((role) => (
+            <button
+              key={role.id}
+              onClick={() => setSelectedRole(role.id)}
+              className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-xs transition-colors ${
+                selectedRole === role.id
+                  ? 'border-primary-accent bg-primary-accent/5 text-primary'
+                  : 'border-border text-secondary hover:border-primary-accent/50'
+              }`}
+            >
+              <span className="text-lg">{role.icon}</span>
+              <span className="font-medium">{role.label}</span>
+              <span className="text-[10px] text-secondary">{role.desc}</span>
+            </button>
+          ))}
+        </div>
+
+        {status === 'success' && result && (
+          <div className="rounded-lg bg-green-50 p-3 mb-3">
+            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+              <Check className="h-4 w-4" /> Agent registered
+            </div>
+            <p className="text-xs text-green-600 mt-1">ERC-8004 ID: #{result.agentId}</p>
+          </div>
+        )}
+
+        <button
+          onClick={handleRegister}
+          disabled={!selectedRole || status === 'loading'}
+          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
+          {status === 'loading' ? 'Registering...' : 'Register on ERC-8004'}
+        </button>
+      </div>
+      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> 0G Chain</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-world" /> World ID</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Human Skills Registration Panel ────────────── */
+
+const SKILL_CATEGORIES = [
+  { id: 'engineering', label: 'Engineering', examples: 'Rust, Solidity, ML/AI' },
+  { id: 'design', label: 'Design', examples: 'UI/UX, Brand, Motion' },
+  { id: 'operations', label: 'Operations', examples: 'DevOps, QA, PM' },
+  { id: 'research', label: 'Research', examples: 'Security, Protocol, Data' },
+];
+
+function HumanRegisterPanel() {
+  const [category, setCategory] = useState<string | null>(null);
+  const [skillName, setSkillName] = useState('');
+  const [hourlyRate, setHourlyRate] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  async function handleRegister() {
+    if (!category || !skillName) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/agents/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentURI: `human:${category}:${skillName}`,
+          role: 'human-provider',
+          metadata: { category, skill: skillName, rate: hourlyRate },
+        }),
+      });
+      if (!res.ok) throw new Error('Registration failed');
+      setStatus('success');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border border-border bg-white p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <User className="h-5 w-5 text-chain-world" />
+          <h3 className="font-semibold text-primary">Register Human Skills</h3>
+        </div>
+        <p className="text-xs text-secondary mb-4">Offer your verified skills for hire. World ID proves you&apos;re human — agents can lease your expertise.</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {SKILL_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategory(cat.id)}
+              className={`rounded-lg border p-2.5 text-left transition-colors ${
+                category === cat.id
+                  ? 'border-primary-accent bg-primary-accent/5'
+                  : 'border-border hover:border-primary-accent/50'
+              }`}
+            >
+              <span className="text-xs font-medium text-primary">{cat.label}</span>
+              <span className="block text-[10px] text-secondary mt-0.5">{cat.examples}</span>
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="text"
+          placeholder="Skill name (e.g. Rust L4, Solidity Auditor)"
+          value={skillName}
+          onChange={(e) => setSkillName(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-2 focus:outline-none focus:border-primary-accent"
+        />
+        <input
+          type="text"
+          placeholder="Hourly rate (e.g. $25/hr)"
+          value={hourlyRate}
+          onChange={(e) => setHourlyRate(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
+        />
+
+        {status === 'success' && (
+          <div className="rounded-lg bg-green-50 p-3 mb-3">
+            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+              <Check className="h-4 w-4" /> Skills registered on ERC-8004
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleRegister}
+          disabled={!category || !skillName || status === 'loading'}
+          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
+          {status === 'loading' ? 'Registering...' : 'Register Skills'}
+        </button>
+      </div>
+      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-world" /> World ID Verified</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> ERC-8004</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── DePIN Registration Panel ───────────────────── */
+
+const DEPIN_TYPES = [
+  { id: 'compute', label: 'Compute', desc: 'CPU/GPU bare metal' },
+  { id: 'storage', label: 'Storage', desc: 'NVMe, HDD arrays' },
+  { id: 'bandwidth', label: 'Bandwidth', desc: 'Network capacity' },
+  { id: 'energy', label: 'Energy', desc: 'Solar, grid power' },
+];
+
+function DePINRegisterPanel() {
+  const [infraType, setInfraType] = useState<string | null>(null);
+  const [location, setLocation] = useState('');
+  const [capacity, setCapacity] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  async function handleRegister() {
+    if (!infraType) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/agents/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentURI: `depin:${infraType}:${location || 'remote'}`,
+          role: 'depin-provider',
+          metadata: { type: infraType, location, capacity },
+        }),
+      });
+      if (!res.ok) throw new Error('Registration failed');
+      setStatus('success');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border border-border bg-white p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Wifi className="h-5 w-5 text-chain-hedera" />
+          <h3 className="font-semibold text-primary">Register Physical Infrastructure</h3>
+        </div>
+        <p className="text-xs text-secondary mb-4">Register DePIN hardware for the agentic economy — verified on-chain, discoverable by any agent.</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {DEPIN_TYPES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setInfraType(t.id)}
+              className={`rounded-lg border p-2.5 text-left transition-colors ${
+                infraType === t.id
+                  ? 'border-primary-accent bg-primary-accent/5'
+                  : 'border-border hover:border-primary-accent/50'
+              }`}
+            >
+              <span className="text-xs font-medium text-primary">{t.label}</span>
+              <span className="block text-[10px] text-secondary mt-0.5">{t.desc}</span>
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="text"
+          placeholder="Location (e.g. US-East, EU-West)"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-2 focus:outline-none focus:border-primary-accent"
+        />
+        <input
+          type="text"
+          placeholder="Capacity (e.g. 10TB, 100Mbps, 5kW)"
+          value={capacity}
+          onChange={(e) => setCapacity(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
+        />
+
+        {status === 'success' && (
+          <div className="rounded-lg bg-green-50 p-3 mb-3">
+            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+              <Check className="h-4 w-4" /> Infrastructure registered on ERC-8004
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={handleRegister}
+          disabled={!infraType || status === 'loading'}
+          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
+          {status === 'loading' ? 'Registering...' : 'Register Infrastructure'}
+        </button>
+      </div>
+      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> 0G Chain</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-hedera" /> Hedera Audit</span>
+      </div>
     </div>
   );
 }
