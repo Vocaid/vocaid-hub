@@ -11,7 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "prettier --check . --ignore-path ../../.prettierignore",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "npx tsx scripts/seed-demo-data.ts"
   },
   "dependencies": {
     "@0glabs/0g-serving-broker": "^0.7.4",
