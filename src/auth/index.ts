@@ -35,16 +35,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signedNonce: { label: 'Signed Nonce', type: 'text' },
         finalPayloadJson: { label: 'Final Payload', type: 'text' },
       },
-      // @ts-expect-error TODO
-      authorize: async ({
-        nonce,
-        signedNonce,
-        finalPayloadJson,
-      }: {
-        nonce: string;
-        signedNonce: string;
-        finalPayloadJson: string;
-      }) => {
+      authorize: async (credentials, _request) => {
+        const nonce = credentials?.nonce as string;
+        const signedNonce = credentials?.signedNonce as string;
+        const finalPayloadJson = credentials?.finalPayloadJson as string;
+
         const expectedSignedNonce = hashNonce({ nonce });
 
         if (signedNonce !== expectedSignedNonce) {
@@ -65,7 +60,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         return {
           id: finalPayload.address,
-          ...userInfo,
+          walletAddress: userInfo.walletAddress ?? finalPayload.address,
+          username: userInfo.username ?? '',
+          profilePictureUrl: userInfo.profilePictureUrl ?? '',
         };
       },
     }),
