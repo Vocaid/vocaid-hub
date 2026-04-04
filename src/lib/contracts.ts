@@ -23,6 +23,8 @@ export const addresses = {
   gpuProviderRegistry: () => getAddress("GPU_PROVIDER_REGISTRY"),
   mockTEEValidator: () => getAddress("MOCK_TEE_VALIDATOR"),
   resourcePrediction: () => getAddress("RESOURCE_PREDICTION"),
+  humanSkillRegistry: () => getAddress("HUMAN_SKILL_REGISTRY"),
+  depinRegistry: () => getAddress("DEPIN_REGISTRY"),
 } as const;
 
 // --- External 0G contracts (read-only) ---

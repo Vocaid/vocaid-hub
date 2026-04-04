@@ -200,3 +200,113 @@ export async function submitMockTEEValidation(
     args: [requestHash, response, responseURI, responseHash, tag, signature],
   });
 }
+
+// --- Human Skill Registry reads ---
+
+const HUMAN_SKILL_REGISTRY_ABI = [
+  {
+    name: "getActiveProviders",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "active", type: "address[]" }],
+  },
+  {
+    name: "getProvider",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "provider", type: "address" }],
+    outputs: [{
+      components: [
+        { name: "agentId", type: "uint256" },
+        { name: "skillName", type: "string" },
+        { name: "skillLevel", type: "string" },
+        { name: "hourlyRate", type: "string" },
+        { name: "registeredAt", type: "uint256" },
+        { name: "active", type: "bool" },
+      ],
+      type: "tuple",
+    }],
+  },
+] as const;
+
+export interface OnChainHumanProvider {
+  address: string;
+  agentId: string;
+  skillName: string;
+  skillLevel: string;
+  hourlyRate: string;
+  registeredAt: number;
+  active: boolean;
+}
+
+export async function getRegisteredHumans(): Promise<OnChainHumanProvider[]> {
+  const client = getPublicClient();
+  const addr = addresses.humanSkillRegistry();
+  const activeAddrs = (await client.readContract({
+    address: addr, abi: HUMAN_SKILL_REGISTRY_ABI, functionName: "getActiveProviders",
+  })) as readonly Address[];
+
+  return Promise.all(activeAddrs.map(async (a) => {
+    const d = (await client.readContract({
+      address: addr, abi: HUMAN_SKILL_REGISTRY_ABI, functionName: "getProvider", args: [a],
+    })) as { agentId: bigint; skillName: string; skillLevel: string; hourlyRate: string; registeredAt: bigint; active: boolean };
+    return { address: a, agentId: d.agentId.toString(), skillName: d.skillName, skillLevel: d.skillLevel, hourlyRate: d.hourlyRate, registeredAt: Number(d.registeredAt), active: d.active };
+  }));
+}
+
+// --- DePIN Registry reads ---
+
+const DEPIN_REGISTRY_ABI = [
+  {
+    name: "getActiveDevices",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "active", type: "address[]" }],
+  },
+  {
+    name: "getDevice",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "device", type: "address" }],
+    outputs: [{
+      components: [
+        { name: "agentId", type: "uint256" },
+        { name: "deviceName", type: "string" },
+        { name: "deviceType", type: "string" },
+        { name: "capacity", type: "string" },
+        { name: "pricePerUnit", type: "string" },
+        { name: "registeredAt", type: "uint256" },
+        { name: "active", type: "bool" },
+      ],
+      type: "tuple",
+    }],
+  },
+] as const;
+
+export interface OnChainDePINDevice {
+  address: string;
+  agentId: string;
+  deviceName: string;
+  deviceType: string;
+  capacity: string;
+  pricePerUnit: string;
+  registeredAt: number;
+  active: boolean;
+}
+
+export async function getRegisteredDePIN(): Promise<OnChainDePINDevice[]> {
+  const client = getPublicClient();
+  const addr = addresses.depinRegistry();
+  const activeAddrs = (await client.readContract({
+    address: addr, abi: DEPIN_REGISTRY_ABI, functionName: "getActiveDevices",
+  })) as readonly Address[];
+
+  return Promise.all(activeAddrs.map(async (a) => {
+    const d = (await client.readContract({
+      address: addr, abi: DEPIN_REGISTRY_ABI, functionName: "getDevice", args: [a],
+    })) as { agentId: bigint; deviceName: string; deviceType: string; capacity: string; pricePerUnit: string; registeredAt: bigint; active: boolean };
+    return { address: a, agentId: d.agentId.toString(), deviceName: d.deviceName, deviceType: d.deviceType, capacity: d.capacity, pricePerUnit: d.pricePerUnit, registeredAt: Number(d.registeredAt), active: d.active };
+  }));
+}

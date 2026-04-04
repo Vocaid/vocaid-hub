@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 import type { ResourceCardProps } from "@/components/ResourceCard";
 import type { ResourceSignals } from "@/components/ReputationSignals";
 import type { OGServiceInfo } from "@/lib/og-compute";
-import { type OnChainGPUProvider, getReputationSummary } from "@/lib/og-chain";
+import { type OnChainGPUProvider, type OnChainHumanProvider, type OnChainDePINDevice, getReputationSummary, getRegisteredHumans, getRegisteredDePIN } from "@/lib/og-chain";
 
 type SortField = "quality" | "cost" | "latency" | "uptime";
-type FilterType = "gpu" | "agent" | "human";
+type FilterType = "gpu" | "agent" | "human" | "depin";
 
 const VALID_SORTS = new Set<SortField>(["quality", "cost", "latency", "uptime"]);
-const VALID_TYPES = new Set<FilterType>(["gpu", "agent", "human"]);
+const VALID_TYPES = new Set<FilterType>(["gpu", "agent", "human", "depin"]);
 /** Lower-is-better metrics sort ascending; everything else sorts descending. */
 const ASC_SORTS = new Set<SortField>(["latency", "cost"]);
 
@@ -41,20 +41,26 @@ export async function GET(request: NextRequest) {
     const { getRegisteredProviders, getValidationSummary } = await import("@/lib/og-chain");
 
     // Fetch from all sources in parallel — each can fail independently
-    const [agentsResult, brokerResult, onChainResult] = await Promise.allSettled([
+    const [agentsResult, brokerResult, onChainResult, humanResult, depinResult] = await Promise.allSettled([
       listRegisteredAgents(),
       listProviders(),
       getRegisteredProviders(),
+      getRegisteredHumans(),
+      getRegisteredDePIN(),
     ]);
 
     const agents = agentsResult.status === "fulfilled" ? agentsResult.value : [];
     const broker = brokerResult.status === "fulfilled" ? brokerResult.value : [];
     const onChain = onChainResult.status === "fulfilled" ? onChainResult.value : [];
+    const humans = humanResult.status === "fulfilled" ? humanResult.value : [];
+    const depinDevices = depinResult.status === "fulfilled" ? depinResult.value : [];
 
     const gpuResources = await mapGpuToResources(broker, onChain, getValidationSummary);
     const rawResources: ResourceWithAgent[] = [
       ...(await mapAgentsToResources(agents)),
       ...gpuResources,
+      ...mapHumanToResources(humans),
+      ...mapDePINToResources(depinDevices),
     ];
 
     // Enrich with reputation signals (best-effort, never fails the whole request)
@@ -181,6 +187,34 @@ async function mapAgentsToResources(agents: AgentData[]): Promise<ResourceWithAg
       verificationType: "world-id" as const,
       _agentId: a.agentId.toString(),
     };
+  }));
+}
+
+function mapHumanToResources(humans: OnChainHumanProvider[]): ResourceWithAgent[] {
+  return humans.map((h) => ({
+    type: "human" as const,
+    name: h.skillName,
+    subtitle: `${h.skillLevel} · Agent #${h.agentId}`,
+    reputation: 80,
+    verified: true,
+    chain: "world" as const,
+    price: h.hourlyRate,
+    verificationType: "world-id" as const,
+    _agentId: h.agentId,
+  }));
+}
+
+function mapDePINToResources(devices: OnChainDePINDevice[]): ResourceWithAgent[] {
+  return devices.map((d) => ({
+    type: "depin" as const,
+    name: d.deviceName,
+    subtitle: `${d.capacity} · ${d.deviceType}`,
+    reputation: 75,
+    verified: true,
+    chain: "hedera" as const,
+    price: d.pricePerUnit,
+    verificationType: "tee" as const,
+    _agentId: d.agentId,
   }));
 }
 
