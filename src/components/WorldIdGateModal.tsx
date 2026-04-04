@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
-import { Verify } from '@/components/Verify';
+import { MiniKit } from '@worldcoin/minikit-js';
 
 interface WorldIdGateModalProps {
   open: boolean;
@@ -11,41 +11,29 @@ interface WorldIdGateModalProps {
 }
 
 /**
- * Bottom-sheet modal for World ID verification.
- * Matches PaymentConfirmation.tsx pattern (fixed overlay + slide-up sheet).
- * Listens for verification success inside <Verify /> and auto-triggers onVerified.
+ * Informational modal shown when World ID verification is required.
+ * Checks MiniKit.user.verificationStatus and auto-resolves if verified.
  */
 export function WorldIdGateModal({ open, onClose, onVerified }: WorldIdGateModalProps) {
-  const observerRef = useRef<MutationObserver | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Watch for the Verify component's success state (LiveFeedback shows "Verified" text)
+  // Auto-detect if user became verified (e.g. after switching back from World App settings)
   useEffect(() => {
-    if (!open || !containerRef.current) return;
+    if (!open) return;
 
-    observerRef.current = new MutationObserver(() => {
-      const successEl = containerRef.current?.querySelector('[data-state="success"]');
-      if (successEl) {
-        // Brief delay so user sees the success state
-        setTimeout(() => onVerified(), 1200);
-        observerRef.current?.disconnect();
+    const interval = setInterval(() => {
+      if (MiniKit.user?.verificationStatus?.isOrbVerified) {
+        clearInterval(interval);
+        onVerified();
       }
-    });
+    }, 2000);
 
-    observerRef.current.observe(containerRef.current, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['data-state'],
-    });
-
-    return () => observerRef.current?.disconnect();
+    return () => clearInterval(interval);
   }, [open, onVerified]);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[428px] rounded-2xl bg-white p-6 pb-10 flex flex-col gap-5 animate-scale-in">
+      <div className="w-full max-w-[428px] rounded-2xl bg-white p-6 flex flex-col gap-5 animate-scale-in">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -61,14 +49,21 @@ export function WorldIdGateModal({ open, onClose, onVerified }: WorldIdGateModal
           </button>
         </div>
 
-        <p className="text-sm text-secondary">
-          Verify your identity to continue. This is a one-time process.
+        <p className="text-sm text-secondary leading-relaxed">
+          To use this feature, you need to verify your identity with World ID.
+          Open <strong>World App &rarr; Settings &rarr; Verify</strong> to complete Orb verification.
         </p>
 
-        {/* Verify component */}
-        <div ref={containerRef}>
-          <Verify />
-        </div>
+        <p className="text-xs text-secondary/70">
+          Once verified, come back and this screen will update automatically.
+        </p>
+
+        <button
+          onClick={onClose}
+          className="w-full py-3 rounded-xl bg-primary text-white font-medium text-sm"
+        >
+          Got it
+        </button>
       </div>
     </div>
   );

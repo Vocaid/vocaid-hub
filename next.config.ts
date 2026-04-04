@@ -1,10 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  webpack(config) {
-    config.experiments = { ...config.experiments, asyncWebAssembly: true };
-    return config;
-  },
   images: {
     remotePatterns: [
       { protocol: 'https' as const, hostname: 'static.usernames.app-backend.toolsforhumanity.com' },
