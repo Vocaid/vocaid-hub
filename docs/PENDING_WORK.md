@@ -72,7 +72,7 @@
 | P-057 | Shield doesn't block unverified providers | ✅ done | Agent 6 | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | ValidationRegistry.getSummary() check per GPU provider; unverified show as "Unverified" |
 | P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
 | P-059 | MiniKit.pay() never called | ✅ done | Agent 7 | World MiniKit $4k | `src/app/(protected)/home/marketplace-content.tsx` | MiniKit.pay() wired with x402 fallback, loading spinner, error toast |
-| P-060 | Seer never runs 0G Compute inference | unclaimed | — | 0G OpenClaw $6k | `src/lib/og-compute.ts`, `agents/.agents/seer/soul.md` | Needs live 0G provider + funded broker. Hard without testnet. |
+| P-060 | Seer never runs 0G Compute inference | ✅ done | Agent 4 | 0G OpenClaw $6k | `src/app/api/seer/inference/route.ts` | API route calls listProviders() + callInference() from SDK. Falls back to mock when testnet empty. Logs to Hedera HCS. |
 | P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
 | P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
