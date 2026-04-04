@@ -124,7 +124,7 @@ export async function mintCredential(
   tokenId: string,
   metadata: Uint8Array[],
 ): Promise<number[]> {
-  const { withRetry, RETRY_POLICIES } = await import('../server/utils/retry');
+  const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   return withRetry(async () => {
     const client = initClient();
     const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
@@ -306,7 +306,7 @@ export async function logAuditMessage(
   topicId: string,
   message: string,
 ): Promise<void> {
-  const { withRetry, RETRY_POLICIES } = await import('../server/utils/retry');
+  const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   return withRetry(async () => {
     const client = initClient();
 
@@ -328,21 +328,25 @@ export async function queryAuditTrail(
   limit = 100,
 ): Promise<HcsMessage[]> {
   const { fetchWithTimeout, TIMEOUT_BUDGETS } = await import('../../server/utils/fetch-with-timeout');
+  const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   const url = `${MIRROR_NODE_BASE}/api/v1/topics/${topicId}/messages?limit=${limit}&order=desc`;
-  const res = await fetchWithTimeout(url, { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR });
 
-  if (!res.ok) {
-    throw new Error(`Mirror Node query failed: ${res.status} ${res.statusText}`);
-  }
+  return withRetry(async () => {
+    const res = await fetchWithTimeout(url, { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR });
 
-  const data = (await res.json()) as { messages: RawHcsMessage[] };
+    if (!res.ok) {
+      throw new Error(`Mirror Node query failed: ${res.status} ${res.statusText}`);
+    }
 
-  return data.messages.map((m) => ({
-    sequenceNumber: m.sequence_number,
-    contents: Buffer.from(m.message, "base64").toString("utf-8"),
-    consensusTimestamp: m.consensus_timestamp,
-    topicId: m.topic_id,
-  }));
+    const data = (await res.json()) as { messages: RawHcsMessage[] };
+
+    return data.messages.map((m) => ({
+      sequenceNumber: m.sequence_number,
+      contents: Buffer.from(m.message, "base64").toString("utf-8"),
+      consensusTimestamp: m.consensus_timestamp,
+      topicId: m.topic_id,
+    }));
+  }, RETRY_POLICIES.MIRROR_NODE);
 }
 
 // ---------------------------------------------------------------------------
