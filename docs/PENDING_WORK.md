@@ -1,7 +1,7 @@
 # Pending Work — Gap Tracker for Agent Coordination
 
 **Purpose:** Structured list of all known gaps, missing files, and incomplete features — prioritized by submission impact.
-**Last Audited:** 2026-04-04T12:00Z
+**Last Audited:** 2026-04-04T14:00Z
 **Cross-Reference:** [`ACTIVE_WORK.md`](ACTIVE_WORK.md) for current ownership claims and file locks.
 
 > **🤖 AGENTS:** This file is your task board. Do NOT start work without checking [`ACTIVE_WORK.md`](ACTIVE_WORK.md) first.
@@ -126,6 +126,8 @@
 | P-068 | PRIVATE_KEY in .env.local didn't match deployer wallet | ✅ done | Agent 8 | `.env.local` | Agents set a different key during dev. Fixed: restored deployer key (0x58c4...) for seed script. |
 | P-069 | ReputationRegistry self-feedback blocks demo seeding | known-limitation | — | `contracts/0g/ReputationRegistryUpgradeable.sol` | Deployer owns all identities, cannot giveFeedback to self. Mock fallback data in API routes provides scores. Would need 2nd wallet for on-chain reputation. |
 | P-070 | GPUProviderRegistry 1-provider-per-wallet limit | known-limitation | — | `contracts/0g/GPUProviderRegistry.sol` | Only GPU-Alpha registered. GPU-Beta skipped. Would need 2nd wallet address. |
-| P-072 | agents/register 500s on malformed address (no input validation) | unclaimed | — | `src/app/api/agents/register/route.ts` | `isVerifiedOnChain()` throws InvalidAddress instead of returning 400. Low priority — only affects bad input. |
+| P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `src/app/api/agents/register/route.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
+| P-073 | README.md missing `/api/edge/trade` route | ✅ done | Agent 9 | `README.md` | Added Edge trade route to API Routes table |
+| P-074 | ARCHITECTURE.md missing `/api/edge/trade` + `prediction-math.ts` | ✅ done | Agent 9 | `docs/ARCHITECTURE.md` | Added edge/trade route tree + prediction-math.ts to lib listing |
 
-> Agents: Add new items here. Use IDs P-073+.
+> Agents: Add new items here. Use IDs P-075+.

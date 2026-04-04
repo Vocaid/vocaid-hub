@@ -114,6 +114,7 @@ Fill in the private keys for each layer:
 | **0G (Verify)** | `PRIVATE_KEY`, `OG_BROKER_PRIVATE_KEY` | RPC + contract addresses pre-filled |
 | **Hedera (Settle)** | `HEDERA_OPERATOR_KEY` | Operator ID, USDC token, Blocky402 pre-filled |
 | **AgentKit** | `OPERATOR_WORLD_ID` | Your World ID nullifier hash |
+| **Demo** | `DEMO_MODE`, `DEMO_WALLET_KEY` | Set `DEMO_MODE=true` to bypass 0G chain calls when testnet is down. `DEMO_WALLET_KEY` for 2nd wallet (reputation feedback). |
 
 ### Deploy Contracts (optional — already deployed on testnets)
 
@@ -131,6 +132,12 @@ npx tsx scripts/register-agents.ts   # Register 4 agents via AgentKit
 npx tsx scripts/seed-demo-data.ts
 ```
 
+### Run Agent Fleet Demo (optional)
+
+```bash
+npx tsx scripts/demo-agent-fleet.ts
+```
+
 ### Run Development Server
 
 ```bash
@@ -146,7 +153,7 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | Route | Method | Description | Chain |
 |-------|--------|------------|-------|
 | `/api/auth/[...nextauth]` | GET/POST | NextAuth session provider | — |
-| `/api/verify-proof` | POST | Validate World ID ZK proof + CredentialGate tx | World |
+| `/api/verify-proof` | POST | Validate World ID ZK proof (v4 API) + CredentialGate tx + VCRED mint | World + Hedera |
 | `/api/world-id/check` | GET | Check World ID verification status | World |
 | `/api/rp-signature` | POST | Generate RP signature for World ID | World |
 | `/api/gpu/register` | POST | Register GPU provider on ERC-8004 | 0G |
@@ -157,10 +164,11 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/predictions/[id]/bet` | POST | Place bet on prediction market | 0G |
 | `/api/predictions/[id]/claim` | POST | Claim prediction market winnings | 0G |
 | `/api/predictions/[id]/resolve` | POST | Resolve prediction market outcome | 0G |
-| `/api/payments` | GET/POST | x402 USDC payments via Blocky402 | Hedera |
+| `/api/payments` | GET/POST | x402 USDC payments via Blocky402 + auto-feedback + HCS audit | Hedera + 0G |
 | `/api/initiate-payment` | POST | MiniKit payment initiation | Hedera |
 | `/api/hedera/audit` | GET | Query HCS audit trail via Mirror Node | Hedera |
 | `/api/seer/inference` | POST | Seer agent 0G Compute inference | 0G |
+| `/api/edge/trade` | POST | Edge agent trade execution + Shield clearance | 0G |
 | `/api/reputation` | GET | Query ERC-8004 reputation scores | 0G |
 | `/api/resources` | GET | Unified resource listing (all types) | 0G + Hedera |
 
@@ -215,11 +223,11 @@ vocaid-hub/
 │   │   ├── layout.tsx          # Root layout + MiniKit provider
 │   │   ├── page.tsx            # Landing page
 │   │   ├── (protected)/        # Auth-gated routes (World ID required)
-│   │   │   ├── home/           # Marketplace (ISR 30s)
-│   │   │   ├── predictions/    # Prediction markets (ISR 10s)
-│   │   │   └── profile/        # User profile + agent fleet (SSR)
+│   │   │   ├── home/           # Marketplace (ISR 30s) — page, loading, error
+│   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
+│   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
-│   │   └── api/                # 18 server-side API routes
+│   │   └── api/                # 19 server-side API routes
 │   ├── lib/                    # Shared server utilities (14 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
@@ -253,6 +261,13 @@ vocaid-hub/
 │   ├── .agents/                # Agent soul files
 │   └── skills/                 # Custom skills (5)
 ├── scripts/                    # Deploy + demo scripts
+│   ├── deploy-0g.ts            # Deploy contracts to 0G Galileo
+│   ├── deploy-world.ts         # Deploy CredentialGate to World Sepolia
+│   ├── setup-hedera.ts         # Create HTS tokens + HCS topic
+│   ├── register-agents.ts      # Register 4 agents via AgentKit
+│   ├── seed-demo-data.ts       # Pre-populate demo state
+│   ├── demo-flow.md            # 7-step demo walkthrough
+│   └── demo-agent-fleet.ts     # 4-agent decision cycle demo
 ├── deployments/                # Contract addresses (JSON)
 ├── public/agent-cards/         # ERC-8004 A2A agent cards
 └── docs/                       # 15+ planning documents

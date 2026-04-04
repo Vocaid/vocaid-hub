@@ -48,7 +48,7 @@ vocaid-hub/
 │       │   └── [...nextauth]/
 │       │       └── route.ts   # NextAuth session provider
 │       ├── verify-proof/
-│       │   └── route.ts       # World ID proof validation
+│       │   └── route.ts       # World ID v4 proof validation + CredentialGate + VCRED mint
 │       ├── world-id/
 │       │   └── check/
 │       │       └── route.ts   # World ID status check
@@ -60,7 +60,7 @@ vocaid-hub/
 │       │   └── list/
 │       │       └── route.ts   # List verified providers
 │       ├── payments/
-│       │   └── route.ts       # Hedera x402 via Blocky402
+│       │   └── route.ts       # Hedera x402 via Blocky402 + auto-feedback + HCS audit
 │       ├── initiate-payment/
 │       │   └── route.ts       # MiniKit payment initiation
 │       ├── hedera/
@@ -69,6 +69,9 @@ vocaid-hub/
 │       ├── seer/
 │       │   └── inference/
 │       │       └── route.ts   # Seer 0G Compute inference via broker SDK
+│       ├── edge/
+│       │   └── trade/
+│       │       └── route.ts   # Edge agent trade execution + Shield clearance
 │       ├── predictions/
 │       │   ├── route.ts       # List/create markets
 │       │   └── [id]/
@@ -98,6 +101,7 @@ vocaid-hub/
 │   ├── agentkit.ts            # World AgentKit registration (ERC-8004)
 │   ├── world-id.ts            # World ID verification + auth gate
 │   ├── reputation.ts          # ERC-8004 ReputationRegistry queries
+│   ├── prediction-math.ts    # Prediction market odds/payout calculations
 │   ├── x402-middleware.ts     # x402 payment-gating wrapper for API routes
 │   ├── contracts.ts           # Contract ABIs + addresses from deployments/
 │   └── types.ts               # Shared TypeScript types
@@ -160,6 +164,7 @@ vocaid-hub/
 │   ├── setup-hedera.ts        # Create HTS tokens + HCS topic
 │   ├── seed-demo-data.ts      # Pre-populate demo state (GPU providers, markets, reputation)
 │   ├── demo-flow.md           # 7-step demo walkthrough for presenters
+│   ├── demo-agent-fleet.ts    # 4-agent autonomy demo (Seer→Edge→Shield→Lens)
 │   └── dev.sh                 # Local dev startup (contracts + ngrok + Next.js)
 │
 ├── deployments/               # Contract addresses (filled during Wave 1)
