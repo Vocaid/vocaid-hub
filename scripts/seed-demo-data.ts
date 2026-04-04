@@ -131,13 +131,21 @@ async function main() {
   // ── Phase 2: Register GPU provider ─────────────────────
   console.log("\nPhase 2: Registering GPU provider...");
   const alphaHash = keccak256(toHex("gpu-alpha-attestation"));
-  const h2 = await walletClient.writeContract({
-    address: C.GPUProviderRegistry, abi: gpuProviderABI, functionName: "registerProvider",
-    args: [agentIds[0], "NVIDIA H100 80GB", "Intel TDX", alphaHash], chain: ogGalileo,
-  });
-  await publicClient.waitForTransactionReceipt({ hash: h2, ...WAIT_OPTS });
-  console.log("  GPU-Alpha registered (H100 / Intel TDX)");
-  console.log("  Note: GPU-Beta skipped (1 provider per wallet limit)");
+  try {
+    const h2 = await walletClient.writeContract({
+      address: C.GPUProviderRegistry, abi: gpuProviderABI, functionName: "registerProvider",
+      args: [agentIds[0], "NVIDIA H100 80GB", "Intel TDX", alphaHash], chain: ogGalileo,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: h2, ...WAIT_OPTS });
+    console.log("  GPU-Alpha registered (H100 / Intel TDX)");
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("0x3a81d6fc") || msg.includes("AlreadyRegistered")) {
+      console.log("  GPU-Alpha: already registered (skipping)");
+    } else {
+      console.log(`  GPU-Alpha: skipped (${msg.slice(0, 80)})`);
+    }
+  }
 
   // ── Phase 3: TEE validation for GPU-Alpha ──────────────
   console.log("\nPhase 3: Submitting TEE validation...");
@@ -242,6 +250,19 @@ async function main() {
       } catch (e: any) {
         console.log(`  Agent ${fb.agentId}: feedback skipped (${e.message?.slice(0, 60)})`);
       }
+    }
+
+    // Approve demo wallet to act on GPU-Beta's identity (deployer owns it)
+    try {
+      const approveABI = [{ name: "approve", type: "function", stateMutability: "nonpayable", inputs: [{ name: "to", type: "address" }, { name: "tokenId", type: "uint256" }], outputs: [] }] as const;
+      const hApprove = await walletClient.writeContract({
+        address: C.IdentityRegistry, abi: approveABI, functionName: "approve",
+        args: [demoAccount.address, agentIds[1]], chain: ogGalileo,
+      });
+      await publicClient.waitForTransactionReceipt({ hash: hApprove, ...WAIT_OPTS });
+      console.log(`  GPU-Beta identity approved for demo wallet`);
+    } catch (e: any) {
+      console.log(`  GPU-Beta approval: skipped (${e.message?.slice(0, 60)})`);
     }
 
     // Register GPU-Beta with demo wallet (different address = no AlreadyRegistered)
