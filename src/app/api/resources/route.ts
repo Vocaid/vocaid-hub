@@ -3,7 +3,7 @@ import { requireWorldId } from "@/lib/world-id";
 import type { ResourceCardProps } from "@/components/ResourceCard";
 import type { ResourceSignals } from "@/components/ReputationSignals";
 import type { OGServiceInfo } from "@/lib/og-compute";
-import type { OnChainGPUProvider } from "@/lib/og-chain";
+import { type OnChainGPUProvider, getReputationSummary } from "@/lib/og-chain";
 
 type SortField = "quality" | "cost" | "latency" | "uptime";
 type FilterType = "gpu" | "agent" | "human";
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
     const gpuResources = await mapGpuToResources(broker, onChain, getValidationSummary);
     const rawResources: ResourceWithAgent[] = [
-      ...mapAgentsToResources(agents),
+      ...(await mapAgentsToResources(agents)),
       ...gpuResources,
     ];
 
@@ -157,19 +157,29 @@ interface AgentData {
   type: string;
 }
 
-function mapAgentsToResources(agents: AgentData[]): ResourceWithAgent[] {
-  return agents.map((a) => ({
-    type: "agent" as const,
-    name: a.role
-      ? `${a.role.charAt(0).toUpperCase()}${a.role.slice(1)} Agent`
-      : `Agent #${a.agentId}`,
-    subtitle: a.agentURI || a.type || "AI Agent",
-    reputation: 85,
-    verified: !!a.operatorWorldId,
-    chain: "world" as const,
-    price: "$0.02/call",
-    verificationType: "world-id" as const,
-    _agentId: a.agentId.toString(),
+async function mapAgentsToResources(agents: AgentData[]): Promise<ResourceWithAgent[]> {
+  return Promise.all(agents.map(async (a) => {
+    let reputation = 85;
+    try {
+      const rep = await getReputationSummary(BigInt(a.agentId));
+      if (rep.count > 0n) {
+        reputation = Math.min(100, Math.max(0, Math.round(Number(rep.summaryValue) / (10 ** rep.decimals))));
+      }
+    } catch { /* fallback to 85 */ }
+
+    return {
+      type: "agent" as const,
+      name: a.role
+        ? `${a.role.charAt(0).toUpperCase()}${a.role.slice(1)} Agent`
+        : `Agent #${a.agentId}`,
+      subtitle: a.agentURI || a.type || "AI Agent",
+      reputation,
+      verified: !!a.operatorWorldId,
+      chain: "world" as const,
+      price: "$0.02/call",
+      verificationType: "world-id" as const,
+      _agentId: a.agentId.toString(),
+    };
   }));
 }
 
@@ -203,11 +213,20 @@ async function mapGpuToResources(
       validated = b?.teeSignerAcknowledged ?? false;
     }
 
+    // Reputation lookup
+    let reputation = 75;
+    try {
+      const rep = await getReputationSummary(BigInt(p.agentId));
+      if (rep.count > 0n) {
+        reputation = Math.min(100, Math.max(0, Math.round(Number(rep.summaryValue) / (10 ** rep.decimals))));
+      }
+    } catch { /* fallback */ }
+
     resources.push({
       type: "gpu" as const,
       name: b?.model || p.gpuModel || "GPU Provider",
       subtitle: b?.url || `${p.teeType} · Agent #${p.agentId}`,
-      reputation: 75,
+      reputation,
       verified: validated,
       chain: "0g" as const,
       price: "$0.05/call",
