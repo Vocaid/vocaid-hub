@@ -9,7 +9,7 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 /* ─── Types ────────────────────────────────────────── */
 
@@ -133,7 +133,24 @@ export default function GPUStepper() {
   const [step3, setStep3] = useState<StepState>({ status: 'idle' });
   const [isDemoMode, setIsDemoMode] = useState(false);
 
-  /* ── Step 1: Connect Wallet ──────────────────────── */
+  /* ── Auto-connect wallet from session on mount ──── */
+  useEffect(() => {
+    if (!walletAddress && step1.status === 'idle') {
+      // Try to get wallet from session (user is already authenticated)
+      fetch('/api/auth/session')
+        .then(r => r.json())
+        .then(session => {
+          if (session?.user?.address) {
+            setWalletAddress(session.user.address);
+            setStep1({ status: 'success' });
+            setCurrentStep(2);
+          }
+        })
+        .catch(() => { /* fallback to manual connect */ });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── Step 1: Connect Wallet (fallback) ──────────── */
 
   const connectWallet = useCallback(async () => {
     setStep1({ status: 'loading' });

@@ -232,76 +232,78 @@ function AgentRegisterPanel() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-xl border border-border bg-white p-4">
-        <div className="flex items-center gap-2 mb-1">
+    <div className="flex flex-col gap-3">
+      <div className="rounded-xl border border-border-card bg-white p-4 flex flex-col gap-4 shadow-sm">
+        <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary-accent" />
           <h3 className="font-semibold text-primary">Register AI Agent</h3>
         </div>
-        <p className="text-xs text-secondary mb-4">
-          List your AI agent as a leasable resource on the marketplace. Other users and agents can discover and hire it.
+        <p className="text-xs text-secondary">
+          List your AI agent as a leasable resource on the marketplace.
         </p>
 
-        <input
-          type="text"
-          placeholder="Agent name (e.g. Orion, DataBot-7)"
-          value={agentName}
-          onChange={(e) => setAgentName(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
-        />
-
-        <p className="text-[10px] text-secondary mb-1.5">Capability</p>
-        <div className="flex flex-wrap gap-1 mb-3">
-          {AGENT_CAPABILITIES.map((cap) => (
-            <button
-              key={cap.id}
-              onClick={() => setCapability(cap.id)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                capability === cap.id
-                  ? 'bg-primary-accent text-white'
-                  : 'bg-surface text-secondary hover:text-primary'
-              }`}
-            >
-              {cap.label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="agent-name" className="text-sm font-medium text-primary">Agent Name</label>
+          <input
+            id="agent-name"
+            type="text"
+            placeholder="e.g. Orion, DataBot-7"
+            value={agentName}
+            onChange={(e) => setAgentName(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
         </div>
 
-        <input
-          type="text"
-          placeholder="Price (e.g. $0.01/query, $5/hr)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="agent-capability" className="text-sm font-medium text-primary">Capability</label>
+          <select
+            id="agent-capability"
+            value={capability ?? ''}
+            onChange={(e) => setCapability(e.target.value || null)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
+          >
+            <option value="">Select capability...</option>
+            {AGENT_CAPABILITIES.map((cap) => (
+              <option key={cap.id} value={cap.id}>{cap.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="agent-price" className="text-sm font-medium text-primary">Price (optional)</label>
+          <input
+            id="agent-price"
+            type="text"
+            placeholder="e.g. $0.01/query, $5/hr"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
+        </div>
 
         {status === 'success' && (
-          <div className="rounded-lg bg-green-50 p-3 mb-3">
-            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+          <div className="rounded-lg bg-status-verified/10 border border-status-verified/30 p-3">
+            <div className="flex items-center gap-2 text-status-verified text-sm font-medium">
               <Check className="h-4 w-4" /> Agent listed on marketplace
             </div>
           </div>
         )}
 
         {status === 'error' && (
-          <div className="rounded-lg bg-red-50 p-3 mb-3">
-            <p className="text-xs text-red-600">Registration failed. Verify World ID and try again.</p>
+          <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3">
+            <p className="text-xs text-status-failed">Registration failed. Check connection and try again.</p>
           </div>
         )}
 
         <button
           onClick={handleRegister}
           disabled={!agentName || !capability || status === 'loading'}
-          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full min-h-[44px] rounded-lg bg-primary-accent text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform"
         >
           {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
           {status === 'loading' ? 'Registering...' : 'List Agent on Marketplace'}
         </button>
       </div>
-
-      <p className="text-center text-[10px] text-secondary">
-        Looking for OpenClaw trading agents (Seer, Edge, Shield, Lens)? Deploy them from your <strong>Profile</strong> page.
-      </p>
     </div>
   );
 }
@@ -346,66 +348,75 @@ function HumanRegisterPanel() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-xl border border-border bg-white p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <User className="h-5 w-5 text-chain-world" />
+    <div className="flex flex-col gap-3">
+      <div className="rounded-xl border border-border-card bg-white p-4 flex flex-col gap-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <User className="h-5 w-5 text-primary-accent" />
           <h3 className="font-semibold text-primary">Register Human Skills</h3>
         </div>
-        <p className="text-xs text-secondary mb-4">Offer your verified skills for hire. World ID proves you&apos;re human — agents can lease your expertise.</p>
+        <p className="text-xs text-secondary">Offer your verified skills for hire. World ID proves you&apos;re human.</p>
 
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          {SKILL_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategory(cat.id)}
-              className={`rounded-lg border p-2.5 text-left transition-colors ${
-                category === cat.id
-                  ? 'border-primary-accent bg-primary-accent/5'
-                  : 'border-border hover:border-primary-accent/50'
-              }`}
-            >
-              <span className="text-xs font-medium text-primary">{cat.label}</span>
-              <span className="block text-[10px] text-secondary mt-0.5">{cat.examples}</span>
-            </button>
-          ))}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="skill-category" className="text-sm font-medium text-primary">Category</label>
+          <select
+            id="skill-category"
+            value={category ?? ''}
+            onChange={(e) => setCategory(e.target.value || null)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
+          >
+            <option value="">Select category...</option>
+            {SKILL_CATEGORIES.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.label} — {cat.examples}</option>
+            ))}
+          </select>
         </div>
 
-        <input
-          type="text"
-          placeholder="Skill name (e.g. Rust L4, Solidity Auditor)"
-          value={skillName}
-          onChange={(e) => setSkillName(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-2 focus:outline-none focus:border-primary-accent"
-        />
-        <input
-          type="text"
-          placeholder="Hourly rate (e.g. $25/hr)"
-          value={hourlyRate}
-          onChange={(e) => setHourlyRate(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="skill-name" className="text-sm font-medium text-primary">Skill Name</label>
+          <input
+            id="skill-name"
+            type="text"
+            placeholder="e.g. Rust Developer L4, Solidity Auditor"
+            value={skillName}
+            onChange={(e) => setSkillName(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="hourly-rate" className="text-sm font-medium text-primary">Hourly Rate (optional)</label>
+          <input
+            id="hourly-rate"
+            type="text"
+            placeholder="e.g. $25/hr"
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
+        </div>
 
         {status === 'success' && (
-          <div className="rounded-lg bg-green-50 p-3 mb-3">
-            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+          <div className="rounded-lg bg-status-verified/10 border border-status-verified/30 p-3">
+            <div className="flex items-center gap-2 text-status-verified text-sm font-medium">
               <Check className="h-4 w-4" /> Skills registered on ERC-8004
             </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3">
+            <p className="text-xs text-status-failed">Registration failed. Check connection and try again.</p>
           </div>
         )}
 
         <button
           onClick={handleRegister}
           disabled={!category || !skillName || status === 'loading'}
-          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full min-h-[44px] rounded-lg bg-primary-accent text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform"
         >
           {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
           {status === 'loading' ? 'Registering...' : 'Register Skills'}
         </button>
-      </div>
-      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-world" /> World ID Verified</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> ERC-8004</span>
       </div>
     </div>
   );
@@ -451,66 +462,75 @@ function DePINRegisterPanel() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-xl border border-border bg-white p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Wifi className="h-5 w-5 text-chain-hedera" />
+    <div className="flex flex-col gap-3">
+      <div className="rounded-xl border border-border-card bg-white p-4 flex flex-col gap-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Wifi className="h-5 w-5 text-primary-accent" />
           <h3 className="font-semibold text-primary">Register Physical Infrastructure</h3>
         </div>
-        <p className="text-xs text-secondary mb-4">Register DePIN hardware for the agentic economy — verified on-chain, discoverable by any agent.</p>
+        <p className="text-xs text-secondary">Register DePIN hardware — verified on-chain, discoverable by any agent.</p>
 
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          {DEPIN_TYPES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setInfraType(t.id)}
-              className={`rounded-lg border p-2.5 text-left transition-colors ${
-                infraType === t.id
-                  ? 'border-primary-accent bg-primary-accent/5'
-                  : 'border-border hover:border-primary-accent/50'
-              }`}
-            >
-              <span className="text-xs font-medium text-primary">{t.label}</span>
-              <span className="block text-[10px] text-secondary mt-0.5">{t.desc}</span>
-            </button>
-          ))}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="depin-type" className="text-sm font-medium text-primary">Infrastructure Type</label>
+          <select
+            id="depin-type"
+            value={infraType ?? ''}
+            onChange={(e) => setInfraType(e.target.value || null)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
+          >
+            <option value="">Select type...</option>
+            {DEPIN_TYPES.map((t) => (
+              <option key={t.id} value={t.id}>{t.label} — {t.desc}</option>
+            ))}
+          </select>
         </div>
 
-        <input
-          type="text"
-          placeholder="Location (e.g. US-East, EU-West)"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-2 focus:outline-none focus:border-primary-accent"
-        />
-        <input
-          type="text"
-          placeholder="Capacity (e.g. 10TB, 100Mbps, 5kW)"
-          value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="depin-location" className="text-sm font-medium text-primary">Location (optional)</label>
+          <input
+            id="depin-location"
+            type="text"
+            placeholder="e.g. US-East, EU-West"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="depin-capacity" className="text-sm font-medium text-primary">Capacity (optional)</label>
+          <input
+            id="depin-capacity"
+            type="text"
+            placeholder="e.g. 10TB, 100Mbps, 5kW"
+            value={capacity}
+            onChange={(e) => setCapacity(e.target.value)}
+            className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
+          />
+        </div>
 
         {status === 'success' && (
-          <div className="rounded-lg bg-green-50 p-3 mb-3">
-            <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+          <div className="rounded-lg bg-status-verified/10 border border-status-verified/30 p-3">
+            <div className="flex items-center gap-2 text-status-verified text-sm font-medium">
               <Check className="h-4 w-4" /> Infrastructure registered on ERC-8004
             </div>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3">
+            <p className="text-xs text-status-failed">Registration failed. Check connection and try again.</p>
           </div>
         )}
 
         <button
           onClick={handleRegister}
           disabled={!infraType || status === 'loading'}
-          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full min-h-[44px] rounded-lg bg-primary-accent text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform"
         >
           {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
           {status === 'loading' ? 'Registering...' : 'Register Infrastructure'}
         </button>
-      </div>
-      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> 0G Chain</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-hedera" /> Hedera Audit</span>
       </div>
     </div>
   );
