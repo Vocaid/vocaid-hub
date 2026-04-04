@@ -24,7 +24,7 @@ export async function GET() {
     type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
     name: "Vocaid Hub",
     description:
-      "Hybrid Resource Allocation Protocol — 4 AI agents backed by World ID-verified human operators, registered on 0G Chain via ERC-8004.",
+      "Reliable Resources for the Agentic Economy — 4 AI agents backed by World ID-verified human operators, registered on 0G Chain via ERC-8004.",
     version: "1.0.0",
     operator: {
       worldAppId: process.env.NEXT_PUBLIC_WORLD_APP_ID || "app_74d7b06d88b9e220ad1cc06e387c55f3",
