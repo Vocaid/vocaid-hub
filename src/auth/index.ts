@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signedNonce: { label: 'Signed Nonce', type: 'text' },
         finalPayloadJson: { label: 'Final Payload', type: 'text' },
       },
-      authorize: async (credentials, _request) => {
+      authorize: async (credentials) => {
         const nonce = credentials?.nonce as string;
         const signedNonce = credentials?.signedNonce as string;
         const finalPayloadJson = credentials?.finalPayloadJson as string;
