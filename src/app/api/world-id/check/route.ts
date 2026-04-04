@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isVerifiedOnChain } from "@/lib/world-id";
+import { auth } from "@/auth";
 import { isAddress, type Address } from "viem";
 
 /**
  * GET /api/world-id/check?address=0x...
  *
  * Lightweight World ID verification status check.
- * Used by middleware for edge-compatible gating and as a debug endpoint.
+ * Requires authenticated session to prevent address enumeration.
  */
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { verified: false, error: "Authentication required" },
+      { status: 401 },
+    );
+  }
+
   const address = req.nextUrl.searchParams.get("address");
   if (!address) {
     return NextResponse.json(

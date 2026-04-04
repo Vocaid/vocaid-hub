@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listProviders } from "@/lib/og-compute";
 import { callInference } from "@/lib/og-broker";
 import { logAuditMessage } from "@/lib/hedera";
+import { requireWorldId } from "@/lib/world-id";
 
 const AUDIT_TOPIC = process.env.HEDERA_AUDIT_TOPIC ?? "";
 
@@ -15,6 +16,9 @@ const AUDIT_TOPIC = process.env.HEDERA_AUDIT_TOPIC ?? "";
  *   4. Falls back to mock when Galileo testnet has no providers
  */
 export async function POST(req: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   const { prompt } = (await req.json()) as { prompt: string };
   if (!prompt) {
     return NextResponse.json({ error: "Missing prompt" }, { status: 400 });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
 import { getValidationSummary } from "@/lib/og-chain";
 import { logAuditMessage } from "@/lib/hedera";
+import { requireWorldId } from "@/lib/world-id";
 
 const AUDIT_TOPIC = process.env.HEDERA_AUDIT_TOPIC ?? "";
 
@@ -30,9 +31,12 @@ function getContract(withSigner = false) {
  * POST /api/edge/trade
  *
  * Edge agent trade execution: Shield clearance → bet placement → HCS audit.
- * No World ID gate — this is an agent endpoint.
+ * Requires World ID verification (prevents unauthorized fund spending).
  */
 export async function POST(request: NextRequest) {
+  const gate = await requireWorldId();
+  if (gate instanceof NextResponse) return gate;
+
   try {
     const body = await request.json();
     const { marketId, side, amount, targetAgentId = 7, reason } = body;

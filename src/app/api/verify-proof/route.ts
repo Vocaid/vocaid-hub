@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { registerOnChain } from '@/lib/world-id';
 import { mintCredential, logAuditMessage } from '@/lib/hedera';
-import type { Address } from 'viem';
+import { isAddress, type Address } from 'viem';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 interface IRequestPayload {
   payload: {
@@ -36,6 +37,9 @@ interface IVerifyResponse {
  * @see node_modules/@worldcoin/idkit-core/README.md (lines 91-98)
  */
 export async function POST(req: NextRequest) {
+  const rateLimited = checkRateLimit(req, 10, 60_000); // 10 verify attempts/min
+  if (rateLimited) return rateLimited;
+
   const body = await req.json();
   const { payload, action, signal } = body as IRequestPayload;
   const rp_id = process.env.RP_ID ?? process.env.WORLD_RP_ID;
@@ -73,6 +77,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (verifyRes.success) {
+    // Validate signal is a valid Ethereum address before using it for on-chain ops
+    if (signal && !isAddress(signal)) {
+      return NextResponse.json(
+        { error: 'Invalid signal — must be a valid Ethereum address' },
+        { status: 400 },
+      );
+    }
+
     // Register on-chain via CredentialGate (only with v2 legacy proof fields)
     let onChainResult = null;
     if (signal && process.env.CREDENTIAL_GATE && payload.merkle_root && payload.proof) {
