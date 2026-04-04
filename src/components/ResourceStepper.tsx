@@ -473,15 +473,23 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
                 text="Discoverable by Agents"
               />
               {registration.txHash && (
-                <a
-                  href={`${OG_EXPLORER}/tx/${registration.txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-border-card px-4 py-2 text-xs font-medium text-primary active:scale-[0.98] cursor-pointer"
-                >
-                  View on Explorer
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                <>
+                  <div className="flex items-center gap-1.5 pt-1 border-t border-border-card">
+                    <span className="text-[10px] text-secondary">Tx Hash:</span>
+                    <code className="font-mono text-[10px] text-primary truncate max-w-[200px]">
+                      {registration.txHash}
+                    </code>
+                  </div>
+                  <a
+                    href={`${OG_EXPLORER}/tx/${registration.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-border-card px-4 py-2 text-xs font-medium text-primary active:scale-[0.98] cursor-pointer"
+                  >
+                    View on Explorer
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </>
               )}
             </div>
           ) : step3.status === 'error' ? (
