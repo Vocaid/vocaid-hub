@@ -114,7 +114,7 @@ Fill in the private keys for each layer:
 | **0G (Verify)** | `PRIVATE_KEY`, `OG_BROKER_PRIVATE_KEY` | RPC + contract addresses pre-filled |
 | **Hedera (Settle)** | `HEDERA_OPERATOR_KEY` | Operator ID, USDC token, Blocky402 pre-filled |
 | **AgentKit** | `OPERATOR_WORLD_ID` | Your World ID nullifier hash |
-| **Demo** | `DEMO_MODE`, `DEMO_WALLET_KEY` | Set `DEMO_MODE=true` to bypass 0G chain calls when testnet is down. `DEMO_WALLET_KEY` for 2nd wallet (reputation feedback). |
+| **Demo** | `DEMO_WALLET_KEY` | 2nd wallet for reputation feedback + multi-provider registration (avoids self-feedback restriction). |
 
 ### Deploy Contracts (optional — already deployed on testnets)
 
@@ -297,7 +297,7 @@ vocaid-hub/
 │   │   ├── PredictionCard.tsx  # Prediction market card
 │   │   ├── SignalTicker.tsx    # 2-row auto-scrolling market signal ticker
 │   │   ├── ActivityFeed.tsx    # Live activity feed with filter chips
-│   │   ├── GPUStepper.tsx      # GPU registration stepper
+│   │   ├── ResourceStepper.tsx  # Unified 3-step registration (GPU/Agent/Human/DePIN)
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
 │   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
 │   │   ├── PostHireRating.tsx   # Post-hire rating + prediction suggestion

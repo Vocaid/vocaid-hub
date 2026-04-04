@@ -43,19 +43,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify the operator has a valid World ID on-chain
-    // In demo mode, skip on-chain verification (testnet may be unreachable)
-    const demoMode = process.env.DEMO_MODE === 'true';
-    if (!demoMode) {
-      const isVerified = await isVerifiedOnChain(operatorAddress as Address);
-      if (!isVerified) {
-        return NextResponse.json(
-          {
-            error:
-              "Operator address is not World ID verified. Complete World ID verification first.",
-          },
-          { status: 403 },
-        );
-      }
+    const isVerified = await isVerifiedOnChain(operatorAddress as Address);
+    if (!isVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Operator address is not World ID verified. Complete World ID verification first.",
+        },
+        { status: 403 },
+      );
     }
 
     // Register on 0G Chain IdentityRegistry

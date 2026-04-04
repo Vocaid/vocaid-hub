@@ -131,7 +131,7 @@ vocaid-hub/
 │   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
 │   ├── CreateMarketModal.tsx  # Prediction market creation modal
 │   ├── RegisterAgentModal.tsx # Agent registration with role selector
-│   ├── GPUStepper.tsx         # GPU provider registration stepper
+│   ├── ResourceStepper.tsx    # Unified 3-step registration (GPU/Agent/Human/DePIN)
 │   ├── Navigation/            # Bottom tab navigation (World App)
 │   ├── PageLayout/            # Page wrapper with header
 │   ├── PaymentConfirmation.tsx # x402 payment receipt
