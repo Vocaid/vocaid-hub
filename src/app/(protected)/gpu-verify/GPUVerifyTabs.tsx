@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowRightLeft, BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
+import { BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
 import GPUStepper from '@/components/GPUStepper';
-import TradingDesk from '@/components/TradingDesk';
 import { ResourceCard, type ResourceCardProps } from '@/components/ResourceCard';
 import {
   ReputationSignals,
@@ -24,7 +23,7 @@ async function getSessionAddress(): Promise<{ address: string; worldId: string }
   }
 }
 
-type Tab = 'dashboard' | 'register' | 'trading';
+type Tab = 'dashboard' | 'register';
 
 interface ResourceWithSignals extends ResourceCardProps {
   agentId?: number;
@@ -77,17 +76,6 @@ export default function GPUVerifyTabs() {
         >
           <Plus className="h-4 w-4" />
           Register
-        </button>
-        <button
-          onClick={() => { setActiveTab('trading'); setSelectedResource(null); }}
-          className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'trading'
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-secondary hover:text-primary'
-          }`}
-        >
-          <ArrowRightLeft className="h-4 w-4" />
-          Trading
         </button>
       </div>
 
@@ -192,14 +180,11 @@ export default function GPUVerifyTabs() {
         </>
       )}
 
-      {activeTab === 'trading' && <TradingDesk />}
-
       {/* Detail View */}
       {activeTab === 'dashboard' && selectedResource && (
         <ResourceDetailView
           resource={selectedResource}
           onBack={() => setSelectedResource(null)}
-          onHire={() => { setActiveTab('trading'); setSelectedResource(null); }}
         />
       )}
     </div>
@@ -534,11 +519,9 @@ function DePINRegisterPanel() {
 function ResourceDetailView({
   resource,
   onBack,
-  onHire,
 }: {
   resource: ResourceWithSignals;
   onBack: () => void;
-  onHire: () => void;
 }) {
   return (
     <div className="space-y-4">
@@ -581,12 +564,9 @@ function ResourceDetailView({
         )}
       </div>
 
-      <button
-        onClick={onHire}
-        className="w-full rounded-xl bg-primary-accent py-3 text-center font-semibold text-white transition-colors hover:bg-primary-accent/90"
-      >
-        Hire — {resource.price} · x402 USDC on Hedera
-      </button>
+      <p className="text-center text-xs text-secondary">
+        This resource is listed on the <a href="/home" className="text-primary-accent font-medium">Market</a> for lease via x402 USDC on Hedera.
+      </p>
     </div>
   );
 }
