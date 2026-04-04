@@ -22,12 +22,12 @@
 
 | Contract | Address |
 |----------|---------|
-| IdentityRegistry | `0x0bd938c2021ba9de937b03f2a4ac793de453e993` |
-| ReputationRegistry | `0x3a7d70e5037811aaf0ccc89d4180917a112f3eed` |
-| ValidationRegistry | `0x345f915375d935298605888926429b9378bddebe` |
-| GPUProviderRegistry | `0x9f522055c682237cf685b8214e1e6c233199abe4` |
-| MockTEEValidator | `0x80597d12e953d7519a248c9eb750339b1c54fb34` |
-| ResourcePrediction | `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e` |
+| IdentityRegistry | `0xc16cf40a33e85f41bed6c90c710ff8c70b8c79ec` |
+| ReputationRegistry | `0xa7ba63bce59d366a1c1b647e4ca75a5c11ca47f4` |
+| ValidationRegistry | `0x629c61e5a8c78725c8e2cfc6d5b441a4bba0517c` |
+| GPUProviderRegistry | `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
+| MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
+| ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
 
 ---
 

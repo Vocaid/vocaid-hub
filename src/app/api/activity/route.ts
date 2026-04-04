@@ -80,17 +80,20 @@ async function fetchReputationEvents(): Promise<ActivityItem[]> {
       toBlock: 'latest',
     });
 
-    return logs.slice(-10).map((log, i) => ({
-      id: `rep-${i}-${log.transactionHash}`,
-      type: 'reputation' as const,
-      agent: 'Lens',
-      action: 'rated',
-      detail: `Agent #${log.args?.agentId?.toString() || '?'} ${log.args?.tag1 || 'quality'}`,
-      value: `${log.args?.value?.toString() || '?'}/100`,
-      chain: '0g' as const,
-      timestamp: Date.now() - i * 60000, // Approximate
-      txHash: log.transactionHash,
-    }));
+    return logs.slice(-10).map((log, i) => {
+      const args = log.args as Record<string, unknown> | undefined;
+      return {
+        id: `rep-${i}-${log.transactionHash}`,
+        type: 'reputation' as const,
+        agent: 'Lens',
+        action: 'rated',
+        detail: `Agent #${args?.agentId?.toString?.() || '?'} ${args?.tag1 || 'quality'}`,
+        value: `${args?.value?.toString?.() || '?'}/100`,
+        chain: '0g' as const,
+        timestamp: Date.now() - i * 60000,
+        txHash: log.transactionHash,
+      };
+    });
   } catch {
     return [];
   }

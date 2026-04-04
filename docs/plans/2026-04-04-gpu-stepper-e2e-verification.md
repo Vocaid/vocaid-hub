@@ -6,7 +6,7 @@
 
 **Architecture:** The GPU stepper is a 3-step client flow (connect wallet → verify node on 0G → register on ERC-8004). It calls two API routes (`/api/gpu/list` and `/api/gpu/register`) which talk to the 0G broker SDK and on-chain contracts. The testnet RPC is currently unreachable (SSL timeout on `evmrpc-testnet.0g.ai`), so we need a mock/fallback path for the demo.
 
-**Tech Stack:** Next.js API routes, ethers.js, @0glabs/0g-serving-broker, GPUProviderRegistry contract at `0x9f522055c682237cf685b8214e1e6c233199abe4`
+**Tech Stack:** Next.js API routes, ethers.js, @0glabs/0g-serving-broker, GPUProviderRegistry contract at `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59`
 
 ---
 

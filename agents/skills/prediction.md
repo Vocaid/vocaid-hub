@@ -26,7 +26,7 @@ Place bet: market 0, side=yes, amount=5 A0GI
 ## Implementation
 
 Calls `ResourcePrediction.createMarket()` and `ResourcePrediction.placeBet()` on 0G Galileo
-testnet at `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e`.
+testnet at `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a`.
 API route: `POST /api/predictions` (create) and `POST /api/predictions/[id]/bet` (bet).
 
 ## Constraints

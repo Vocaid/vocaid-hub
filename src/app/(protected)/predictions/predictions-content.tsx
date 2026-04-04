@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { PredictionCard, type PredictionMarket } from '@/components/PredictionCard';
 import { CreateMarketModal } from '@/components/CreateMarketModal';
@@ -12,6 +12,11 @@ interface PredictionsContentProps {
 export function PredictionsContent({ initialMarkets }: PredictionsContentProps) {
   const [markets, setMarkets] = useState(initialMarkets);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Refresh from API on mount (SSR may have returned stale/empty data)
+  useEffect(() => {
+    refreshMarkets();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function refreshMarkets() {
     try {

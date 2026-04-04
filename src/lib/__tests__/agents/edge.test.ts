@@ -59,7 +59,7 @@ describe('Edge Signature Verification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.OG_RPC_URL = 'https://evmrpc-testnet.0g.ai';
-    process.env.RESOURCE_PREDICTION = '0x6ce572729a5cbc8aa9df7ac25d8076e80665194e';
+    process.env.RESOURCE_PREDICTION = '0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a';
     process.env.PRIVATE_KEY = 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
   });
 
@@ -102,7 +102,7 @@ describe('Edge A2A', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.OG_RPC_URL = 'https://evmrpc-testnet.0g.ai';
-    process.env.RESOURCE_PREDICTION = '0x6ce572729a5cbc8aa9df7ac25d8076e80665194e';
+    process.env.RESOURCE_PREDICTION = '0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a';
     process.env.PRIVATE_KEY = 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
   });
 

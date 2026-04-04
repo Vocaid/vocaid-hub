@@ -10,7 +10,7 @@
 
 ## Context
 
-`ResourcePrediction.sol` is deployed on 0G Galileo at `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e`. The contract supports `createMarket`, `placeBet`, `resolveMarket`, `claimWinnings`, `cancelMarket`, and `claimRefund`. The frontend currently only supports viewing markets and placing bets. Three features complete the DeFi product loop.
+`ResourcePrediction.sol` is deployed on 0G Galileo at `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a`. The contract supports `createMarket`, `placeBet`, `resolveMarket`, `claimWinnings`, `cancelMarket`, and `claimRefund`. The frontend currently only supports viewing markets and placing bets. Three features complete the DeFi product loop.
 
 ## Current Architecture
 

@@ -4,7 +4,7 @@
 
 **Goal:** Complete the prediction markets DeFi product loop — create markets, resolve outcomes, claim winnings, and preview price impact before betting.
 
-**Architecture:** All prediction logic runs on 0G Galileo via `ResourcePrediction.sol` at `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e`. API routes sign transactions server-side using `PRIVATE_KEY`. Market resolution events are cross-chain logged to Hedera HCS topic `0.0.8499635`. Price impact is computed client-side via pure functions.
+**Architecture:** All prediction logic runs on 0G Galileo via `ResourcePrediction.sol` at `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a`. API routes sign transactions server-side using `PRIVATE_KEY`. Market resolution events are cross-chain logged to Hedera HCS topic `0.0.8499635`. Price impact is computed client-side via pure functions.
 
 **Tech Stack:** Next.js 15 App Router, Tailwind CSS 4, ethers v6, @hashgraph/sdk, Lucide React
 
