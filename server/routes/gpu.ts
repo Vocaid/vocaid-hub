@@ -3,7 +3,8 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ethers } from 'ethers';
 import GPUProviderRegistryABI from '@/abi/GPUProviderRegistry.json';
 import { addresses, OG_RPC_URL } from '@/lib/contracts';
-import { listProviders, getProviderMetadata, verifyProvider } from '@/lib/og-compute';
+// Dynamic import to avoid @0glabs/0g-serving-broker ESM crash on startup
+const loadOgCompute = () => import('@/lib/og-compute');
 import { sendRateLimited } from '../plugins/rate-limit';
 import { GpuRegisterSchema, GpuListQuerySchema } from '../schemas/gpu';
 
@@ -91,6 +92,8 @@ export default async function gpuRoutes(app: FastifyInstance) {
       const { address } = request.query;
 
       try {
+        const { listProviders, getProviderMetadata, verifyProvider } = await loadOgCompute();
+
         if (address) {
           const [metadata, verification] = await Promise.all([
             getProviderMetadata(address),
@@ -111,36 +114,9 @@ export default async function gpuRoutes(app: FastifyInstance) {
         const providers = await listProviders();
         return { providers };
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Internal error';
-        request.log.warn({ err }, 'Falling back to demo data');
-
-        if (address) {
-          return {
-            service: {
-              provider: address,
-              model: 'NVIDIA H100 80GB',
-              url: 'https://inference.0g.ai/v1',
-              teeSignerAcknowledged: true,
-              verifiability: 'TDX',
-            },
-            _demo: true,
-          };
-        }
-
-        return {
-          providers: [
-            {
-              provider: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
-              model: 'NVIDIA H100 80GB',
-              url: 'https://inference.0g.ai/v1',
-              inputPrice: '50000',
-              outputPrice: '50000',
-              verifiability: 'TDX',
-              teeSignerAcknowledged: true,
-            },
-          ],
-          _demo: true,
-        };
+        request.log.error({ err }, 'GPU list failed');
+        reply.code(502);
+        return { error: '0G broker unreachable' };
       }
     },
   );
@@ -191,7 +167,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
         );
 
         // 2. Set up wallet + contracts
-        let chainResult: { agentId: string; txHash: string; demo: boolean };
+        let chainResult: { agentId: string; txHash: string };
 
         try {
           const provider = getOgProvider();
@@ -286,11 +262,10 @@ export default async function gpuRoutes(app: FastifyInstance) {
             registeredAgentId = parsed?.args?.[1]?.toString() ?? agentId.toString();
           }
 
-          chainResult = { agentId: registeredAgentId, txHash: receipt!.hash, demo: false };
+          chainResult = { agentId: registeredAgentId, txHash: receipt!.hash };
         } catch (chainErr) {
-          request.log.warn({ err: chainErr }, 'Chain unreachable, using demo fallback');
-          const mockAgentId = String(Math.floor(Math.random() * 1000) + 100);
-          chainResult = { agentId: mockAgentId, txHash: `0x${'d'.repeat(64)}`, demo: true };
+          request.log.error({ err: chainErr }, 'Chain registration failed');
+          return reply.code(502).send({ error: 'On-chain registration failed — 0G Galileo may be unreachable' });
         }
 
         return {
@@ -298,7 +273,6 @@ export default async function gpuRoutes(app: FastifyInstance) {
           txHash: chainResult.txHash,
           attestationHash,
           verified: verification.success,
-          ...(chainResult.demo && { _demo: true }),
         };
       } catch (err) {
         request.log.error({ err }, 'GPU registration failed');

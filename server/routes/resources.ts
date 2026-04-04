@@ -53,8 +53,7 @@ export async function fetchAllResources(sortField: SortField, filterType: Filter
     ...gpuResources,
     ...humanResources,
     ...depinResources,
-    ...(agentResources.length === 0 ? getDemoAgents() : []),
-    ...(depinResources.length === 0 ? getDemoDePIN() : []),
+    // No demo seed data — only real on-chain resources
   ];
 
   let resources = await enrichWithSignals(rawResources);
@@ -165,8 +164,12 @@ interface AgentData {
   type: string;
 }
 
+/** Fleet agent roles are internal (Seer/Edge/Shield/Lens) — never listed on marketplace */
+const FLEET_ROLES = new Set(['signal-analyst', 'market-maker', 'risk-manager', 'discovery']);
+
 async function mapAgentsToResources(agents: AgentData[]): Promise<ResourceWithAgent[]> {
-  const verified = agents.filter((a) => !!a.operatorWorldId);
+  // Exclude fleet agents + require World ID verification
+  const verified = agents.filter((a) => !FLEET_ROLES.has(a.role) && !!a.operatorWorldId);
   return Promise.all(verified.map(async (a) => {
     let reputation = 85;
     try {

@@ -148,18 +148,17 @@ export default async function edgeRoutes(app: FastifyInstance) {
           });
         }
 
-        // Place bet
-        let txHash = '';
-        let demo = false;
+        // Place bet — real on-chain, no fallback
+        let txHash: string;
         try {
           const contract = getContract(true);
           const value = ethers.parseEther(String(amount));
           const tx = await contract.placeBet(marketId, outcomeEnum, { value });
           const receipt = await tx.wait();
           txHash = receipt.hash;
-        } catch {
-          txHash = '0xdemo_edge_trade_' + Date.now().toString(16);
-          demo = true;
+        } catch (betErr) {
+          request.log.error({ err: betErr }, 'Bet placement failed');
+          return reply.code(502).send({ error: 'Bet placement failed — chain may be unreachable' });
         }
 
         // HCS audit (fire-and-forget)
@@ -187,7 +186,6 @@ export default async function edgeRoutes(app: FastifyInstance) {
           marketId,
           side,
           amount: String(amount),
-          ...(demo && { _demo: true, _reason: '0G testnet unreachable — mock response' }),
           ...(shieldFallback && { _shieldFallback: true }),
         };
       } catch (err) {

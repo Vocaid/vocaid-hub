@@ -88,43 +88,8 @@ export default async function predictionRoutes(app: FastifyInstance) {
       return markets;
     } catch (error) {
       request.log.error({ err: error }, 'Failed to fetch prediction markets');
-
-      // C1: Fallback demo data with _demo flag
-      return [
-        {
-          id: 0,
-          question: 'Will H100 cost drop below $0.005 per token by May?',
-          resolutionTime: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,
-          state: 0,
-          winningOutcome: 0,
-          yesPool: '62000000000000000000',
-          noPool: '38000000000000000000',
-          creator: '0x0000000000000000000000000000000000000000',
-          _demo: true,
-        },
-        {
-          id: 1,
-          question: 'Rust developer demand +15% in Q2 2026?',
-          resolutionTime: Math.floor(Date.now() / 1000) + 60 * 24 * 3600,
-          state: 0,
-          winningOutcome: 0,
-          yesPool: '45000000000000000000',
-          noPool: '55000000000000000000',
-          creator: '0x0000000000000000000000000000000000000000',
-          _demo: true,
-        },
-        {
-          id: 2,
-          question: 'EU GPU capacity will exceed US by end of 2026?',
-          resolutionTime: Math.floor(Date.now() / 1000) + 90 * 24 * 3600,
-          state: 0,
-          winningOutcome: 0,
-          yesPool: '30000000000000000000',
-          noPool: '70000000000000000000',
-          creator: '0x0000000000000000000000000000000000000000',
-          _demo: true,
-        },
-      ];
+      reply.code(502);
+      return { error: 'Failed to fetch markets — 0G Galileo may be unreachable' };
     }
   });
 

@@ -26,16 +26,12 @@ const activityRoutes: FastifyPluginAsync = async (app) => {
       if (reputationEvents.status === 'fulfilled') activities.push(...reputationEvents.value);
       if (hcsMessages.status === 'fulfilled') activities.push(...hcsMessages.value);
 
-      activities.push(...getDemoSignals());
-
-      if (activities.length === 0) {
-        return { activities: getDemoActivities() };
-      }
-
+      // Only real on-chain events — no demo data
       activities.sort((a, b) => b.timestamp - a.timestamp);
       return { activities: activities.slice(0, 20) };
-    } catch {
-      return { activities: getDemoActivities() };
+    } catch (err) {
+      request.log.error({ err }, 'Activity feed failed');
+      return { activities: [] };
     }
   });
 };
