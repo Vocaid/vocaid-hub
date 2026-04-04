@@ -46,6 +46,12 @@
 | 6 | P-062: Agent-to-agent fleet demo script | `scripts/demo-agent-fleet.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T11:30Z | 2026-04-04T12:00Z |
 | 3 | P-071: Fix verify-proof to World ID v4 API (was invalid_action) | `src/app/api/verify-proof/route.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T13:00Z | 2026-04-04T13:15Z |
 | 6 | P-061: Edge trade API route + fleet script wiring | `src/app/api/edge/trade/route.ts` (new), `scripts/demo-agent-fleet.ts` | done | 2026-04-04T13:30Z | 2026-04-04T14:00Z |
+| 5 | Fix GPU registration route wiring (ABI mismatch, env var, identity lookup) | `src/abi/GPUProviderRegistry.json`, `src/app/api/gpu/register/route.ts` | done | 2026-04-04T14:00Z | 2026-04-04T14:30Z |
+| 5 | Add demo fallback to GPU routes for 0G testnet downtime (P-046, P-047) | `src/app/api/gpu/list/route.ts`, `src/app/api/gpu/register/route.ts`, `src/components/GPUStepper.tsx`, `.env.example` | done | 2026-04-04T14:30Z | 2026-04-04T15:00Z |
+| 5 | E2E GPU stepper verification + wiring audit | Plan: `docs/plans/2026-04-04-gpu-stepper-e2e-verification.md` | done | 2026-04-04T15:00Z | 2026-04-04T15:30Z |
+| 5 | Fix /api/resources self-fetch + add on-chain GPU listing (P-051, P-052) | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | done | 2026-04-04T15:30Z | 2026-04-04T16:00Z |
+| 5 | P-072: Address validation in agents/register + world-id/check | `src/app/api/agents/register/route.ts`, `src/app/api/world-id/check/route.ts` | done | 2026-04-04T16:00Z | 2026-04-04T16:15Z |
+| 5 | P-071: Pass signal in verify flow + v4/v2 fallback | `src/components/Verify/index.tsx`, `src/app/api/verify-proof/route.ts` | done | 2026-04-04T16:15Z | 2026-04-04T16:30Z |
 
 ---
 
