@@ -24,7 +24,7 @@ export const ogGalileo = {
 export function getPublicClient() {
   return createPublicClient({
     chain: ogGalileo,
-    transport: http(OG_RPC_URL),
+    transport: http(OG_RPC_URL, { timeout: 10_000 }),
   });
 }
 
@@ -36,7 +36,7 @@ export function getWalletClient() {
   return createWalletClient({
     account,
     chain: ogGalileo,
-    transport: http(OG_RPC_URL),
+    transport: http(OG_RPC_URL, { timeout: 10_000 }),
   });
 }
 
@@ -49,7 +49,7 @@ export function getDemoWalletClient() {
   return createWalletClient({
     account,
     chain: ogGalileo,
-    transport: http(OG_RPC_URL),
+    transport: http(OG_RPC_URL, { timeout: 10_000 }),
   });
 }
 
