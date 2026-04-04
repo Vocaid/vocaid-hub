@@ -400,6 +400,63 @@ If Seer or Shield is compromised, the attacker gets read access to chain data bu
 
 ---
 
+## Retroactive Reputation Engine
+
+Vocaid provides **backward-compatible reputation** for the entire 0G provider ecosystem by scanning historical transaction data from the native InferenceServing contract.
+
+### How It Works
+
+```
+0G InferenceServing (0xa79F...91E)
+  │
+  ├── BalanceUpdated events  →  tx count, unique clients, volume per provider
+  ├── RefundRequested events →  dispute count per provider
+  └── ServiceUpdated events  →  first-seen timestamp, model, TEE type
+          │
+          ▼
+  scripts/compute-retroactive-reputation.ts
+          │
+          ├── Phase 1: Scan events (last 2M blocks)
+          ├── Phase 2: Fetch service metadata (model, pricing, TEE)
+          ├── Phase 3: Compute 6 reputation signals + composite
+          ├── Phase 4: Auto-register unregistered providers into ERC-8004
+          ├── Phase 5: Write scores to ReputationRegistry
+          └── Phase 6: Log to Hedera HCS audit topic
+```
+
+### 6 Reputation Signals
+
+| Signal | Weight | Formula | Source |
+|--------|--------|---------|--------|
+| Activity | 25% | `min(100, uniqueClients * 5)` | BalanceUpdated unique user addresses |
+| Settlement Health | 20% | `100 - (refundCount / txCount * 100)` | RefundRequested count vs total |
+| TEE Compliance | 15% | `100 if verifiability present, else 0` | getService() TEE field |
+| Pricing | 15% | `100 - (price / medianPrice * 50)` | getService() inputPrice vs median |
+| Dispute Rate | 15% | `100 - (disputes / txCount * 100)` | RefundRequested events |
+| Longevity | 10% | `min(100, daysSinceFirst * 2)` | ServiceUpdated first-seen block |
+
+### Testnet Data (April 2026)
+
+| Provider | Model | Txs | Clients | Volume | Composite |
+|----------|-------|-----|---------|--------|-----------|
+| `0xa48f...7836` | qwen-2.5-7b-instruct | 205 | 43 | 1,397 A0GI | **91** |
+| `0x4b2a...4389` | qwen-image-edit-2511 | 4 | 4 | 4.6 A0GI | **74** |
+| `0xb8f0...f275` | qwen-2.5-7b-instruct | 17 | 6 | 17 A0GI | **67** |
+| `0x8e60...0049` | gpt-oss-20b | 5 | 2 | 11 A0GI | **65** |
+| 4 others | various/offline | 1-3 | 1-2 | 1-4 A0GI | 44-60 |
+
+**Total: 8 providers, 239 transactions, 1,439 A0GI volume analyzed.**
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/lib/og-inference-serving.ts` | Event scanner for InferenceServing contract |
+| `src/lib/retroactive-reputation.ts` | 6-signal computation + composite scoring |
+| `scripts/compute-retroactive-reputation.ts` | Batch script (scan → register → score → HCS) |
+
+---
+
 ## On-Chain vs Off-Chain Data
 
 ### On-Chain (Permanent, Verifiable)

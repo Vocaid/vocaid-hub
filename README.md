@@ -33,18 +33,18 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                        MINI APP (Next.js 15)                      │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│  │    /     │ │/gpu-verify│ │/predictions│ │  /seer   │ │ /profile │ │
-│  │Marketplace│ │GPU Portal│ │Pred Market│ │Agent Dec.│ │  My Hub  │ │
-│  └────┬─────┘ └────┬─────┘ └────┬──────┘ └────┬─────┘            │
-│       │             │            │              │                  │
-│  ┌────┴─────────────┴────────────┴──────────────┴─────┐           │
-│  │              API ROUTES (Next.js /api/)              │           │
-│  │  /api/verify    /api/gpu     /api/predict  /api/agents│          │
-│  └──────┬────────────┬────────────┬─────────────┬──────┘           │
-└─────────┼────────────┼────────────┼─────────────┼─────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            MINI APP (Next.js 15)                            │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│  │    /     │ │/gpu-verify│ │/predict  │ │  /seer   │ │ /profile │         │
+│  │Marketplace│ │GPU Portal│ │Pred Mkt  │ │Agent Dec.│ │  My Hub  │         │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘         │
+│       │             │            │             │             │               │
+│  ┌────┴─────────────┴────────────┴─────────────┴─────────────┴──────┐       │
+│  │                    API ROUTES (Next.js /api/)                     │       │
+│  │  /api/verify  /api/gpu  /api/predict  /api/agent-decision  /api/agents   │
+│  └──────┬────────────┬────────────┬─────────────┬───────────────────┘       │
+└─────────┼────────────┼────────────┼─────────────┼───────────────────────────┘
           │            │            │             │
     ┌─────┴─────┐ ┌────┴────┐ ┌────┴────┐ ┌─────┴─────┐
     │  WORLD    │ │   0G    │ │ HEDERA  │ │ OPENCLAW  │
@@ -265,7 +265,7 @@ vocaid-hub/
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
 │   │   └── api/                # 22 server-side API routes
-│   ├── lib/                    # Shared server utilities (14 files)
+│   ├── lib/                    # Shared server utilities (19 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
 │   │   ├── blocky402.ts        # x402 facilitator client
@@ -279,6 +279,13 @@ vocaid-hub/
 │   │   ├── reputation.ts       # ERC-8004 reputation queries
 │   │   ├── prediction-math.ts  # Prediction market math
 │   │   ├── contracts.ts        # ABIs + addresses
+│   │   ├── cache.ts            # TTL cache + circuit breaker
+│   │   ├── agent-router.ts     # Agent dispatch + rate limiter
+│   │   ├── agents/             # Per-agent A2A + MCP handlers
+│   │   │   ├── seer.ts         # Signal analysis (0G Compute)
+│   │   │   ├── edge.ts         # Trade execution (signed payloads)
+│   │   │   ├── shield.ts       # Risk management (validation)
+│   │   │   └── lens.ts         # Discovery + reputation feedback
 │   │   └── types.ts            # Shared TypeScript types
 │   ├── components/             # React components
 │   │   ├── ResourceCard.tsx    # Resource listing card
@@ -304,7 +311,8 @@ vocaid-hub/
 │   ├── register-agents.ts      # Register 4 agents via AgentKit
 │   ├── seed-demo-data.ts       # Pre-populate demo state
 │   ├── demo-flow.md            # 7-step demo walkthrough
-│   └── demo-agent-fleet.ts     # 4-agent decision cycle demo
+│   ├── demo-agent-fleet.ts     # 4-agent decision cycle demo
+│   └── demo-agent-curl.sh      # Agent accessibility demo (curl)
 ├── deployments/                # Contract addresses (JSON)
 ├── public/agent-cards/         # ERC-8004 A2A agent cards
 └── docs/                       # 15+ planning documents
@@ -335,6 +343,28 @@ Four OpenClaw agents operate autonomously with ERC-8004 identities on 0G Chain, 
 
 ---
 
+## Retroactive Reputation Engine
+
+Vocaid doesn't just score new providers — it retroactively computes reputation for the **entire existing 0G provider ecosystem** by reading historical transaction data from the native InferenceServing contract.
+
+```bash
+npx tsx scripts/compute-retroactive-reputation.ts
+```
+
+**How it works:**
+1. Scans `BalanceUpdated`, `RefundRequested`, and `ServiceUpdated` events from 0G's InferenceServing contract (last 2M blocks)
+2. Discovers all providers with transaction history (8 found on testnet with 239 total transactions)
+3. Computes 6 weighted reputation signals per provider: activity (25%), settlement health (20%), TEE compliance (15%), pricing competitiveness (15%), dispute rate (15%), longevity (10%)
+4. Auto-registers unregistered providers into ERC-8004 IdentityRegistry
+5. Writes composite scores to ReputationRegistry
+6. Logs computation event to Hedera HCS audit trail
+
+**Key files:** [`og-inference-serving.ts`](src/lib/og-inference-serving.ts) (event scanner), [`retroactive-reputation.ts`](src/lib/retroactive-reputation.ts) (signal computation), [`compute-retroactive-reputation.ts`](scripts/compute-retroactive-reputation.ts) (batch script)
+
+See [`ARCHITECTURE.md`](docs/ARCHITECTURE.md#retroactive-reputation-engine) for the full signal breakdown and testnet data.
+
+---
+
 ## Documentation Index
 
 | Document | Content | Used By |
@@ -355,6 +385,7 @@ Four OpenClaw agents operate autonomously with ERC-8004 identities on 0G Chain, 
 | [`STRATEGIC_ASSESSMENT.md`](docs/STRATEGIC_ASSESSMENT.md) | One-liner, partner selection, doc index | Overview |
 | [`CURSOR_SETUP.md`](docs/CURSOR_SETUP.md) | Coding machine config: tools, MCP servers, deps | Machine setup |
 | [`MINIKIT_SCAFFOLD.md`](docs/MINIKIT_SCAFFOLD.md) | Day 1 scaffold commands using World starter kit | Wave 1 (Agent 4) |
+| [`DEMO_RECORDING_SCRIPT.md`](docs/DEMO_RECORDING_SCRIPT.md) | Step-by-step demo video recording guide | Wave 4 (submission) |
 | [`PRE_HACKATHON_CHECKLIST.md`](docs/PRE_HACKATHON_CHECKLIST.md) | All pre-requisites (completed) | Before travel |
 
 ---
