@@ -84,6 +84,17 @@ const predictionABI = [
     inputs: [{ name: "marketId", type: "uint256" }, { name: "side", type: "uint8" }], outputs: [] },
 ] as const;
 
+const reputationABI = [
+  { name: "giveFeedback", type: "function", stateMutability: "nonpayable",
+    inputs: [
+      { name: "agentId", type: "uint256" }, { name: "value", type: "uint256" },
+      { name: "valueDecimals", type: "uint8" },
+      { name: "tag1", type: "string" }, { name: "tag2", type: "string" },
+      { name: "endpoint", type: "string" },
+      { name: "feedbackURI", type: "string" }, { name: "feedbackHash", type: "bytes32" },
+    ], outputs: [] },
+] as const;
+
 // ── Constants ─────────────────────────────────────────────
 const WAIT_OPTS = { retryCount: 30, pollingInterval: 5_000 };
 const BASE = "https://vocaid-hub.vercel.app/agent-cards";
@@ -205,6 +216,43 @@ async function main() {
     });
     await publicClient.waitForTransactionReceipt({ hash: hn, ...WAIT_OPTS });
     console.log(`  Market ${mId}: ${yesAmt} A0GI Yes, ${noAmt} A0GI No`);
+  }
+
+  // ── Phase 6: Seed reputation scores ───────────────────
+  console.log("\nPhase 6: Seeding reputation scores...");
+  const feedbacks: { id: bigint; tag: string; value: number }[] = [
+    { id: agentIds[0], tag: "starred",     value: 82 },   // GPU-Alpha
+    { id: agentIds[2], tag: "starred",     value: 95 },   // Seer
+    { id: agentIds[3], tag: "starred",     value: 88 },   // Edge
+    { id: agentIds[2], tag: "uptime",      value: 99 },   // Seer uptime
+    { id: agentIds[3], tag: "successRate", value: 91 },   // Edge success
+  ];
+  for (const fb of feedbacks) {
+    const fbHash = keccak256(toHex(`seed-${fb.id}-${fb.tag}-${Date.now()}`));
+    const h = await walletClient.writeContract({
+      address: C.ReputationRegistry, abi: reputationABI, functionName: "giveFeedback",
+      args: [fb.id, BigInt(fb.value * 100), 2, fb.tag, "", "/seed", `seed:${fb.tag}`, fbHash],
+      chain: ogGalileo,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: h, ...WAIT_OPTS });
+    console.log(`  Agent ${fb.id} ${fb.tag}: ${fb.value}`);
+  }
+
+  // ── Phase 7: Log seed event to Hedera HCS ─────────────
+  const auditTopic = process.env.HEDERA_AUDIT_TOPIC;
+  if (auditTopic) {
+    console.log("\nPhase 7: Logging seed event to Hedera HCS...");
+    // @ts-expect-error — tsx resolves .ts imports at runtime
+    const { logAuditMessage, initClient } = await import("../src/lib/hedera.ts");
+    initClient();
+    await logAuditMessage(auditTopic, JSON.stringify({
+      type: "demo_seed_complete",
+      agentIds: agentIds.map(String),
+      markets: 3,
+      feedbacks: feedbacks.length,
+      timestamp: new Date().toISOString(),
+    }));
+    console.log("  Seed event logged to HCS topic " + auditTopic);
   }
 
   console.log("\n" + "=".repeat(60));
