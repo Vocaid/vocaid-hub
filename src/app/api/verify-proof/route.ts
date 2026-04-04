@@ -5,9 +5,15 @@ import type { Address } from 'viem';
 
 interface IRequestPayload {
   payload: {
-    merkle_root: string;
-    nullifier_hash: string;
-    proof: string;
+    // v4 fields
+    protocol_version?: string;
+    nonce?: string;
+    action?: string;
+    responses?: unknown[];
+    // v2 legacy fields (when allow_legacy_proofs: true)
+    merkle_root?: string;
+    nullifier_hash?: string;
+    proof?: string;
     [key: string]: unknown;
   };
   action: string;
@@ -20,40 +26,53 @@ interface IVerifyResponse {
 }
 
 /**
- * This route is used to verify the proof of the user
- * It is critical proofs are verified from the server side
- * Read More: https://docs.world.org/mini-apps/commands/verify#verifying-the-proof
+ * POST /api/verify-proof
+ *
+ * Validates World ID ZK proof server-side via Developer Portal API.
+ * World ID 4.0 uses v4 endpoint with rp_id; falls back to v2 with app_id.
+ * On success: registers on CredentialGate (World Chain) + mints VCRED (Hedera).
+ *
+ * @see https://docs.world.org/mini-apps/commands/verify#verifying-the-proof
+ * @see node_modules/@worldcoin/idkit-core/README.md (lines 91-98)
  */
 export async function POST(req: NextRequest) {
-  const { payload, action, signal } = (await req.json()) as IRequestPayload;
+  const body = await req.json();
+  const { payload, action, signal } = body as IRequestPayload;
+  const rp_id = process.env.RP_ID ?? process.env.WORLD_RP_ID;
   const app_id = process.env.NEXT_PUBLIC_APP_ID as `app_${string}`;
 
-  const response = await fetch(
-    `https://developer.worldcoin.org/api/v2/verify/${app_id}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, action, signal }),
-    },
-  );
+  // World ID 4.0: v4 endpoint with rp_id; legacy: v2 with app_id
+  const verifyUrl = rp_id
+    ? `https://developer.worldcoin.org/api/v4/verify/${rp_id}`
+    : `https://developer.worldcoin.org/api/v2/verify/${app_id}`;
+
+  // v4: forward completion.result directly; v2: spread with action + signal
+  const verifyBody = rp_id
+    ? JSON.stringify(payload)
+    : JSON.stringify({ ...payload, action, signal });
+
+  const response = await fetch(verifyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: verifyBody,
+  });
 
   const verifyRes = (await response.json()) as IVerifyResponse;
 
   if (verifyRes.success) {
-    // Register on-chain via CredentialGate if signal is a valid address
+    // Register on-chain via CredentialGate (only with v2 legacy proof fields)
     let onChainResult = null;
-    if (signal && process.env.CREDENTIAL_GATE) {
+    if (signal && process.env.CREDENTIAL_GATE && payload.merkle_root && payload.proof) {
       try {
         const proofArray = decodeProof(payload.proof);
         onChainResult = await registerOnChain(
           signal as Address,
           BigInt(payload.merkle_root),
-          BigInt(payload.nullifier_hash),
+          BigInt(payload.nullifier_hash!),
           proofArray,
         );
       } catch (err) {
         console.error('On-chain registration failed:', err);
-        // API verification succeeded — return success even if on-chain fails
       }
     }
 
@@ -62,7 +81,6 @@ export async function POST(req: NextRequest) {
     const credentialTokenId = process.env.HEDERA_CREDENTIAL_TOKEN;
     if (credentialTokenId && signal) {
       try {
-        // HTS NFT metadata max 100 bytes — compact format
         const shortAddr = `${signal.slice(0, 8)}...${signal.slice(-4)}`;
         const metadata = new TextEncoder().encode(
           `wid:${shortAddr}:${Date.now()}`,
@@ -70,7 +88,6 @@ export async function POST(req: NextRequest) {
         const serials = await mintCredential(credentialTokenId, [metadata]);
         credentialResult = { tokenId: credentialTokenId, serials };
 
-        // Log credential mint to HCS audit trail
         const auditTopic = process.env.HEDERA_AUDIT_TOPIC;
         if (auditTopic) {
           logAuditMessage(auditTopic, JSON.stringify({
