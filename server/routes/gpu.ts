@@ -270,6 +270,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
         }
 
         app.responseCache.invalidate('/api/resources');
+        app.responseCache.invalidate('/api/agents');
         return {
           agentId: chainResult.agentId,
           txHash: chainResult.txHash,

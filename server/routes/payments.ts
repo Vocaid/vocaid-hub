@@ -123,6 +123,7 @@ export default async function paymentRoutes(app: FastifyInstance) {
         request.log.error(feedbackErr, 'Lens agent feedback failed');
       }
 
+      app.responseCache.invalidate('/api/activity');
       return {
         success: true,
         payment: {

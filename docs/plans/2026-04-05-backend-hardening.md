@@ -1263,6 +1263,334 @@ git commit -m "feat: cache invalidation on POST mutations"
 
 ---
 
+## Wave H3b: Remaining Integration (depends on H1 + H2 — run as single session)
+
+**Session:** Run after H3. Covers: timeout on all remaining raw `fetch()` calls, Hedera SDK retry, singleton client adoption, cache invalidation on all POST routes.
+
+### Task 10: Timeout-wrap World ID API fetches in `server/routes/world-id.ts`
+
+**Files:**
+- Modify: `server/routes/world-id.ts:72,85`
+
+**Step 1: Add import at top of file**
+
+```typescript
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../utils/fetch-with-timeout.js';
+```
+
+**Step 2: Replace line 72 — v4 verify fetch**
+
+Replace:
+```typescript
+const response = await fetch(verifyUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: verifyBody,
+});
+```
+
+With:
+```typescript
+const response = await fetchWithTimeout(verifyUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: verifyBody,
+  timeout: TIMEOUT_BUDGETS.WORLD_ID_API,
+});
+```
+
+**Step 3: Replace line 85 — v2 fallback fetch**
+
+Replace:
+```typescript
+const v2Response = await fetch(v2Url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: v2Body,
+});
+```
+
+With:
+```typescript
+const v2Response = await fetchWithTimeout(v2Url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: v2Body,
+  timeout: TIMEOUT_BUDGETS.WORLD_ID_API,
+});
+```
+
+**Step 4: Commit**
+
+```bash
+git add server/routes/world-id.ts
+git commit -m "fix: add 10s timeout to World ID Developer Portal API calls"
+```
+
+---
+
+### Task 11: Timeout-wrap Mirror Node fetches in `src/lib/hedera.ts` and `server/routes/activity.ts`
+
+**Files:**
+- Modify: `src/lib/hedera.ts:325`
+- Modify: `server/routes/activity.ts:84`
+
+**Step 1: `src/lib/hedera.ts` — queryAuditTrail (line 325)**
+
+Add import at top:
+```typescript
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../server/utils/fetch-with-timeout';
+```
+
+Replace line 325:
+```typescript
+const res = await fetch(url);
+```
+
+With:
+```typescript
+const res = await fetchWithTimeout(url, { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR });
+```
+
+**Step 2: `server/routes/activity.ts` — fetchHCSAuditTrail (line 84)**
+
+Add import at top:
+```typescript
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../utils/fetch-with-timeout.js';
+```
+
+Replace line 84-85:
+```typescript
+const res = await fetch(
+  `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId}/messages?limit=5&order=desc`,
+);
+```
+
+With:
+```typescript
+const res = await fetchWithTimeout(
+  `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId}/messages?limit=5&order=desc`,
+  { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR },
+);
+```
+
+**Step 3: Commit**
+
+```bash
+git add src/lib/hedera.ts server/routes/activity.ts
+git commit -m "fix: add 8s timeout to Hedera Mirror Node REST queries"
+```
+
+---
+
+### Task 12: Add retry to critical Hedera SDK operations in `src/lib/hedera.ts`
+
+**Files:**
+- Modify: `src/lib/hedera.ts`
+
+**Step 1: Add import**
+
+```typescript
+import { withRetry, RETRY_POLICIES } from '../server/utils/retry';
+```
+
+**Step 2: Wrap `logAuditMessage` (line 302-313) — fire-and-forget audit, should retry**
+
+Replace:
+```typescript
+export async function logAuditMessage(
+  topicId: string,
+  message: string,
+): Promise<void> {
+  const client = initClient();
+
+  const tx = new TopicMessageSubmitTransaction()
+    .setTopicId(topicId)
+    .setMessage(message);
+
+  const response = await tx.execute(client);
+  await response.getReceipt(client);
+}
+```
+
+With:
+```typescript
+export async function logAuditMessage(
+  topicId: string,
+  message: string,
+): Promise<void> {
+  return withRetry(async () => {
+    const client = initClient();
+
+    const tx = new TopicMessageSubmitTransaction()
+      .setTopicId(topicId)
+      .setMessage(message);
+
+    const response = await tx.execute(client);
+    await response.getReceipt(client);
+  }, RETRY_POLICIES.HEDERA_TX);
+}
+```
+
+**Step 3: Wrap `mintCredential` (line 123-140) — credential mint should retry**
+
+Replace:
+```typescript
+export async function mintCredential(
+  tokenId: string,
+  metadata: Uint8Array[],
+): Promise<number[]> {
+  const client = initClient();
+  const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+
+  const tx = new TokenMintTransaction()
+    .setTokenId(tokenId)
+    .setMetadata(metadata)
+    .freezeWith(client);
+
+  const signed = await tx.sign(operatorKey);
+  const response = await signed.execute(client);
+  const receipt = await response.getReceipt(client);
+
+  return receipt.serials.map((s) => Number(s));
+}
+```
+
+With:
+```typescript
+export async function mintCredential(
+  tokenId: string,
+  metadata: Uint8Array[],
+): Promise<number[]> {
+  return withRetry(async () => {
+    const client = initClient();
+    const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+
+    const tx = new TokenMintTransaction()
+      .setTokenId(tokenId)
+      .setMetadata(metadata)
+      .freezeWith(client);
+
+    const signed = await tx.sign(operatorKey);
+    const response = await signed.execute(client);
+    const receipt = await response.getReceipt(client);
+
+    return receipt.serials.map((s) => Number(s));
+  }, RETRY_POLICIES.HEDERA_TX);
+}
+```
+
+**Step 4: Verify existing tests still pass**
+
+```bash
+npx vitest run src/lib/__tests__/hedera.test.ts
+```
+
+**Step 5: Commit**
+
+```bash
+git add src/lib/hedera.ts
+git commit -m "feat: add retry with backoff to Hedera SDK operations (mintCredential, logAuditMessage)"
+```
+
+---
+
+### Task 13: Adopt singleton clients in routes
+
+**Files:**
+- Modify: `server/routes/predictions.ts`
+- Modify: `server/routes/edge.ts`
+- Modify: `server/routes/proposals.ts`
+
+These 3 routes create their own `new ethers.JsonRpcProvider()` + `new ethers.Wallet()` per-request (or per-singleton). Replace with `getOgProvider()` and `getOgSigner()` from `server/clients.ts`.
+
+**Step 1: `server/routes/predictions.ts`**
+
+Replace the local singleton pattern:
+```typescript
+import { getOgProvider, getOgSigner } from '../clients.js';
+```
+
+Replace the `getProvider()` / `getSigner()` local functions with calls to `getOgProvider()` / `getOgSigner()`.
+
+**Step 2: `server/routes/edge.ts`**
+
+Same pattern — replace `_edgeProvider` local singleton with `getOgProvider()`, replace `new ethers.Wallet(pk, _edgeProvider)` with `getOgSigner()`.
+
+**Step 3: `server/routes/proposals.ts`**
+
+Replace `getProvider()` and the `new ethers.Wallet()` calls with `getOgProvider()` / `getOgSigner()`.
+
+**Step 4: Verify server starts**
+
+```bash
+npx tsx server/index.ts &
+sleep 4
+curl -s http://localhost:5001/api/predictions | head -1
+kill %1
+```
+
+**Step 5: Commit**
+
+```bash
+git add server/routes/predictions.ts server/routes/edge.ts server/routes/proposals.ts
+git commit -m "refactor: adopt singleton ethers provider/signer from server/clients.ts"
+```
+
+---
+
+### Task 14: Add cache invalidation to all remaining POST routes
+
+**Files:**
+- Modify: `server/routes/edge.ts`
+- Modify: `server/routes/gpu.ts`
+- Modify: `server/routes/payments.ts`
+- Modify: `server/routes/proposals.ts`
+- Modify: `server/routes/seer.ts`
+- Modify: `server/routes/world-id.ts`
+
+**Step 1: Add invalidation calls after successful mutations**
+
+`server/routes/edge.ts` — after hire or bet succeeds:
+```typescript
+app.responseCache.invalidate('/api/activity');
+```
+
+`server/routes/gpu.ts` — after register succeeds:
+```typescript
+app.responseCache.invalidate('/api/resources');
+app.responseCache.invalidate('/api/agents');
+```
+
+`server/routes/payments.ts` — after payment settled:
+```typescript
+app.responseCache.invalidate('/api/activity');
+```
+
+`server/routes/proposals.ts` — after submit/approve/reject:
+```typescript
+app.responseCache.invalidate('/api/proposals');
+```
+
+`server/routes/seer.ts` — after inference:
+```typescript
+app.responseCache.invalidate('/api/activity');
+```
+
+`server/routes/world-id.ts` — after verify-proof succeeds:
+```typescript
+app.responseCache.invalidate('/api/resources');
+```
+
+**Step 2: Commit**
+
+```bash
+git add server/routes/edge.ts server/routes/gpu.ts server/routes/payments.ts server/routes/proposals.ts server/routes/seer.ts server/routes/world-id.ts
+git commit -m "feat: complete cache invalidation on all POST mutation routes"
+```
+
+---
+
 ## Verification Checklist
 
 After all waves complete:

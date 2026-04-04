@@ -54,6 +54,7 @@ export default async function seerRoutes(app: FastifyInstance) {
             ).catch((e) => request.log.error({ err: e }, 'HCS audit failed'));
           }
 
+          app.responseCache.invalidate('/api/activity');
           return {
             response: result.response,
             provider: providers[0].provider,

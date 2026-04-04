@@ -16,24 +16,15 @@ const PREDICTION_ABI = [
   'function getMarket(uint256) view returns (tuple(string question, uint256 resolutionTime, uint8 state, uint8 winningOutcome, uint256 yesPool, uint256 noPool, address creator))',
 ];
 
-// Singleton provider — avoid per-request socket leaks
-let _provider: ethers.JsonRpcProvider | null = null;
-function getProvider() {
-  if (!_provider) {
-    _provider = new ethers.JsonRpcProvider(process.env.OG_RPC_URL || 'https://evmrpc-testnet.0g.ai');
-  }
-  return _provider;
-}
+import { getOgProvider, getOgSigner } from '../clients.js';
 
 function getContract(withSigner = false) {
   const address = process.env.AGENT_PROPOSAL_REGISTRY;
   if (!address) throw new Error('AGENT_PROPOSAL_REGISTRY not set');
-  const provider = getProvider();
   if (withSigner) {
-    const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-    return new ethers.Contract(address, PROPOSAL_ABI, signer);
+    return new ethers.Contract(address, PROPOSAL_ABI, getOgSigner());
   }
-  return new ethers.Contract(address, PROPOSAL_ABI, provider);
+  return new ethers.Contract(address, PROPOSAL_ABI, getOgProvider());
 }
 
 // Timeout wrapper for tx.wait()
@@ -63,7 +54,7 @@ export default async function proposalRoutes(app: FastifyInstance) {
 
       const predictionAddr = process.env.RESOURCE_PREDICTION;
       const predictionContract = predictionAddr
-        ? new ethers.Contract(predictionAddr, PREDICTION_ABI, getProvider())
+        ? new ethers.Contract(predictionAddr, PREDICTION_ABI, getOgProvider())
         : null;
 
       const proposals = [];

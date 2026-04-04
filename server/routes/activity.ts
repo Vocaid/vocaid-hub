@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { getPublicClient } from '@/lib/og-chain';
 import { addresses, REPUTATION_REGISTRY_ABI } from '@/lib/contracts';
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../utils/fetch-with-timeout.js';
 
 interface ActivityItem {
   id: string;
@@ -81,8 +82,9 @@ async function fetchReputationEvents(): Promise<ActivityItem[]> {
 async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
   try {
     const topicId = process.env.HEDERA_AUDIT_TOPIC || '0.0.8499635';
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId}/messages?limit=5&order=desc`,
+      { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR },
     );
 
     if (!res.ok) return [];

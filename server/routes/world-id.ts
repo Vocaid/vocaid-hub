@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { isAddress, type Address } from 'viem';
 import { sendRateLimited } from '../plugins/rate-limit';
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../utils/fetch-with-timeout.js';
 import {
   RpSignatureBodySchema,
   VerifyProofBodySchema,
@@ -69,10 +70,11 @@ export default async function worldIdRoutes(app: FastifyInstance) {
         ? JSON.stringify(payload)
         : JSON.stringify({ ...payload, action, signal });
 
-      const response = await fetch(verifyUrl, {
+      const response = await fetchWithTimeout(verifyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: verifyBody,
+        timeout: TIMEOUT_BUDGETS.WORLD_ID_API,
       });
 
       let verifyRes = (await response.json()) as { success: boolean; [k: string]: unknown };
@@ -82,10 +84,11 @@ export default async function worldIdRoutes(app: FastifyInstance) {
         request.log.warn({ verifyRes }, 'v4 failed, retrying with v2');
         const v2Url = `https://developer.worldcoin.org/api/v2/verify/${app_id}`;
         const v2Body = JSON.stringify({ ...payload, action, signal });
-        const v2Response = await fetch(v2Url, {
+        const v2Response = await fetchWithTimeout(v2Url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: v2Body,
+          timeout: TIMEOUT_BUDGETS.WORLD_ID_API,
         });
         verifyRes = (await v2Response.json()) as { success: boolean; [k: string]: unknown };
       }
@@ -145,6 +148,7 @@ export default async function worldIdRoutes(app: FastifyInstance) {
         }
       }
 
+      app.responseCache.invalidate('/api/resources');
       return { verifyRes, onChainResult, credentialResult, status: 200 };
     },
   );

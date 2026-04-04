@@ -13,22 +13,16 @@ const RESOURCE_PREDICTION_ABI = [
   'function getMarket(uint256 marketId) view returns (string question, uint256 resolutionTime, uint8 state, uint8 winningOutcome, uint256 yesPool, uint256 noPool)',
 ] as const;
 
-// R1: Singleton provider
-let _edgeProvider: ethers.JsonRpcProvider | null = null;
+import { getOgProvider, getOgSigner } from '../clients.js';
 
 function getContract(withSigner = false) {
-  const rpc = process.env.OG_RPC_URL;
   const address = process.env.RESOURCE_PREDICTION;
-  if (!rpc || !address) throw new Error('Missing OG_RPC_URL or RESOURCE_PREDICTION env');
+  if (!address) throw new Error('Missing RESOURCE_PREDICTION env');
 
-  if (!_edgeProvider) _edgeProvider = new ethers.JsonRpcProvider(rpc);
-
-  if (!withSigner) return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, _edgeProvider);
-
-  const pk = process.env.PRIVATE_KEY;
-  if (!pk) throw new Error('Missing PRIVATE_KEY env');
-  const signer = new ethers.Wallet(pk, _edgeProvider);
-  return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, signer);
+  if (withSigner) {
+    return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, getOgSigner());
+  }
+  return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, getOgProvider());
 }
 
 // Timeout wrapper for tx.wait()
@@ -117,6 +111,7 @@ export default async function edgeRoutes(app: FastifyInstance) {
             ).catch((e) => request.log.error({ err: e }, 'HCS audit failed'));
           }
 
+          app.responseCache.invalidate('/api/activity');
           return {
             success: true,
             action: 'hire',
@@ -191,6 +186,7 @@ export default async function edgeRoutes(app: FastifyInstance) {
         }
 
         app.responseCache.invalidate('/api/predictions');
+        app.responseCache.invalidate('/api/activity');
         return {
           success: true,
           txHash,

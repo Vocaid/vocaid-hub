@@ -20,27 +20,16 @@ const RESOURCE_PREDICTION_ABI = [
   'function resolveMarket(uint256,uint8)',
 ] as const;
 
-// R1: Singleton provider — avoid per-request socket leaks
-let _provider: ethers.JsonRpcProvider | null = null;
-function getProvider() {
-  if (!_provider) {
-    const rpc = process.env.OG_RPC_URL;
-    if (!rpc) throw new Error('Missing OG_RPC_URL env');
-    _provider = new ethers.JsonRpcProvider(rpc);
-  }
-  return _provider;
-}
+import { getOgProvider, getOgSigner } from '../clients.js';
 
 function getContract(withSigner = false) {
   const address = process.env.RESOURCE_PREDICTION;
   if (!address) throw new Error('Missing RESOURCE_PREDICTION env');
 
-  const provider = getProvider();
   if (withSigner) {
-    const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-    return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, signer);
+    return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, getOgSigner());
   }
-  return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, provider);
+  return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, getOgProvider());
 }
 
 // R2: Timeout wrapper for tx.wait() — prevents indefinite hangs
