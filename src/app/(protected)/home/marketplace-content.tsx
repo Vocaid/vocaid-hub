@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { ActivityFeed } from '@/components/ActivityFeed';
+import { AgentDecisionContent, type DecisionData } from '@/app/(protected)/agent-decision/agent-decision-content';
 import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
@@ -19,6 +20,7 @@ const tabs: { value: FilterTab; label: string }[] = [
   { value: 'gpu', label: 'GPU' },
   { value: 'agent', label: 'Agent' },
   { value: 'human', label: 'Human' },
+  { value: 'depin', label: 'DePIN' },
 ];
 
 function parsePrice(price: string): string {
@@ -26,7 +28,7 @@ function parsePrice(price: string): string {
   return match?.[1] ?? '0';
 }
 
-export function MarketplaceContent({ resources }: { resources: ResourceCardProps[] }) {
+export function MarketplaceContent({ resources, decision }: { resources: ResourceCardProps[]; decision?: DecisionData | null }) {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [paying, setPaying] = useState(false);
@@ -193,6 +195,12 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
       {/* Activity Feed */}
       <div className="mt-6 border-t border-border pt-4">
         <ActivityFeed maxItems={6} />
+      </div>
+
+      {/* Agent Decision Engine */}
+      <div className="mt-4 border-t border-border pt-4">
+        <h2 className="text-sm font-bold text-primary mb-3">Agent Decision Engine</h2>
+        <AgentDecisionContent decision={decision ?? null} />
       </div>
 
       {/* Payment confirmation modal */}

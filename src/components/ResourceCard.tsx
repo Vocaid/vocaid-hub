@@ -1,12 +1,12 @@
 'use client';
 
-import { Bot, Cpu, Loader2, User } from 'lucide-react';
+import { Bot, Cpu, Loader2, User, Zap } from 'lucide-react';
 import { ChainBadge, type Chain } from './ChainBadge';
 import { ReputationBar } from './ReputationBar';
 import { VerificationStatus, type VerificationType } from './VerificationStatus';
 import type { ResourceSignals } from './ReputationSignals';
 
-export type ResourceType = 'human' | 'gpu' | 'agent';
+export type ResourceType = 'human' | 'gpu' | 'agent' | 'depin';
 
 export interface ResourceCardProps {
   type: ResourceType;
@@ -26,6 +26,7 @@ const typeConfig: Record<ResourceType, { icon: typeof Cpu; label: string }> = {
   gpu: { icon: Cpu, label: 'GPU' },
   agent: { icon: Bot, label: 'Agent' },
   human: { icon: User, label: 'Human' },
+  depin: { icon: Zap, label: 'DePIN' },
 };
 
 export function ResourceCard({

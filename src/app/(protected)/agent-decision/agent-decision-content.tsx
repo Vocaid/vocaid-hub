@@ -16,7 +16,7 @@ interface Provider {
   compositeScore: number;
 }
 
-interface DecisionData {
+export interface DecisionData {
   discovered: number;
   providers: Provider[];
   selected: Provider | null;

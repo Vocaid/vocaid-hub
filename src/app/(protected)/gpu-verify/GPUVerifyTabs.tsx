@@ -25,6 +25,7 @@ export default function GPUVerifyTabs() {
   const [filterType, setFilterType] = useState<string>('all');
   const [selectedResource, setSelectedResource] =
     useState<ResourceWithSignals | null>(null);
+  const [registerType, setRegisterType] = useState<'gpu' | 'agent' | 'human' | 'depin'>('gpu');
 
   useEffect(() => {
     if (activeTab !== 'dashboard') return;
@@ -64,7 +65,36 @@ export default function GPUVerifyTabs() {
         </button>
       </div>
 
-      {activeTab === 'register' && <GPUStepper />}
+      {activeTab === 'register' && (
+        <>
+          <div className="flex gap-1 mb-4">
+            {(['gpu', 'agent', 'human', 'depin'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setRegisterType(t)}
+                className={`flex-1 rounded-full py-1.5 text-xs font-medium transition-colors ${
+                  registerType === t
+                    ? 'bg-primary text-white'
+                    : 'bg-surface text-secondary hover:text-primary'
+                }`}
+              >
+                {t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+          {registerType === 'gpu' && <GPUStepper />}
+          {registerType !== 'gpu' && (
+            <div className="rounded-xl border border-dashed border-border p-8 text-center">
+              <p className="text-sm text-secondary">
+                {registerType === 'agent' ? 'Register an AI agent on ERC-8004' :
+                 registerType === 'human' ? 'Register human skills and availability' :
+                 'Register physical infrastructure (electricity, bandwidth, storage)'}
+              </p>
+              <p className="text-xs text-secondary/60 mt-2">Coming soon — use the Market tab to browse existing resources</p>
+            </div>
+          )}
+        </>
+      )}
 
       {activeTab === 'dashboard' && !selectedResource && (
         <>
@@ -81,7 +111,7 @@ export default function GPUVerifyTabs() {
               <option value="uptime">Uptime</option>
             </select>
             <div className="flex gap-1">
-              {['all', 'gpu', 'agent', 'human'].map((t) => (
+              {['all', 'gpu', 'agent', 'human', 'depin'].map((t) => (
                 <button
                   key={t}
                   onClick={() => setFilterType(t)}
@@ -91,7 +121,7 @@ export default function GPUVerifyTabs() {
                       : 'bg-surface text-secondary hover:text-primary'
                   }`}
                 >
-                  {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t === 'all' ? 'All' : t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
                 </button>
               ))}
             </div>
