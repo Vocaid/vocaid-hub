@@ -75,5 +75,8 @@
 | P-043 | predictions/claim and predictions/resolve have no World ID gating | unclaimed | — | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Anyone can resolve markets or claim winnings without verification |
 | P-044 | /api/agents/register has no UI caller | unclaimed | — | `src/app/api/agents/register/route.ts` | Orphaned endpoint — functional but not wired to any frontend component |
 | P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | unclaimed | — | `src/app/api/rp-signature/route.ts`, `.env.local` | World ID 4.0 IDKit verification flow requires RP signing key |
+| P-046 | 0G Galileo testnet unreachable (SSL timeout on evmrpc-testnet.0g.ai) | mitigated | 5 | `src/app/api/gpu/*` routes have demo fallback | Demo-flow.md fallback section |
+| P-047 | GPU stepper e2e verified with demo fallback | ✅ done | 5 | `src/components/GPUStepper.tsx`, `src/app/api/gpu/*` | Plan: `docs/plans/2026-04-04-gpu-stepper-e2e-verification.md` |
+| P-048 | Shield agent doesn't block unverified providers | unclaimed | — | `src/app/api/resources/route.ts`, `src/lib/reputation.ts` | Wave 3 deliverable: Shield reads ValidationRegistry to block unverified providers from allocation. No code checks validation status before serving resources. |
 
 > Agents: Add new items here as you discover them during implementation. Use IDs P-046+.

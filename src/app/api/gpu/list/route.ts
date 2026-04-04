@@ -13,8 +13,9 @@ export async function GET(req: NextRequest) {
   const gate = await requireWorldId();
   if (gate instanceof NextResponse) return gate;
 
+  const address = req.nextUrl.searchParams.get('address');
+
   try {
-    const address = req.nextUrl.searchParams.get('address');
 
     if (address) {
       // Look up a specific provider and enrich with metadata + verification
@@ -40,8 +41,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ providers });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    console.error('[api/gpu/list]', message);
+    console.warn('[api/gpu/list] Falling back to demo data:', message);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Demo fallback: return mock data when 0G testnet is unreachable
+    if (address) {
+      return NextResponse.json({
+        service: {
+          provider: address,
+          model: 'NVIDIA H100 80GB',
+          url: 'https://inference.0g.ai/v1',
+          teeSignerAcknowledged: true,
+          verifiability: 'TDX',
+        },
+        _demo: true,
+      });
+    }
+
+    return NextResponse.json({
+      providers: [
+        {
+          provider: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
+          model: 'NVIDIA H100 80GB',
+          url: 'https://inference.0g.ai/v1',
+          inputPrice: '50000',
+          outputPrice: '50000',
+          verifiability: 'TDX',
+          teeSignerAcknowledged: true,
+        },
+      ],
+      _demo: true,
+    });
   }
 }

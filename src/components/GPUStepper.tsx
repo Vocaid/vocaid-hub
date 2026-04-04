@@ -131,6 +131,7 @@ export default function GPUStepper() {
   const [step1, setStep1] = useState<StepState>({ status: 'idle' });
   const [step2, setStep2] = useState<StepState>({ status: 'idle' });
   const [step3, setStep3] = useState<StepState>({ status: 'idle' });
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   /* ── Step 1: Connect Wallet ──────────────────────── */
 
@@ -178,6 +179,7 @@ export default function GPUStepper() {
 
       const data = await res.json();
       setServiceInfo(data.service);
+      if (data._demo) setIsDemoMode(true);
       setStep2({ status: 'success' });
       setCurrentStep(3);
     } catch (err) {
@@ -247,6 +249,15 @@ export default function GPUStepper() {
           This tool doesn&apos;t exist in 0G&apos;s ecosystem yet — we built it.
         </p>
       </div>
+
+      {/* Demo mode indicator */}
+      {isDemoMode && (
+        <div className="flex items-center gap-2 rounded-lg border border-status-pending/30 bg-status-pending/5 px-4 py-2">
+          <span className="text-xs font-medium text-status-pending">
+            Demo Mode — 0G testnet offline, showing simulated data
+          </span>
+        </div>
+      )}
 
       {/* Stepper */}
       <div className="rounded-xl border border-border-card bg-white p-5">
