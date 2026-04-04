@@ -269,6 +269,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
           return reply.code(502).send({ error: 'On-chain registration failed — 0G Galileo may be unreachable' });
         }
 
+        app.responseCache.invalidate('/api/resources');
         return {
           agentId: chainResult.agentId,
           txHash: chainResult.txHash,

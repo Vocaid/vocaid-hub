@@ -31,6 +31,17 @@ function getContract(withSigner = false) {
   return new ethers.Contract(address, RESOURCE_PREDICTION_ABI, signer);
 }
 
+// Timeout wrapper for tx.wait()
+const TX_TIMEOUT_MS = 60_000;
+function waitWithTimeout(tx: ethers.ContractTransactionResponse, ms = TX_TIMEOUT_MS) {
+  return Promise.race([
+    tx.wait(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Transaction confirmation timed out')), ms),
+    ),
+  ]);
+}
+
 const EdgeTradeBodySchema = z.object({
   method: z.string().optional(),
   marketId: z.number().int().min(0).optional(),
@@ -154,8 +165,8 @@ export default async function edgeRoutes(app: FastifyInstance) {
           const contract = getContract(true);
           const value = ethers.parseEther(String(amount));
           const tx = await contract.placeBet(marketId, outcomeEnum, { value });
-          const receipt = await tx.wait();
-          txHash = receipt.hash;
+          const receipt = await waitWithTimeout(tx);
+          txHash = receipt!.hash;
         } catch (betErr) {
           request.log.error({ err: betErr }, 'Bet placement failed');
           return reply.code(502).send({ error: 'Bet placement failed — chain may be unreachable' });
@@ -179,6 +190,7 @@ export default async function edgeRoutes(app: FastifyInstance) {
           ).catch((e) => request.log.error({ err: e }, 'HCS audit failed'));
         }
 
+        app.responseCache.invalidate('/api/predictions');
         return {
           success: true,
           txHash,

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ProposalQuerySchema, ProposalActionSchema } from '../schemas/proposals.js';
+import { sendRateLimited } from '../plugins/rate-limit.js';
 import { ethers } from 'ethers';
 
 const PROPOSAL_ABI = [
@@ -15,8 +16,13 @@ const PREDICTION_ABI = [
   'function getMarket(uint256) view returns (tuple(string question, uint256 resolutionTime, uint8 state, uint8 winningOutcome, uint256 yesPool, uint256 noPool, address creator))',
 ];
 
+// Singleton provider — avoid per-request socket leaks
+let _provider: ethers.JsonRpcProvider | null = null;
 function getProvider() {
-  return new ethers.JsonRpcProvider(process.env.OG_RPC_URL || 'https://evmrpc-testnet.0g.ai');
+  if (!_provider) {
+    _provider = new ethers.JsonRpcProvider(process.env.OG_RPC_URL || 'https://evmrpc-testnet.0g.ai');
+  }
+  return _provider;
 }
 
 function getContract(withSigner = false) {
@@ -28,6 +34,17 @@ function getContract(withSigner = false) {
     return new ethers.Contract(address, PROPOSAL_ABI, signer);
   }
   return new ethers.Contract(address, PROPOSAL_ABI, provider);
+}
+
+// Timeout wrapper for tx.wait()
+const TX_TIMEOUT_MS = 60_000;
+function waitWithTimeout(tx: ethers.ContractTransactionResponse, ms = TX_TIMEOUT_MS) {
+  return Promise.race([
+    tx.wait(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Transaction confirmation timed out')), ms),
+    ),
+  ]);
 }
 
 export default async function proposalRoutes(app: FastifyInstance) {
@@ -106,6 +123,9 @@ export default async function proposalRoutes(app: FastifyInstance) {
   typed.post('/proposals', {
     schema: { body: ProposalActionSchema },
   }, async (request, reply) => {
+    const rl = app.checkRateLimit(request.ip, '/api/proposals', 5, 60_000);
+    if (rl) return sendRateLimited(reply, rl);
+
     try {
       const body = request.body;
       const contract = getContract(true);
@@ -129,8 +149,9 @@ export default async function proposalRoutes(app: FastifyInstance) {
         }
 
         const tx = await contract.submitProposal(agentId, pType, data);
-        const receipt = await tx.wait();
-        return { success: true, txHash: receipt.hash };
+        const receipt = await waitWithTimeout(tx);
+        app.responseCache.invalidate('/api/proposals');
+        return { success: true, txHash: receipt!.hash };
       }
 
       if (body.action === 'approve') {
@@ -138,15 +159,18 @@ export default async function proposalRoutes(app: FastifyInstance) {
         const tx = await contract.approveAndExecute(proposalId, {
           value: value ? ethers.parseEther(String(value)) : 0n,
         });
-        const receipt = await tx.wait();
-        return { success: true, txHash: receipt.hash };
+        const receipt = await waitWithTimeout(tx);
+        app.responseCache.invalidate('/api/proposals');
+        app.responseCache.invalidate('/api/predictions');
+        return { success: true, txHash: receipt!.hash };
       }
 
       // action === 'reject'
       const { proposalId } = body;
       const tx = await contract.reject(proposalId);
-      const receipt = await tx.wait();
-      return { success: true, txHash: receipt.hash };
+      const receipt = await waitWithTimeout(tx);
+      app.responseCache.invalidate('/api/proposals');
+      return { success: true, txHash: receipt!.hash };
     } catch (err) {
       request.log.error(err, '[proposals/POST]');
       return reply.code(500).send({ error: 'Failed to process proposal' });

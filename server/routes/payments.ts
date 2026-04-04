@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { InitiatePaymentSchema, PaymentBodySchema } from '../schemas/payments.js';
+import { sendRateLimited } from '../plugins/rate-limit.js';
 import { verifyPayment, settlePayment } from '@/lib/blocky402';
 import { logAuditMessage } from '@/lib/hedera';
 import { executeAgentAction } from '@/lib/hedera-agent';
@@ -33,6 +34,9 @@ export default async function paymentRoutes(app: FastifyInstance) {
     schema: { body: PaymentBodySchema },
     preHandler: [app.requireWorldId],
   }, async (request, reply) => {
+    const rl = app.checkRateLimit(request.ip, '/api/payments', 5, 60_000);
+    if (rl) return sendRateLimited(reply, rl);
+
     const paymentHeader = request.headers['x-payment'] as string | undefined;
 
     if (!paymentHeader) {
@@ -139,7 +143,10 @@ export default async function paymentRoutes(app: FastifyInstance) {
   // POST /api/initiate-payment — Start x402 payment flow
   typed.post('/initiate-payment', {
     schema: { body: InitiatePaymentSchema },
-  }, async (request) => {
+  }, async (request, reply) => {
+    const rl = app.checkRateLimit(request.ip, '/api/initiate-payment', 10, 60_000);
+    if (rl) return sendRateLimited(reply, rl);
+
     const { resourceName, resourceType, amount } = request.body;
     const paymentAmount = amount ?? getDefaultPrice(resourceType);
     const paymentId = crypto.randomUUID();
