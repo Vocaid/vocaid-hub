@@ -76,11 +76,12 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 |------|--------|-----|
 | 0:00 | Tap "Verify with World ID" | *"Everything starts with World ID. No verification, no access."* |
 | 0:25 | Show agent fleet on Profile tab | *"Four AI agents, each registered via AgentKit with on-chain ERC-8004 identity."* |
-| 0:55 | GPU Verify tab — walk through 3-step registration | *"This is the key innovation. A GPU provider connects, we verify their TEE attestation on-chain via ZK proof, and register them on ERC-8004. This tool does not exist in 0G's ecosystem."* |
-| 1:55 | Marketplace tab — show all resource types | *"Humans, GPUs, and agents — one marketplace, one protocol."* |
-| 2:15 | Predictions tab — place $5 USDC bet | *"Will H100 inference cost drop next week? The market decides. USDC on Hedera."* |
-| 2:35 | Tap "Hire" on GPU-Alpha — show payment | *"Agent pays five cents, $0.0001 gas, sub-second settlement. x402 USDC via Blocky402 on Hedera."* |
-| 2:55 | Show reputation update on GPU card | *"Reputation updates automatically. Our Lens agent wrote quality feedback to ERC-8004."* |
+| 0:55 | Resources tab → Register → GPU 3-step stepper | *"GPU provider connects, we verify TEE attestation on-chain, register on ERC-8004. This tool doesn't exist in 0G's ecosystem."* |
+| 1:30 | Resources tab → Trading Desk → run 5-step pipeline | *"Now watch the agent pipeline. Shield validates TEE. Lens indexes the ecosystem. Seer ranks by reputation signals. Edge settles the lease."* |
+| 2:10 | Marketplace tab — show all resource types (GPU, Agent, Human, DePIN) | *"Humans, GPUs, agents, and physical infrastructure — one marketplace, one protocol."* |
+| 2:25 | Predictions tab — signal ticker + place bet | *"Will H100 inference cost drop next week? The market decides. USDC on Hedera."* |
+| 2:45 | Tap "Hire" on a resource — show payment + post-hire rating | *"Five cents, $0.0001 gas, sub-second settlement via x402 on Hedera. After hiring, users rate quality — closing the feedback loop."* |
+| 3:05 | Profile tab — show fleet deployment + ProposalQueue | *"My trading fleet — four agents deployed on ERC-8004. Edge proposes a bet based on Seer's signal. Owner approves — on-chain governance."* |
 
 ### Slide 8: Close (10 seconds)
 

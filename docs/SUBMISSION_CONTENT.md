@@ -48,6 +48,10 @@ OpenClaw 4-agent fleet with wallet key isolation: Seer (read-only, no wallet key
 
 The reputation signal system uses 7 ERC-8004 tags: cost, latency, uptime, compute, region, quality, availability. Lens agent writes feedback, Seer reads it for pricing, Shield enforces minimums.
 
+Retroactive Reputation Engine: We compute historical reputation for the ENTIRE existing 0G provider ecosystem by scanning BalanceUpdated, RefundRequested, and ServiceUpdated events from 0G's native InferenceServing contract (last 2M blocks). 8 providers discovered, 239 transactions analyzed, 6-signal composite scoring (activity 25%, settlement health 20%, TEE compliance 15%, pricing 15%, dispute rate 15%, longevity 10%). Unregistered providers are auto-registered into ERC-8004 IdentityRegistry. Results logged to Hedera HCS audit trail.
+
+Trading Desk: A visual 5-step agent pipeline (Register → Shield → Lens → Seer → Edge) that runs real A2A calls to each OpenClaw agent, ranks all resource types (GPU, Agent, Human, DePIN) by reputation signals, and settles the optimal lease via Edge's x402 payment on Hedera.
+
 Notable hack: We discovered Blocky402's Hedera testnet support isn't documented on their website but IS live on their API — confirmed by curling https://api.testnet.blocky402.com/supported and finding {"network":"hedera-testnet","x402Version":1,"extra":{"feePayer":"0.0.7162784"}}.
 ```
 
@@ -128,6 +132,7 @@ ValidationRegistry:   0x629c61e5a8c78725c8e2cfc6d5b441a4bba0517c
 GPUProviderRegistry:  0x94f7d419dd3ff171cb5cd9291a510528ee1ada59
 MockTEEValidator:     0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd
 ResourcePrediction:   0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a
+AgentProposalRegistry: 0x4093025085ea8a3ef36cff0a28e6e7acdf356392
 ```
 
 ### World Chain Sepolia (chainId 4801)

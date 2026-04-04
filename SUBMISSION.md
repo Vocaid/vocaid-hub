@@ -55,7 +55,9 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - Multi-resource marketplace (humans + GPUs + agents + DePIN) on 0G full stack
 - Unified ERC-8004 identity across all resource types
 - Resource prediction markets deployed on 0G Chain
-- **Files:** `src/app/(protected)/home/*`, `src/components/ResourceCard.tsx`, `contracts/0g/ResourcePrediction.sol`
+- Retroactive reputation engine — scans 0G InferenceServing events to compute historical reputation for the entire existing provider ecosystem (8 providers, 239 txs, 6-signal composite scoring)
+- Trading Desk — visual 5-step agent pipeline (Register → Shield → Lens → Seer → Edge) with real A2A calls
+- **Files:** `src/app/(protected)/home/*`, `src/components/ResourceCard.tsx`, `src/components/TradingDesk.tsx`, `src/lib/retroactive-reputation.ts`, `contracts/0g/ResourcePrediction.sol`
 
 ### Hedera — AI & Agentic Payments ($6k, 2 winners)
 **Evidence:**
@@ -96,6 +98,7 @@ Explorer: https://chainscan-galileo.0g.ai
 | GPUProviderRegistry | `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
 | MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
 | ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
+| AgentProposalRegistry | `0x4093025085ea8a3ef36cff0a28e6e7acdf356392` |
 
 ### World Sepolia (Chain ID 4801)
 
