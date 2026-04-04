@@ -60,7 +60,7 @@
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
 | P-030 | Package name still `@worldcoin/next-15-template` | ✅ done | Agent 14 | `package.json` | Fixed to `vocaid-hub` |
-| P-031 | Favicon + OG images need branding | ✅ done | Agent 2 | `src/app/layout.tsx`, `src/app/page.tsx`, `docs/DESIGN_SYSTEM.md` | Favicon set to compact-logo.png, app-logo.png on landing, brand assets documented |
+| P-031 | Favicon + OG images need branding | ✅ done | Agent 2+7 | `src/app/layout.tsx`, `src/app/favicon.ico` | Agent 2: initial setup. Agent 7: fixed OG dimensions (630x630→1200x378), Twitter card→summary_large_image, regenerated favicon.ico from brand logo |
 | P-032 | `README-minikit.md` leftover from scaffold | ✅ done | Agent 7 | `README-minikit.md` | Deleted |
 
 ---
@@ -129,5 +129,7 @@
 | P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `src/app/api/agents/register/route.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
 | P-073 | README.md missing `/api/edge/trade` route | ✅ done | Agent 9 | `README.md` | Added Edge trade route to API Routes table |
 | P-074 | ARCHITECTURE.md missing `/api/edge/trade` + `prediction-math.ts` | ✅ done | Agent 9 | `docs/ARCHITECTURE.md` | Added edge/trade route tree + prediction-math.ts to lib listing |
+| P-075 | A2A endpoints declared in agent cards but not implemented | unclaimed | — | `src/app/api/agents/[name]/a2a/route.ts` | Agent cards declare `/api/agents/{name}/a2a` but routes return 404. Needed for full A2A interop. |
+| P-076 | MCP endpoints declared in agent cards but not implemented | unclaimed | — | `src/app/api/agents/[name]/mcp/route.ts` | Agent cards declare `/api/agents/{name}/mcp` but routes return 404. Needed for LLM tool integration. |
 
-> Agents: Add new items here. Use IDs P-075+.
+> Agents: Add new items here. Use IDs P-077+.

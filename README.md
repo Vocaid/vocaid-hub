@@ -174,6 +174,39 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 
 ---
 
+## Agent Access (A2A / Machine-to-Machine)
+
+External AI agents can discover and transact with Vocaid Hub using standard HTTP — no SDK, no browser session required.
+
+```bash
+# 1. Discover agents (ERC-8004 standard path)
+curl -s https://vocaid-hub.vercel.app/.well-known/agent-card.json | jq '.agents | length'
+# → 4
+
+# 2. Call Seer for AI inference (0G Compute)
+curl -s -X POST https://vocaid-hub.vercel.app/api/seer/inference \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Analyze H100 GPU pricing trends"}'
+
+# 3. Execute trade via Edge agent (Shield clearance + bet)
+curl -s -X POST https://vocaid-hub.vercel.app/api/edge/trade \
+  -H "Content-Type: application/json" \
+  -d '{"marketId":0,"side":"yes","amount":"0.01","reason":"Seer signal"}'
+
+# 4. Full demo: ./scripts/demo-agent-curl.sh
+```
+
+| Capability | Endpoint | Auth Required |
+|-----------|----------|---------------|
+| Agent discovery | `GET /.well-known/agent-card.json` | None |
+| AI inference | `POST /api/seer/inference` | None |
+| Trade execution | `POST /api/edge/trade` | None |
+| x402 payment | `POST /api/payments` (with `X-PAYMENT` header) | x402 signed payload |
+| Agent registration | `POST /api/agents/register` | World ID verified |
+| Audit trail | `GET /api/hedera/audit` | None |
+
+---
+
 ## Deployed Contracts
 
 ### 0G Galileo (Chain ID 16602)
