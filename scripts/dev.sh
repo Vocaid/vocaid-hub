@@ -34,14 +34,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 export PATH="/opt/homebrew/bin:$HOME/bin:/usr/local/bin:$HOME/.npm-global/bin:$HOME/.foundry/bin:$PATH"
 
-# PID tracking for cleanup
-PIDS=()
+# Cleanup: stop PM2 + ngrok on exit
 cleanup() {
   echo ""
   echo -e "${TAG_DEV} ${YELLOW}Shutting down all services...${NC}"
-  for pid in "${PIDS[@]}"; do
-    kill "$pid" 2>/dev/null || true
-  done
+  npx pm2 delete all 2>/dev/null || true
   pkill -f "ngrok" 2>/dev/null || true
   echo -e "${TAG_DEV} ${GREEN}All services stopped.${NC}"
   exit 0
@@ -155,86 +152,59 @@ start_ngrok() {
 start_ngrok
 
 # ============================================================
-# 5b. Start Fastify Backend (API server)
+# 5b. Start all services via PM2
 # ============================================================
-TAG_API="${GREEN}[api]${NC}"
+echo -e "${TAG_DEV} Stopping any existing PM2 processes..."
+npx pm2 delete all 2>/dev/null || true
 
-echo -e "${TAG_API} Starting Fastify backend on :5001..."
-npm run dev:backend 2>&1 | prefix "$TAG_API" &
-API_PID=$!
-PIDS+=($API_PID)
+echo -e "${TAG_DEV} Starting services via PM2 (api + next + claw)..."
+npx pm2 start ecosystem.config.cjs 2>&1 | prefix "$TAG_DEV"
 
+# Wait for Fastify backend
+echo -e "${TAG_DEV} Waiting for Fastify backend..."
 for i in {1..15}; do
   if curl -s http://localhost:5001/health > /dev/null 2>&1; then
-    echo -e "${TAG_API} ${GREEN}✓ Backend ready at http://localhost:5001${NC}"
+    echo -e "${TAG_DEV} ${GREEN}✓ Fastify backend ready at http://localhost:5001${NC}"
     break
   fi
   sleep 1
 done
 
-# ============================================================
-# 6. Start Next.js dev server (with tagged output)
-# ============================================================
-echo -e "${TAG_NEXT} Starting Next.js on :3000..."
-
-# Pipe both stdout and stderr through the prefixer
-npm run dev 2>&1 | prefix "$TAG_NEXT" &
-NEXTJS_PID=$!
-PIDS+=($NEXTJS_PID)
-
-# Wait for Next.js to be ready
+# Wait for Next.js
+echo -e "${TAG_DEV} Waiting for Next.js..."
 for i in {1..30}; do
   if curl -s http://localhost:3000 > /dev/null 2>&1; then
-    echo -e "${TAG_NEXT} ${GREEN}✓ Ready at http://localhost:3000${NC}"
+    echo -e "${TAG_DEV} ${GREEN}✓ Next.js ready at http://localhost:3000${NC}"
     break
   fi
   sleep 1
 done
 
 # ============================================================
-# 7. Start OpenClaw Gateway (with tagged output)
-# ============================================================
-start_openclaw() {
-  if [ ! -f "agents/openclaw.json" ]; then
-    echo -e "${TAG_CLAW} ${YELLOW}No agents/openclaw.json — skipping${NC}"
-    return
-  fi
-
-  echo -e "${TAG_CLAW} Starting Gateway on :18789..."
-  (cd agents && openclaw gateway run 2>&1) | prefix "$TAG_CLAW" &
-  OPENCLAW_PID=$!
-  PIDS+=($OPENCLAW_PID)
-  sleep 2
-
-  if kill -0 $OPENCLAW_PID 2>/dev/null; then
-    echo -e "${TAG_CLAW} ${GREEN}✓ Gateway running on ws://127.0.0.1:18789${NC}"
-  else
-    echo -e "${TAG_CLAW} ${RED}Failed to start. Check output above.${NC}"
-  fi
-}
-
-start_openclaw
-
-# ============================================================
-# 8. Status summary
+# 6. Status summary
 # ============================================================
 echo ""
 echo -e "${BLUE}════════════════════════════════════════════${NC}"
-echo -e "${GREEN}  Vocaid Hub — All Services Running${NC}"
+echo -e "${GREEN}  Vocaid Hub — All Services Running (PM2)${NC}"
 echo -e "${BLUE}════════════════════════════════════════════${NC}"
 echo ""
-echo -e "  ${GREEN}[api]${NC}    http://localhost:5001"
-echo -e "  ${CYAN}[next]${NC}   http://localhost:3000"
+echo -e "  ${GREEN}[api]${NC}    http://localhost:5001  (Fastify + Zod + dotenv)"
+echo -e "  ${CYAN}[next]${NC}   http://localhost:3000  (Next.js + Turbopack)"
 [ -n "$NGROK_URL" ] && echo -e "  ${MAGENTA}[ngrok]${NC}  ${NGROK_URL}"
-echo -e "  ${YELLOW}[claw]${NC}   ws://127.0.0.1:18789"
+echo -e "  ${YELLOW}[claw]${NC}   ws://127.0.0.1:18789  (OpenClaw Gateway)"
 echo ""
 echo -e "  Chains:"
 echo -e "    0G:     https://evmrpc-testnet.0g.ai (16602)"
 echo -e "    World:  chainId 4801"
 echo -e "    Hedera: ${HEDERA_OPERATOR_ID:-'not set'}"
 echo ""
-echo -e "  ${YELLOW}Ctrl+C to stop all services${NC}"
+echo -e "  ${CYAN}Commands:${NC}"
+echo -e "    npm run dev:logs    ${YELLOW}# tail all process logs${NC}"
+echo -e "    npm run dev:stop    ${YELLOW}# stop all processes${NC}"
+echo -e "    npx pm2 monit       ${YELLOW}# real-time dashboard${NC}"
+echo ""
+echo -e "  ${YELLOW}Streaming logs below (Ctrl+C to stop)...${NC}"
 echo ""
 
-# Keep alive — wait for Next.js
-wait $NEXTJS_PID
+# Stream PM2 logs in foreground (replaces manual PID tracking)
+npx pm2 logs --lines 20
