@@ -120,7 +120,7 @@ export function AgentDecisionContent({ decision, resourceType, signal, compact =
 
       {/* Step Content */}
       <div className={compact ? 'min-h-[180px]' : 'min-h-[300px]'}>
-        {currentStep === 0 && <DiscoverStep providers={data.providers} />}
+        {currentStep === 0 && <DiscoverStep providers={data.providers} compact={compact} />}
         {currentStep === 1 && <RankStep providers={data.providers} reasoning={data.reasoning} />}
         {currentStep === 2 && <VerifyStep providers={data.providers} />}
         {currentStep === 3 && <SelectStep provider={selected} reasoning={data.reasoning} />}
@@ -132,7 +132,14 @@ export function AgentDecisionContent({ decision, resourceType, signal, compact =
 
 // --- Step 1: Discover ---
 
-function DiscoverStep({ providers }: { providers: Provider[] }) {
+function DiscoverStep({ providers, compact = false }: { providers: Provider[]; compact?: boolean }) {
+  // Count by type
+  const typeCounts = providers.reduce<Record<string, number>>((acc, p) => {
+    const t = p.resourceType || 'gpu';
+    acc[t] = (acc[t] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="flex flex-col gap-3">
       <StepHeader
@@ -140,25 +147,43 @@ function DiscoverStep({ providers }: { providers: Provider[] }) {
         title="Scanning 0G Network"
         subtitle={`Found ${providers.length} resources on 0G Galileo`}
       />
-      {providers.map((p, i) => {
-        const RIcon = resourceIcon(p.resourceType);
-        return (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border-card animate-fade-in"
-          style={{ animationDelay: `${i * 200}ms` }}>
-          <RIcon className="w-5 h-5 text-primary-accent" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-primary">{p.gpuModel}</p>
-            <p className="text-xs text-secondary">{p.teeType || 'No TEE'} · Agent #{p.agentId}</p>
-          </div>
-          {p.resourceType && (
-            <span className="text-[9px] font-medium text-secondary bg-surface border border-border-card px-1.5 py-0.5 rounded-full">
-              {p.resourceType === 'depin' ? 'DePIN' : p.resourceType}
-            </span>
-          )}
-          <ChainBadge chain="0g" />
+
+      {/* Compact: summary badges only — no card duplication */}
+      {compact ? (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(typeCounts).map(([type, count]) => {
+            const Icon = resourceIcon(type);
+            return (
+              <div key={type} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border-card">
+                <Icon className="w-3.5 h-3.5 text-primary-accent" />
+                <span className="text-xs font-medium text-primary">{count}</span>
+                <span className="text-xs text-secondary">{type === 'depin' ? 'DePIN' : type}</span>
+              </div>
+            );
+          })}
         </div>
-        );
-      })}
+      ) : (
+        /* Full: detailed provider cards (standalone page only) */
+        providers.map((p, i) => {
+          const RIcon = resourceIcon(p.resourceType);
+          return (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border-card animate-fade-in"
+            style={{ animationDelay: `${i * 200}ms` }}>
+            <RIcon className="w-5 h-5 text-primary-accent" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-primary">{p.gpuModel}</p>
+              <p className="text-xs text-secondary">{p.teeType || 'No TEE'} · Agent #{p.agentId}</p>
+            </div>
+            {p.resourceType && (
+              <span className="text-[9px] font-medium text-secondary bg-surface border border-border-card px-1.5 py-0.5 rounded-full">
+                {p.resourceType === 'depin' ? 'DePIN' : p.resourceType}
+              </span>
+            )}
+            <ChainBadge chain="0g" />
+          </div>
+          );
+        })
+      )}
     </div>
   );
 }

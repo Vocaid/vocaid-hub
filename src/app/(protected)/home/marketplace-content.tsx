@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, ChevronDown } from 'lucide-react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { AgentDecisionContent, type DecisionData } from '@/app/(protected)/agent-decision/agent-decision-content';
@@ -225,65 +225,110 @@ const SIGNAL_OPTIONS = [
 
 function SeerRankingPanel({ decision }: { decision: DecisionData | null }) {
   const [resourceType, setResourceType] = useState<string>('all');
-  const [signal, setSignal] = useState<string>('quality');
+  const [signals, setSignals] = useState<Set<string>>(new Set(['quality']));
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showSignalDropdown, setShowSignalDropdown] = useState(false);
+
+  function toggleSignal(id: string) {
+    setSignals((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      if (next.size === 0) next.add('quality'); // at least one
+      return next;
+    });
+  }
+
+  const selectedSignalLabels = SIGNAL_OPTIONS
+    .filter((s) => signals.has(s.id))
+    .map((s) => s.label)
+    .join(', ');
+
+  const typeLabel = resourceType === 'all'
+    ? 'All Types'
+    : resourceType === 'depin'
+      ? 'DePIN'
+      : resourceType.charAt(0).toUpperCase() + resourceType.slice(1);
 
   return (
-    <div className="rounded-xl border border-border-card bg-white p-4 flex flex-col gap-4 shadow-sm">
-      {/* Header — always visible */}
+    <div className="rounded-xl border border-border-card bg-white p-4 flex flex-col gap-3 shadow-sm">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-primary-accent/10 flex items-center justify-center shrink-0">
           <Eye className="w-5 h-5 text-primary-accent" />
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-primary">Seer Agent</p>
-          <p className="text-[11px] text-secondary">Ranking resources by reputation signals</p>
+          <p className="text-[11px] text-secondary">Validate resources by reputation signals</p>
         </div>
       </div>
 
-      {/* Resource type selector */}
-      <div>
-        <p className="text-[10px] font-medium text-secondary uppercase tracking-wider mb-1.5">Resource Type</p>
-        <div className="flex gap-1">
-          {RESOURCE_TYPES.map((t) => (
-            <button
-              key={t}
-              onClick={() => setResourceType(t)}
-              className={`flex-1 rounded-full py-1.5 text-[11px] font-medium transition-colors cursor-pointer ${
-                resourceType === t
-                  ? 'bg-primary-accent text-white'
-                  : 'bg-surface text-secondary hover:text-primary'
-              }`}
-            >
-              {t === 'all' ? 'All' : t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
+      {/* Dropdowns row */}
+      <div className="flex gap-2">
+        {/* Resource type dropdown */}
+        <div className="relative flex-1">
+          <button
+            onClick={() => { setShowTypeDropdown(!showTypeDropdown); setShowSignalDropdown(false); }}
+            className="w-full min-h-[40px] px-3 rounded-lg border border-border-card bg-surface text-sm text-primary flex items-center justify-between cursor-pointer"
+          >
+            <span className="truncate">{typeLabel}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-secondary shrink-0 ml-1" />
+          </button>
+          {showTypeDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-lg border border-border-card bg-white shadow-lg py-1 animate-fade-in">
+              {RESOURCE_TYPES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => { setResourceType(t); setShowTypeDropdown(false); }}
+                  className={`w-full px-3 py-2 text-left text-sm cursor-pointer ${
+                    resourceType === t ? 'bg-primary-accent/10 text-primary-accent font-medium' : 'text-primary hover:bg-surface'
+                  }`}
+                >
+                  {t === 'all' ? 'All Types' : t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Signal multiselect dropdown */}
+        <div className="relative flex-1">
+          <button
+            onClick={() => { setShowSignalDropdown(!showSignalDropdown); setShowTypeDropdown(false); }}
+            className="w-full min-h-[40px] px-3 rounded-lg border border-border-card bg-surface text-sm text-primary flex items-center justify-between cursor-pointer"
+          >
+            <span className="truncate text-left">{signals.size === 1 ? selectedSignalLabels : `${signals.size} signals`}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-secondary shrink-0 ml-1" />
+          </button>
+          {showSignalDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-lg border border-border-card bg-white shadow-lg py-1 animate-fade-in max-h-[200px] overflow-y-auto">
+              {SIGNAL_OPTIONS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => toggleSignal(s.id)}
+                  className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 cursor-pointer ${
+                    signals.has(s.id) ? 'text-primary-accent font-medium' : 'text-primary hover:bg-surface'
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                    signals.has(s.id) ? 'bg-primary-accent border-primary-accent' : 'border-border-card'
+                  }`}>
+                    {signals.has(s.id) && <span className="text-white text-[10px]">&#10003;</span>}
+                  </span>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Signal selector */}
-      <div>
-        <p className="text-[10px] font-medium text-secondary uppercase tracking-wider mb-1.5">Rank By Signal</p>
-        <div className="flex flex-wrap gap-1">
-          {SIGNAL_OPTIONS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSignal(s.id)}
-              className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors cursor-pointer ${
-                signal === s.id
-                  ? 'bg-primary-accent text-white'
-                  : 'bg-surface text-secondary hover:text-primary border border-border-card'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Decision engine — always visible, compact mode */}
-      <div className="max-h-[50vh] overflow-y-auto">
-        <AgentDecisionContent decision={decision} resourceType={resourceType} signal={signal} compact />
-      </div>
+      {/* Decision engine — compact, no resource listing duplication */}
+      <AgentDecisionContent
+        decision={decision}
+        resourceType={resourceType}
+        signal={[...signals][0]}
+        compact
+      />
     </div>
   );
 }
