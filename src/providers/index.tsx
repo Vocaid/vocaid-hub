@@ -3,7 +3,7 @@ import { MiniKitProvider } from '@worldcoin/minikit-js/minikit-provider';
 import { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 const ErudaProvider = dynamic(
   () => import('@/providers/Eruda').then((c) => c.ErudaProvider),
@@ -32,6 +32,15 @@ export default function ClientProviders({
   children,
   session,
 }: ClientProvidersProps) {
+  // Shim: MiniKit v2 removed .commands but UI kit v1.6.0 still accesses it for haptics
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mk = (window as any).MiniKit;
+    if (mk && !mk.commands) {
+      mk.commands = { sendHapticFeedback: () => {} };
+    }
+  }, []);
+
   return (
     <ErudaProvider>
       <MiniKitProvider props={{ appId: process.env.NEXT_PUBLIC_APP_ID }}>
