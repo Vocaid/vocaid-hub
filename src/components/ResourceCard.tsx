@@ -79,8 +79,8 @@ export function ResourceCard({
             disabled={hiring}
             className={`min-h-11 min-w-11 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
               hiring
-                ? 'bg-primary-accent/60 text-white/80 cursor-wait'
-                : 'bg-primary-accent text-white cursor-pointer active:scale-95'
+                ? 'bg-primary/60 text-white/80 cursor-wait'
+                : 'bg-primary text-white cursor-pointer active:scale-95'
             }`}
           >
             {hiring ? (

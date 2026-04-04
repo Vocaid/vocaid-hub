@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireWorldId } from "@/lib/world-id";
+// World ID gate removed for browsing — resources should be publicly discoverable
+// Keep gate on write operations (hire, register) only
 import type { ResourceCardProps } from "@/components/ResourceCard";
 import type { ResourceSignals } from "@/components/ReputationSignals";
 import type { OGServiceInfo } from "@/lib/og-compute";
@@ -18,16 +19,14 @@ const ASC_SORTS = new Set<SortField>(["latency", "cost"]);
  *
  * Unified resource listing — aggregates agents + GPU providers.
  * Calls library functions directly (no HTTP self-fetch to other routes).
- * Gated behind World ID verification.
+ * Public endpoint — no World ID gate. Resources should be discoverable
+ * by anyone (including agents via A2A/MCP).
  *
  * Query params:
  *   ?sort=quality|cost|latency|uptime  (default: quality desc)
  *   ?type=gpu|agent|human              (filter by resource type)
  */
 export async function GET(request: NextRequest) {
-  const gate = await requireWorldId();
-  if (gate instanceof NextResponse) return gate;
-
   const { searchParams } = request.nextUrl;
   const sortParam = searchParams.get("sort") as SortField | null;
   const typeParam = searchParams.get("type") as FilterType | null;
