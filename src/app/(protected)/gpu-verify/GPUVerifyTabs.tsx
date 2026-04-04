@@ -179,11 +179,35 @@ export default function GPUVerifyTabs() {
 
 /* ─── Agent Registration Panel ───────────────────── */
 
-const AGENT_ROLES = [
-  { id: 'signal-analyst', label: 'Seer', icon: '🔮', desc: 'Signal analysis & trend detection' },
-  { id: 'market-maker', label: 'Edge', icon: '⚡', desc: 'Trade execution & market pricing' },
-  { id: 'risk-manager', label: 'Shield', icon: '🛡️', desc: 'Risk management & TEE validation' },
-  { id: 'discovery', label: 'Lens', icon: '🔍', desc: 'Discovery & reputation monitoring' },
+const TRADING_DESK_AGENTS = [
+  {
+    id: 'signal-analyst',
+    label: 'Seer',
+    desc: 'Listens to on-chain reputation signals across all resource types. Measures quality, uptime, latency, and cost efficiency using ERC-8004 ReputationRegistry data.',
+    workflow: 'Signals → MCP tool calls → ReputationRegistry reads',
+    resources: 'GPU, Human, Agent, DePIN',
+  },
+  {
+    id: 'market-maker',
+    label: 'Edge',
+    desc: 'Settles resource leases and hires via x402 USDC on Hedera. Executes prediction market trades based on Seer signals, approved by Shield.',
+    workflow: 'Seer signal → Shield approval → x402 payment → HCS audit',
+    resources: 'Payments, Predictions, Settlements',
+  },
+  {
+    id: 'risk-manager',
+    label: 'Shield',
+    desc: 'Verifies assets before allocation. Reads TEE attestation from ValidationRegistry, enforces minimum reputation thresholds, blocks unverified providers.',
+    workflow: 'ValidationRegistry check → Reputation threshold → Approve/Deny',
+    resources: 'All types — gates every hire decision',
+  },
+  {
+    id: 'discovery',
+    label: 'Lens',
+    desc: 'Monitors resource performance after hire. Writes retroactive reputation feedback (quality, uptime, latency) to ERC-8004 on 0G Chain.',
+    workflow: 'Observe → Measure → giveFeedback() → ReputationRegistry',
+    resources: 'GPU, Human, Agent, DePIN',
+  },
 ];
 
 function AgentRegisterPanel() {
@@ -195,7 +219,7 @@ function AgentRegisterPanel() {
     if (!selectedRole) return;
     setStatus('loading');
     try {
-      const role = AGENT_ROLES.find((r) => r.id === selectedRole)!;
+      const role = TRADING_DESK_AGENTS.find((r) => r.id === selectedRole)!;
       const res = await fetch('/api/agents/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -213,54 +237,90 @@ function AgentRegisterPanel() {
     }
   }
 
+  const selected = TRADING_DESK_AGENTS.find((r) => r.id === selectedRole);
+
   return (
     <div className="space-y-3">
       <div className="rounded-xl border border-border bg-white p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Bot className="h-5 w-5 text-chain-world" />
-          <h3 className="font-semibold text-primary">Register AI Agent</h3>
+        <div className="flex items-center gap-2 mb-1">
+          <Bot className="h-5 w-5 text-primary-accent" />
+          <h3 className="font-semibold text-primary">OpenClaw Trading Desk</h3>
         </div>
-        <p className="text-xs text-secondary mb-4">Register an autonomous agent with ERC-8004 identity on 0G Chain, linked to your World ID.</p>
+        <p className="text-xs text-secondary mb-4">
+          Register autonomous agents on ERC-8004. Each agent searches for resources,
+          listens to reputation signals, verifies assets, and settles leases using on-chain transaction data.
+        </p>
 
+        {/* Agent Role Selector */}
         <div className="grid grid-cols-2 gap-2 mb-4">
-          {AGENT_ROLES.map((role) => (
+          {TRADING_DESK_AGENTS.map((role) => (
             <button
               key={role.id}
               onClick={() => setSelectedRole(role.id)}
-              className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-xs transition-colors ${
+              className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors ${
                 selectedRole === role.id
-                  ? 'border-primary-accent bg-primary-accent/5 text-primary'
-                  : 'border-border text-secondary hover:border-primary-accent/50'
+                  ? 'border-primary-accent bg-primary-accent/5'
+                  : 'border-border hover:border-primary-accent/50'
               }`}
             >
-              <span className="text-lg">{role.icon}</span>
-              <span className="font-medium">{role.label}</span>
-              <span className="text-[10px] text-secondary">{role.desc}</span>
+              <span className="text-sm font-semibold text-primary">{role.label}</span>
+              <span className="text-[10px] leading-tight text-secondary line-clamp-2">{role.desc.split('.')[0]}.</span>
             </button>
           ))}
         </div>
 
+        {/* Selected Role Detail */}
+        {selected && (
+          <div className="rounded-lg bg-surface p-3 mb-4 space-y-2">
+            <p className="text-xs font-semibold text-primary">{selected.label} Agent</p>
+            <p className="text-[11px] text-secondary leading-relaxed">{selected.desc}</p>
+            <div className="flex flex-col gap-1 mt-2">
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-medium text-primary-accent shrink-0">Workflow:</span>
+                <span className="text-[10px] text-secondary">{selected.workflow}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[10px] font-medium text-primary-accent shrink-0">Resources:</span>
+                <span className="text-[10px] text-secondary">{selected.resources}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {status === 'success' && result && (
           <div className="rounded-lg bg-green-50 p-3 mb-3">
             <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
-              <Check className="h-4 w-4" /> Agent registered
+              <Check className="h-4 w-4" /> Agent registered on ERC-8004
             </div>
-            <p className="text-xs text-green-600 mt-1">ERC-8004 ID: #{result.agentId}</p>
+            <p className="text-xs text-green-600 mt-1">Identity NFT #{result.agentId} · Linked to your World ID</p>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="rounded-lg bg-red-50 p-3 mb-3">
+            <p className="text-xs text-red-600">Registration failed. Verify World ID and try again.</p>
           </div>
         )}
 
         <button
           onClick={handleRegister}
           disabled={!selectedRole || status === 'loading'}
-          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full rounded-full bg-primary py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
-          {status === 'loading' ? 'Registering...' : 'Register on ERC-8004'}
+          {status === 'loading' ? 'Registering on 0G Chain...' : 'Deploy Agent on ERC-8004'}
         </button>
       </div>
-      <div className="flex items-center justify-center gap-3 text-xs text-secondary">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-og" /> 0G Chain</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-chain-world" /> World ID</span>
+
+      {/* Protocol badges */}
+      <div className="flex items-center justify-center gap-4 text-[10px] text-secondary">
+        <span className="flex items-center gap-1">OpenClaw</span>
+        <span>·</span>
+        <span>ERC-8004</span>
+        <span>·</span>
+        <span>A2A Protocol</span>
+        <span>·</span>
+        <span>World ID</span>
       </div>
     </div>
   );
