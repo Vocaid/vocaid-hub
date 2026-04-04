@@ -12,13 +12,15 @@ export default async function TabsLayout({ children }: { children: React.ReactNo
     <Page>
       <Page.Header className="p-0">
         <TopBar
-          endAdornment={
-            <img src="/app-logo.png" alt="Vocaid Hub" className="h-8" />
-          }
           startAdornment={
+            <img src="/app-logo.png" alt="Vocaid Hub" className="h-6 w-auto" />
+          }
+          endAdornment={
             <div className="flex items-center gap-2">
-              <Marble src={session?.user.profilePictureUrl} className="w-10" />
-              <p className="text-sm font-semibold capitalize">{session?.user.username}</p>
+              <p className="text-sm font-semibold capitalize">
+                {session?.user.username}
+              </p>
+              <Marble src={session?.user.profilePictureUrl} className="w-12" />
             </div>
           }
         />
