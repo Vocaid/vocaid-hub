@@ -138,18 +138,35 @@ export default function GPUStepper() {
   const connectWallet = useCallback(async () => {
     setStep1({ status: 'loading' });
     try {
-      if (!window.ethereum) {
-        throw new Error('No wallet detected');
+      // Path 1: Inside World App — get address from auth session
+      if (typeof window !== 'undefined' && (window as any).MiniKit?.isInstalled?.()) {
+        const session = await fetch('/api/auth/session').then(r => r.json()).catch(() => null);
+        if (session?.user?.address) {
+          setWalletAddress(session.user.address);
+          setStep1({ status: 'success' });
+          setCurrentStep(2);
+          return;
+        }
       }
-      const accounts = (await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      })) as string[];
 
-      if (!accounts?.[0]) throw new Error('No account returned');
+      // Path 2: Browser wallet (MetaMask, Rabby, etc.)
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        const accounts = (await (window as any).ethereum.request({
+          method: 'eth_requestAccounts',
+        })) as string[];
 
-      setWalletAddress(accounts[0]);
-      setStep1({ status: 'success' });
-      setCurrentStep(2);
+        if (!accounts?.[0]) throw new Error('No account returned');
+
+        setWalletAddress(accounts[0]);
+        setStep1({ status: 'success' });
+        setCurrentStep(2);
+        return;
+      }
+
+      // Path 3: No wallet available
+      throw new Error(
+        'No wallet detected. Open in World App or install a browser wallet (MetaMask, Rabby).'
+      );
     } catch (err) {
       setStep1({
         status: 'error',

@@ -1,11 +1,12 @@
-import GPUStepper from '@/components/GPUStepper';
 import { Page } from '@/components/PageLayout';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import GPUVerifyTabs from './GPUVerifyTabs';
 
 export const metadata = {
-  title: 'GPU Verification — Vocaid Hub',
-  description: 'Register and verify GPU providers on-chain via ERC-8004',
+  title: 'Resources — Vocaid Hub',
+  description:
+    'Browse resource reputation signals and register GPU providers on ERC-8004',
 };
 
 export default function GPUVerifyPage() {
@@ -18,12 +19,10 @@ export default function GPUVerifyPage() {
         >
           <ChevronLeft className="h-5 w-5 text-primary" />
         </Link>
-        <h2 className="text-lg font-semibold text-primary">
-          GPU Verification
-        </h2>
+        <h2 className="text-lg font-semibold text-primary">Resources</h2>
       </Page.Header>
       <Page.Main>
-        <GPUStepper />
+        <GPUVerifyTabs />
       </Page.Main>
     </Page>
   );
