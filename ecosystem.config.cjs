@@ -26,8 +26,8 @@ module.exports = {
     {
       name: 'claw',
       script: 'npx',
-      args: 'openclaw',
-      cwd: './',
+      args: 'openclaw gateway run',
+      cwd: './agents',
       env: { NODE_ENV: 'development' },
       watch: false,
       log_date_format: 'HH:mm:ss',
