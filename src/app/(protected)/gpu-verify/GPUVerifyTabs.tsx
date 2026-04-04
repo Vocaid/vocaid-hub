@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
+import { ArrowRightLeft, BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
 import GPUStepper from '@/components/GPUStepper';
+import TradingDesk from '@/components/TradingDesk';
 import { ResourceCard, type ResourceCardProps } from '@/components/ResourceCard';
 import {
   ReputationSignals,
@@ -23,7 +24,7 @@ async function getSessionAddress(): Promise<{ address: string; worldId: string }
   }
 }
 
-type Tab = 'dashboard' | 'register';
+type Tab = 'dashboard' | 'register' | 'trading';
 
 interface ResourceWithSignals extends ResourceCardProps {
   agentId?: number;
@@ -76,6 +77,17 @@ export default function GPUVerifyTabs() {
         >
           <Plus className="h-4 w-4" />
           Register
+        </button>
+        <button
+          onClick={() => { setActiveTab('trading'); setSelectedResource(null); }}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'trading'
+              ? 'bg-white text-primary shadow-sm'
+              : 'text-secondary hover:text-primary'
+          }`}
+        >
+          <ArrowRightLeft className="h-4 w-4" />
+          Trading
         </button>
       </div>
 
@@ -180,138 +192,109 @@ export default function GPUVerifyTabs() {
         </>
       )}
 
+      {activeTab === 'trading' && <TradingDesk />}
+
       {/* Detail View */}
       {activeTab === 'dashboard' && selectedResource && (
         <ResourceDetailView
           resource={selectedResource}
           onBack={() => setSelectedResource(null)}
+          onHire={() => { setActiveTab('trading'); setSelectedResource(null); }}
         />
       )}
     </div>
   );
 }
 
-/* ─── Agent Registration Panel ───────────────────── */
+/* ─── Resource Agent Registration Panel ─────────────── */
 
-const TRADING_DESK_AGENTS = [
-  {
-    id: 'signal-analyst',
-    label: 'Seer',
-    desc: 'Listens to on-chain reputation signals across all resource types. Measures quality, uptime, latency, and cost efficiency using ERC-8004 ReputationRegistry data.',
-    workflow: 'Signals → MCP tool calls → ReputationRegistry reads',
-    resources: 'GPU, Human, Agent, DePIN',
-  },
-  {
-    id: 'market-maker',
-    label: 'Edge',
-    desc: 'Settles resource leases and hires via x402 USDC on Hedera. Executes prediction market trades based on Seer signals, approved by Shield.',
-    workflow: 'Seer signal → Shield approval → x402 payment → HCS audit',
-    resources: 'Payments, Predictions, Settlements',
-  },
-  {
-    id: 'risk-manager',
-    label: 'Shield',
-    desc: 'Verifies assets before allocation. Reads TEE attestation from ValidationRegistry, enforces minimum reputation thresholds, blocks unverified providers.',
-    workflow: 'ValidationRegistry check → Reputation threshold → Approve/Deny',
-    resources: 'All types — gates every hire decision',
-  },
-  {
-    id: 'discovery',
-    label: 'Lens',
-    desc: 'Monitors resource performance after hire. Writes retroactive reputation feedback (quality, uptime, latency) to ERC-8004 on 0G Chain.',
-    workflow: 'Observe → Measure → giveFeedback() → ReputationRegistry',
-    resources: 'GPU, Human, Agent, DePIN',
-  },
+const AGENT_CAPABILITIES = [
+  { id: 'signal-analysis', label: 'Signal Analysis' },
+  { id: 'code-review', label: 'Code Review' },
+  { id: 'data-processing', label: 'Data Processing' },
+  { id: 'translation', label: 'Translation' },
+  { id: 'custom', label: 'Custom' },
 ];
 
 function AgentRegisterPanel() {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [agentName, setAgentName] = useState('');
+  const [capability, setCapability] = useState<string | null>(null);
+  const [price, setPrice] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [result, setResult] = useState<{ agentId?: string; txHash?: string } | null>(null);
 
   async function handleRegister() {
-    if (!selectedRole) return;
+    if (!agentName || !capability) return;
     setStatus('loading');
     try {
       const session = await getSessionAddress();
       if (!session) { setStatus('error'); return; }
 
-      const role = TRADING_DESK_AGENTS.find((r) => r.id === selectedRole)!;
       const res = await fetch('/api/agents/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentURI: `https://vocaid-hub.vercel.app/agent-cards/${role.label.toLowerCase()}.json`,
-          role: selectedRole,
+          agentURI: `resource-agent:${capability}:${agentName}`,
+          role: 'resource-agent',
           operatorWorldId: session.worldId,
           operatorAddress: session.address,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setResult(data);
+      if (!res.ok) throw new Error('Registration failed');
       setStatus('success');
     } catch {
       setStatus('error');
     }
   }
 
-  const selected = TRADING_DESK_AGENTS.find((r) => r.id === selectedRole);
-
   return (
     <div className="space-y-3">
       <div className="rounded-xl border border-border bg-white p-4">
         <div className="flex items-center gap-2 mb-1">
           <Bot className="h-5 w-5 text-primary-accent" />
-          <h3 className="font-semibold text-primary">OpenClaw Trading Desk</h3>
+          <h3 className="font-semibold text-primary">Register AI Agent</h3>
         </div>
         <p className="text-xs text-secondary mb-4">
-          Register autonomous agents on ERC-8004. Each agent searches for resources,
-          listens to reputation signals, verifies assets, and settles leases using on-chain transaction data.
+          List your AI agent as a leasable resource on the marketplace. Other users and agents can discover and hire it.
         </p>
 
-        {/* Agent Role Selector */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {TRADING_DESK_AGENTS.map((role) => (
+        <input
+          type="text"
+          placeholder="Agent name (e.g. Orion, DataBot-7)"
+          value={agentName}
+          onChange={(e) => setAgentName(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
+        />
+
+        <p className="text-[10px] text-secondary mb-1.5">Capability</p>
+        <div className="flex flex-wrap gap-1 mb-3">
+          {AGENT_CAPABILITIES.map((cap) => (
             <button
-              key={role.id}
-              onClick={() => setSelectedRole(role.id)}
-              className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors ${
-                selectedRole === role.id
-                  ? 'border-primary-accent bg-primary-accent/5'
-                  : 'border-border hover:border-primary-accent/50'
+              key={cap.id}
+              onClick={() => setCapability(cap.id)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                capability === cap.id
+                  ? 'bg-primary-accent text-white'
+                  : 'bg-surface text-secondary hover:text-primary'
               }`}
             >
-              <span className="text-sm font-semibold text-primary">{role.label}</span>
-              <span className="text-[10px] leading-tight text-secondary line-clamp-2">{role.desc.split('.')[0]}.</span>
+              {cap.label}
             </button>
           ))}
         </div>
 
-        {/* Selected Role Detail */}
-        {selected && (
-          <div className="rounded-lg bg-surface p-3 mb-4 space-y-2">
-            <p className="text-xs font-semibold text-primary">{selected.label} Agent</p>
-            <p className="text-[11px] text-secondary leading-relaxed">{selected.desc}</p>
-            <div className="flex flex-col gap-1 mt-2">
-              <div className="flex items-start gap-2">
-                <span className="text-[10px] font-medium text-primary-accent shrink-0">Workflow:</span>
-                <span className="text-[10px] text-secondary">{selected.workflow}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-[10px] font-medium text-primary-accent shrink-0">Resources:</span>
-                <span className="text-[10px] text-secondary">{selected.resources}</span>
-              </div>
-            </div>
-          </div>
-        )}
+        <input
+          type="text"
+          placeholder="Price (e.g. $0.01/query, $5/hr)"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className="w-full rounded-lg border border-border px-3 py-2 text-sm mb-3 focus:outline-none focus:border-primary-accent"
+        />
 
-        {status === 'success' && result && (
+        {status === 'success' && (
           <div className="rounded-lg bg-green-50 p-3 mb-3">
             <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
-              <Check className="h-4 w-4" /> Agent registered on ERC-8004
+              <Check className="h-4 w-4" /> Agent listed on marketplace
             </div>
-            <p className="text-xs text-green-600 mt-1">Identity NFT #{result.agentId} · Linked to your World ID</p>
           </div>
         )}
 
@@ -323,24 +306,17 @@ function AgentRegisterPanel() {
 
         <button
           onClick={handleRegister}
-          disabled={!selectedRole || status === 'loading'}
-          className="w-full rounded-full bg-primary py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
+          disabled={!agentName || !capability || status === 'loading'}
+          className="w-full rounded-lg bg-primary-accent py-2.5 text-sm font-medium text-white disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin" />}
-          {status === 'loading' ? 'Registering on 0G Chain...' : 'Deploy Agent on ERC-8004'}
+          {status === 'loading' ? 'Registering...' : 'List Agent on Marketplace'}
         </button>
       </div>
 
-      {/* Protocol badges */}
-      <div className="flex items-center justify-center gap-4 text-[10px] text-secondary">
-        <span className="flex items-center gap-1">OpenClaw</span>
-        <span>·</span>
-        <span>ERC-8004</span>
-        <span>·</span>
-        <span>A2A Protocol</span>
-        <span>·</span>
-        <span>World ID</span>
-      </div>
+      <p className="text-center text-[10px] text-secondary">
+        Looking for OpenClaw trading agents (Seer, Edge, Shield, Lens)? Deploy them from your <strong>Profile</strong> page.
+      </p>
     </div>
   );
 }
@@ -558,9 +534,11 @@ function DePINRegisterPanel() {
 function ResourceDetailView({
   resource,
   onBack,
+  onHire,
 }: {
   resource: ResourceWithSignals;
   onBack: () => void;
+  onHire: () => void;
 }) {
   return (
     <div className="space-y-4">
@@ -604,6 +582,7 @@ function ResourceDetailView({
       </div>
 
       <button
+        onClick={onHire}
         className="w-full rounded-xl bg-primary-accent py-3 text-center font-semibold text-white transition-colors hover:bg-primary-accent/90"
       >
         Hire — {resource.price} · x402 USDC on Hedera

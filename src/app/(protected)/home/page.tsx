@@ -27,6 +27,8 @@ async function getResources(): Promise<ResourceCardProps[]> {
     { type: 'agent', name: 'Lyra', reputation: 93, verified: true, chain: '0g', price: '$0.005/check', verificationType: 'agentkit', subtitle: 'Compliance Agent' },
     { type: 'depin', name: 'Helios Solar Farm', reputation: 85, verified: true, chain: 'hedera', price: '$0.08/kWh', verificationType: 'tee', subtitle: '50kW · Frankfurt' },
     { type: 'depin', name: 'FiberLink Relay', reputation: 82, verified: true, chain: 'hedera', price: '$0.003/GB', verificationType: 'tee', subtitle: '10Gbps · Virginia' },
+    { type: 'depin', name: 'GridPulse Energy', reputation: 79, verified: true, chain: 'hedera', price: '$0.12/kWh', verificationType: 'tee', subtitle: 'Grid Power · 200kW · Paris' },
+    { type: 'depin', name: 'Tesla Model Y Fleet', reputation: 88, verified: true, chain: 'hedera', price: '$0.45/mi', verificationType: 'tee', subtitle: 'Autonomous · 12 vehicles · LA' },
   ];
 }
 

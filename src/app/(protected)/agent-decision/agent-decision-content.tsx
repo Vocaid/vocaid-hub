@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, Search, BarChart3, ShieldCheck, CheckCircle, Cpu, Zap, Clock, Star, Activity } from 'lucide-react';
+import { Eye, Search, BarChart3, ShieldCheck, CheckCircle, Cpu, Bot, User, Zap, Clock, Star, Activity } from 'lucide-react';
 import { ReputationBar } from '@/components/ReputationBar';
 import { ChainBadge } from '@/components/ChainBadge';
 
@@ -14,6 +14,18 @@ interface Provider {
   reputation: { starred: number; uptime: number; successRate: number; responseTime: number };
   validationScore: number;
   compositeScore: number;
+  resourceType?: string;
+  resourceName?: string;
+  price?: string;
+}
+
+function resourceIcon(type?: string) {
+  switch (type) {
+    case 'agent': return Bot;
+    case 'human': return User;
+    case 'depin': return Zap;
+    default: return Cpu;
+  }
 }
 
 export interface DecisionData {
@@ -30,7 +42,7 @@ const STEPS = [
   { icon: CheckCircle, label: 'Select', desc: 'Choose optimal provider' },
 ];
 
-export function AgentDecisionContent({ decision, resourceType, signal }: { decision: DecisionData | null; resourceType?: string; signal?: string }) {
+export function AgentDecisionContent({ decision, resourceType, signal, compact = false }: { decision: DecisionData | null; resourceType?: string; signal?: string; compact?: boolean }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [autoPlay, setAutoPlay] = useState(false);
   const data = decision ?? getDemoData();
@@ -46,8 +58,9 @@ export function AgentDecisionContent({ decision, resourceType, signal }: { decis
   const selected = data.providers[0];
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Agent Header */}
+    <div className={`flex flex-col ${compact ? 'gap-3' : 'gap-6'}`}>
+      {/* Agent Header — hidden in compact mode (parent already shows header) */}
+      {!compact && (
       <div className="flex items-center gap-3 p-4 rounded-xl bg-surface border border-border-card">
         <div className="w-10 h-10 rounded-full bg-primary-accent/10 flex items-center justify-center">
           <Eye className="w-5 h-5 text-primary-accent" />
@@ -67,6 +80,17 @@ export function AgentDecisionContent({ decision, resourceType, signal }: { decis
           {autoPlay ? 'Running...' : 'Run Decision'}
         </button>
       </div>
+      )}
+
+      {/* Run button in compact mode */}
+      {compact && (
+        <button
+          onClick={() => { setCurrentStep(0); setAutoPlay(true); }}
+          className="w-full min-h-[44px] text-xs font-medium rounded-lg bg-primary-accent text-white active:scale-95 transition-transform cursor-pointer"
+        >
+          {autoPlay ? 'Running Decision...' : 'Run Seer Decision'}
+        </button>
+      )}
 
       {/* Step Indicators */}
       <div className="flex items-center justify-between px-2">
@@ -113,20 +137,28 @@ function DiscoverStep({ providers }: { providers: Provider[] }) {
     <div className="flex flex-col gap-3">
       <StepHeader
         icon={Search}
-        title="Scanning 0G Compute Network"
-        subtitle={`Found ${providers.length} GPU providers on 0G Galileo`}
+        title="Scanning 0G Network"
+        subtitle={`Found ${providers.length} resources on 0G Galileo`}
       />
-      {providers.map((p, i) => (
+      {providers.map((p, i) => {
+        const RIcon = resourceIcon(p.resourceType);
+        return (
         <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border-card animate-fade-in"
           style={{ animationDelay: `${i * 200}ms` }}>
-          <Cpu className="w-5 h-5 text-primary-accent" />
+          <RIcon className="w-5 h-5 text-primary-accent" />
           <div className="flex-1">
             <p className="text-sm font-medium text-primary">{p.gpuModel}</p>
             <p className="text-xs text-secondary">{p.teeType || 'No TEE'} · Agent #{p.agentId}</p>
           </div>
+          {p.resourceType && (
+            <span className="text-[9px] font-medium text-secondary bg-surface border border-border-card px-1.5 py-0.5 rounded-full">
+              {p.resourceType === 'depin' ? 'DePIN' : p.resourceType}
+            </span>
+          )}
           <ChainBadge chain="0g" />
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -198,17 +230,18 @@ function VerifyStep({ providers }: { providers: Provider[] }) {
 // --- Step 4: Select ---
 
 function SelectStep({ provider, reasoning }: { provider: Provider; reasoning: DecisionData['reasoning'] }) {
+  const SIcon = resourceIcon(provider.resourceType);
   return (
     <div className="flex flex-col gap-4 animate-fade-in">
       <StepHeader
         icon={CheckCircle}
-        title="Provider Selected"
-        subtitle="Seer recommends the highest-scoring verified provider"
+        title="Resource Selected"
+        subtitle="Seer recommends the highest-scoring verified resource"
       />
       <div className="p-4 rounded-xl border-2 border-status-verified bg-status-verified/5">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-12 h-12 rounded-xl bg-primary-accent/10 flex items-center justify-center">
-            <Cpu className="w-6 h-6 text-primary-accent" />
+            <SIcon className="w-6 h-6 text-primary-accent" />
           </div>
           <div className="flex-1">
             <p className="font-semibold text-primary">{provider.gpuModel}</p>
@@ -266,13 +299,15 @@ function Signal({ icon: Icon, label, value }: { icon: typeof Star; label: string
 
 function getDemoData(): DecisionData {
   return {
-    discovered: 3,
+    discovered: 5,
     providers: [
-      { address: "0xGPU1", agentId: "7", gpuModel: "NVIDIA H100 80GB", teeType: "Intel TDX", teeVerified: true, reputation: { starred: 82, uptime: 99, successRate: 95, responseTime: 45 }, validationScore: 100, compositeScore: 89 },
-      { address: "0xGPU2", agentId: "8", gpuModel: "NVIDIA H200 141GB", teeType: "AMD SEV", teeVerified: true, reputation: { starred: 64, uptime: 92, successRate: 88, responseTime: 30 }, validationScore: 85, compositeScore: 76 },
-      { address: "0xGPU3", agentId: "9", gpuModel: "AMD MI300X 192GB", teeType: "None", teeVerified: false, reputation: { starred: 45, uptime: 78, successRate: 70, responseTime: 60 }, validationScore: 0, compositeScore: 48 },
+      { address: "agent-0", agentId: "27", gpuModel: "Orion · Signal Analysis", teeType: "AgentKit", teeVerified: true, reputation: { starred: 95, uptime: 99, successRate: 98, responseTime: 45 }, validationScore: 90, compositeScore: 91, resourceType: "agent", resourceName: "Orion", price: "$0.01/query" },
+      { address: "gpu-0", agentId: "25", gpuModel: "Nebula-H100 · EU Frankfurt", teeType: "Intel TDX", teeVerified: true, reputation: { starred: 87, uptime: 99, successRate: 95, responseTime: 120 }, validationScore: 100, compositeScore: 89, resourceType: "gpu", resourceName: "Nebula-H100", price: "$0.04/1K tok" },
+      { address: "human-0", agentId: "29", gpuModel: "Camila Torres · Rust L4", teeType: "World ID", teeVerified: true, reputation: { starred: 91, uptime: 0, successRate: 88, responseTime: 0 }, validationScore: 80, compositeScore: 75, resourceType: "human", resourceName: "Camila Torres", price: "$45/hr" },
+      { address: "depin-0", agentId: "31", gpuModel: "Helios Solar · 50kW", teeType: "TEE", teeVerified: true, reputation: { starred: 85, uptime: 97, successRate: 90, responseTime: 0 }, validationScore: 75, compositeScore: 72, resourceType: "depin", resourceName: "Helios Solar", price: "$0.08/kWh" },
+      { address: "gpu-1", agentId: "26", gpuModel: "Titan-A100 · US East", teeType: "None", teeVerified: false, reputation: { starred: 45, uptime: 78, successRate: 70, responseTime: 60 }, validationScore: 0, compositeScore: 48, resourceType: "gpu", resourceName: "Titan-A100", price: "$0.03/1K tok" },
     ],
     selected: null,
-    reasoning: { weights: { starred: 0.3, uptime: 0.25, successRate: 0.25, teeBonus: 0.2 }, formula: "score = quality*0.3 + uptime*0.25 + success*0.25 + (TEE ? 20 : 0)" },
+    reasoning: { weights: { starred: 0.3, uptime: 0.25, successRate: 0.25, teeBonus: 0.2 }, formula: "score = quality*0.3 + uptime*0.25 + success*0.25 + (verified ? 20 : 0)" },
   };
 }

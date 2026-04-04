@@ -62,6 +62,11 @@
 | 6 | P-081: Payment ledger persistence + Agent Autonomy Gap cleanup | `src/lib/payment-ledger.ts` (new), `src/app/api/payments/route.ts`, `.gitignore`, `docs/PENDING_WORK.md` | done | 2026-04-04T23:00Z | 2026-04-04T23:15Z |
 | 4 | P-080: Error response sanitization (13 catch blocks) | 9 API routes + 2 agent handlers | done | 2026-04-04T23:30Z | 2026-04-04T23:45Z |
 | 5 | P-077/078/079: Solidity security fixes + full redeploy | `contracts/0g/GPUProviderRegistry.sol`, `contracts/0g/ResourcePrediction.sol`, `contracts/world/CredentialGate.sol`, `scripts/deploy-0g.ts`, `scripts/deploy-world.ts`, `.env.local`, `.env.example` | done | 2026-04-05T00:00Z | 2026-04-05T01:00Z |
+| 5 | Predictions SSR fix: direct chain read + useEffect refresh | `src/app/(protected)/predictions/page.tsx`, `src/app/(protected)/predictions/predictions-content.tsx` | done | 2026-04-05T01:00Z | 2026-04-05T01:15Z |
+| 5 | Remove World ID gates from prediction routes (demo) | `src/app/api/predictions/[id]/bet/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts`, `src/app/api/predictions/[id]/claim/route.ts` | done | 2026-04-05T01:15Z | 2026-04-05T01:30Z |
+| 5 | SignalTicker + ActivityFeed relocation to Predict page | `src/components/SignalTicker.tsx` (new), `src/components/ActivityFeed.tsx`, `src/app/(protected)/predictions/predictions-content.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, `src/app/api/activity/route.ts`, `src/app/globals.css` | done | 2026-04-05T02:00Z | 2026-04-05T03:00Z |
+| 5 | Contract address updates across 10 docs | `SUBMISSION.md`, `docs/SUBMISSION_CONTENT.md`, `scripts/demo-flow.md`, 4 plan files, `agents/skills/prediction.md`, test file | done | 2026-04-05T01:30Z | 2026-04-05T02:00Z |
+| — | Resources page refactor: Trading Desk tab + agent pipeline + multi-type decision | `src/app/(protected)/gpu-verify/GPUVerifyTabs.tsx`, `src/components/TradingDesk.tsx` (new), `src/app/(protected)/agent-decision/agent-decision-content.tsx` | done | 2026-04-05T03:00Z | 2026-04-05T03:30Z |
 
 ---
 
