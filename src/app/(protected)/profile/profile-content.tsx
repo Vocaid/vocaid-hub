@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ShieldCheck, Plus } from 'lucide-react';
-import Image from 'next/image';
 import { AgentCard, type AgentRole } from '@/components/AgentCard';
 import { ChainBadge } from '@/components/ChainBadge';
 import { RegisterAgentModal } from '@/components/RegisterAgentModal';
@@ -38,12 +37,6 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
 
   return (
     <>
-      {/* Vocaid branding */}
-      <div className="flex items-center gap-3 mb-4">
-        <Image src="/compact-logo.png" alt="Vocaid" width={36} height={36} />
-        <h1 className="text-lg font-bold text-primary">My Profile</h1>
-      </div>
-
       {/* Identity card */}
       <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3">
         <div className="flex items-center gap-3">

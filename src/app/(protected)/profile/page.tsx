@@ -1,6 +1,5 @@
 import { auth } from '@/auth';
 import { Page } from '@/components/PageLayout';
-import { TopBar, Marble } from '@worldcoin/mini-apps-ui-kit-react';
 import { ProfileContent } from './profile-content';
 
 export const metadata = {
@@ -43,27 +42,12 @@ export default async function ProfilePage() {
   const [session, agents] = await Promise.all([auth(), getAgents()]);
 
   return (
-    <>
-      <Page.Header className="p-0">
-        <TopBar
-          title="My Resources"
-          endAdornment={
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold capitalize">
-                {session?.user.username}
-              </p>
-              <Marble src={session?.user.profilePictureUrl} className="w-12" />
-            </div>
-          }
-        />
-      </Page.Header>
-      <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
-        <ProfileContent
-          username={session?.user.username ?? 'Anonymous'}
-          walletAddress={session?.user.walletAddress}
-          agents={agents}
-        />
-      </Page.Main>
-    </>
+    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
+      <ProfileContent
+        username={session?.user.username ?? 'Anonymous'}
+        walletAddress={session?.user.walletAddress}
+        agents={agents}
+      />
+    </Page.Main>
   );
 }

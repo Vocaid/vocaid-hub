@@ -1,7 +1,5 @@
-import { auth } from '@/auth';
 import { MarketplaceContent } from './marketplace-content';
 import { Page } from '@/components/PageLayout';
-import { TopBar, Marble } from '@worldcoin/mini-apps-ui-kit-react';
 import type { ResourceCardProps } from '@/components/ResourceCard';
 
 export const revalidate = 30; // ISR every 30 seconds
@@ -83,28 +81,11 @@ async function getResources(): Promise<ResourceCardProps[]> {
 }
 
 export default async function Home() {
-  const [session, resources] = await Promise.all([auth(), getResources()]);
+  const resources = await getResources();
 
   return (
-    <>
-      <Page.Header className="p-0">
-        <TopBar
-          startAdornment={
-            <img src="/app-logo.png" alt="Vocaid Hub" className="h-6" />
-          }
-          endAdornment={
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold capitalize">
-                {session?.user.username}
-              </p>
-              <Marble src={session?.user.profilePictureUrl} className="w-12" />
-            </div>
-          }
-        />
-      </Page.Header>
-      <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
-        <MarketplaceContent resources={resources} />
-      </Page.Main>
-    </>
+    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
+      <MarketplaceContent resources={resources} />
+    </Page.Main>
   );
 }

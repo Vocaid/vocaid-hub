@@ -1,7 +1,4 @@
 import { Page } from '@/components/PageLayout';
-import { TopBar } from '@worldcoin/mini-apps-ui-kit-react';
-import { ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
 import type { PredictionMarket } from '@/components/PredictionCard';
 import { PredictionsContent } from './predictions-content';
 import { ethers } from 'ethers';
@@ -50,23 +47,9 @@ export default async function PredictionsPage() {
   const markets = await getMarkets();
 
   return (
-    <>
-      <Page.Header className="p-0">
-        <TopBar
-          title="Prediction Markets"
-          startAdornment={
-            <Link
-              href="/home"
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-surface"
-            >
-              <ChevronLeft className="h-5 w-5 text-primary" />
-            </Link>
-          }
-        />
-      </Page.Header>
-      <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4">
-        <PredictionsContent initialMarkets={markets} />
-      </Page.Main>
-    </>
+    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4 pt-2">
+      <h1 className="text-lg font-bold text-primary">Prediction Markets</h1>
+      <PredictionsContent initialMarkets={markets} />
+    </Page.Main>
   );
 }

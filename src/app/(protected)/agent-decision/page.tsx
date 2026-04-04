@@ -1,5 +1,4 @@
 import { Page } from '@/components/PageLayout';
-import { TopBar } from '@worldcoin/mini-apps-ui-kit-react';
 import { AgentDecisionContent } from './agent-decision-content';
 
 export const revalidate = 30;
@@ -20,13 +19,8 @@ export default async function AgentDecisionPage() {
   const decision = await getDecision();
 
   return (
-    <>
-      <Page.Header className="p-0">
-        <TopBar title="Seer Agent — GPU Selection" />
-      </Page.Header>
-      <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4 pt-4">
-        <AgentDecisionContent decision={decision} />
-      </Page.Main>
-    </>
+    <Page.Main className="flex flex-col items-stretch gap-4 mb-16 px-4 pt-2">
+      <AgentDecisionContent decision={decision} />
+    </Page.Main>
   );
 }
