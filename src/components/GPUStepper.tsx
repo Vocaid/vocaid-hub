@@ -139,6 +139,7 @@ export default function GPUStepper() {
     setStep1({ status: 'loading' });
     try {
       // Path 1: Inside World App — get address from auth session
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof window !== 'undefined' && (window as any).MiniKit?.isInstalled?.()) {
         const session = await fetch('/api/auth/session').then(r => r.json()).catch(() => null);
         if (session?.user?.address) {
@@ -150,7 +151,9 @@ export default function GPUStepper() {
       }
 
       // Path 2: Browser wallet (MetaMask, Rabby, etc.)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof window !== 'undefined' && (window as any).ethereum) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const accounts = (await (window as any).ethereum.request({
           method: 'eth_requestAccounts',
         })) as string[];

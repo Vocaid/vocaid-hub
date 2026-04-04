@@ -1,6 +1,6 @@
 export function ResourceCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3 animate-pulse">
+    <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3 animate-pulse shadow-sm">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-lg bg-border-card" />
