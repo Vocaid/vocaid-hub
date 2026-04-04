@@ -76,7 +76,7 @@
 | P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
 | P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
-| P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | open | — | World ID $8k | `src/app/api/verify-proof/route.ts` | Action exists in Developer Portal (World ID 4.0) but v2 verify endpoint rejects it. Blocks: CredentialGate registration + VCRED mint. IDKit may work natively in World App. Investigate: v4 API endpoint or staging env. |
+| P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | ✅ done | Agent 3 | World ID $8k | `src/app/api/verify-proof/route.ts` | Fixed: switched to v4 endpoint (`api/v4/verify/{rp_id}`). Action now recognized. |
 
 ---
 

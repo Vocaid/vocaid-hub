@@ -44,8 +44,7 @@
 | 7 | P-059 MiniKit.pay() + ResourceCard UX (unverified muted + hire spinner + error toast) | `src/components/ResourceCard.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, `.env.example` | done | 2026-04-04 | 2026-04-04 |
 | 4 | P-020 + P-021: vitest setup + 22 tests + auth type fix | `src/auth/index.ts`, `vitest.config.ts`, `src/lib/__tests__/*.test.ts`, `package.json` | done | 2026-04-04T11:00Z | 2026-04-04T11:30Z |
 | 6 | P-062: Agent-to-agent fleet demo script | `scripts/demo-agent-fleet.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T11:30Z | 2026-04-04T12:00Z |
-| 3 | E2E audit: log findings P-071 (verify-human action) + P-072 (address validation) | `docs/PENDING_WORK.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T12:00Z | 2026-04-04T12:15Z |
-| 4 | P-060: Wire Seer 0G Compute inference route | `src/app/api/seer/inference/route.ts` (new), `docs/PENDING_WORK.md` | done | 2026-04-04T12:30Z | 2026-04-04T12:45Z |
+| 3 | P-071: Fix verify-proof to World ID v4 API (was invalid_action) | `src/app/api/verify-proof/route.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T13:00Z | 2026-04-04T13:15Z |
 
 ---
 
