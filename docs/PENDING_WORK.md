@@ -88,7 +88,7 @@
 | P-041 | AgentCard.tsx hardcoded colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Fixed |
 | P-042 | AuthButton hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Fixed |
 | P-043 | predictions resolve/claim no World ID gate | ✅ done | Agent 1 | `src/app/api/predictions/[id]/claim/route.ts`, `resolve/route.ts` | Added requireWorldId() |
-| P-044 | /api/agents/register no UI caller | ✅ done | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Added Register button |
+| P-044 | /api/agents/register no UI caller | ✅ done (superseded by P-099) | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Register button moved to Resources page (ResourceStepper). Profile is fleet-only now. |
 | P-045 | RP_SIGNING_KEY not configured | ✅ done | Agent 1 | `.env.local` | Set from WORLD_ID_PRIVATE_KEY |
 | P-046 | Edge soul.md Arc references | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed |
 | P-047 | Unused scaffold SVGs | ✅ done | Agent 9 | `public/*.svg` | Deleted |
@@ -160,5 +160,23 @@
 | P-097 | Doc gap analysis: 8 discrepancies fixed | ✅ done | — | README, ARCHITECTURE, SUBMISSION, SUBMISSION_CONTENT | Missing contracts, wrong counts, path errors, structure errors. |
 
 | P-098 | Backend migration: Fastify + Zod + PM2 (Wave 4 cleanup) | ✅ done | — | `src/app/api/` (deleted), `server/`, `middleware.ts`, `src/types/resource.ts`, docs | Deleted all Next.js API routes. Extracted ResourceCardProps to shared types. Updated middleware, ARCHITECTURE.md, README.md. All routes now on Fastify :5001. |
+| P-099 | Separate fleet vs resource agent flows | ✅ done | — | `profile-content.tsx`, `server/routes/resources.ts`, `gpu-verify/page.tsx`, `GPUVerifyTabs.tsx` | Profile = fleet-only (removed RegisterAgentModal + resource agents section). Resources = marketplace registration. FLEET_ROLES filter excludes fleet agents from /api/resources. Cross-links between pages. |
+| P-100 | ResourceStepper data-driven refactor | ✅ done | — | `src/components/ResourceStepper.tsx` | Replaced 7 individual state vars + 3 per-type JSX blocks with TYPE_META config + generic FieldRenderer. Single `form` Record. `buildPayload()` per type. Adding new resource type = 1 config entry, 0 JSX. |
+| P-101 | RegisterAgentModal orphaned | unclaimed | — | `src/components/RegisterAgentModal.tsx` | No longer imported anywhere after Profile cleanup. Can be deleted safely. |
+| P-102 | Prediction market persistence fix (caching + tx hash detection) | unclaimed | — | `server/routes/predictions.ts`, `predictions-content.tsx` | Root cause: catch block returns hardcoded mock pools; client never polls markets. Fix: cache last-known-good data, detect new txs before re-fetching, add client polling. |
 
-> Agents: Add new items here. Use IDs P-099+.
+| P-103 | Backend hardening: fetch-with-timeout utility | ✅ done | Agent 5 | `server/utils/fetch-with-timeout.ts`, `server/__tests__/fetch-with-timeout.test.ts` | AbortController wrapper with per-service TIMEOUT_BUDGETS (World ID 10s, Hedera Mirror 8s, Blocky402 15s, 0G Inference 30s). 5 vitest tests. |
+| P-104 | Backend hardening: retry with exponential backoff | ✅ done | Agent 5 | `server/utils/retry.ts`, `server/__tests__/retry.test.ts` | `withRetry()` + `isRetryable()` + per-service RETRY_POLICIES. Jitter to prevent thundering herd. 12 vitest tests. |
+| P-105 | Backend hardening: per-service circuit breaker | ✅ done | Agent 5 | `server/utils/circuit-breaker.ts`, `server/__tests__/circuit-breaker.test.ts` | ServiceBreaker (CLOSED/OPEN/HALF_OPEN), `getBreaker()` singleton factory, BREAKER_CONFIGS for 6 services. 11 vitest tests. |
+| P-106 | Security headers plugin + graceful shutdown | ✅ done | — | `server/plugins/security-headers.ts`, `server/index.ts` | CSP, CORS, X-Frame-Options, HSTS headers. SIGTERM graceful drain. |
+| P-107 | Response cache plugin + tests | ✅ done | — | `server/plugins/response-cache.ts`, `server/__tests__/response-cache.test.ts` | TTL-based GET response cache with Cache-Control headers. 6 vitest tests. |
+| P-108 | Singleton chain client factories | ✅ done | — | `server/clients.ts` | Singleton ethers JsonRpcProvider + viem PublicClient — reused across Fastify requests. |
+| P-109 | Remove mock/demo fallbacks from API routes | ✅ done | — | `server/routes/*.ts` | All demo fallback data removed from catch blocks. Routes now return proper errors. |
+| P-110 | Wire fetchWithTimeout + withRetry into blocky402.ts | ✅ done | — | `src/lib/blocky402.ts` | verifyPayment: 15s + 2 retries; settlePayment: 15s + 1 retry; getSupportedNetworks: 15s timeout. |
+| P-111 | Wire fetchWithTimeout into og-broker.ts | ✅ done | — | `src/lib/og-broker.ts` | callInference: 30s timeout via TIMEOUT_BUDGETS.OG_INFERENCE. |
+| P-112 | Cache invalidation on POST mutations | ✅ done | — | `server/routes/{predictions,agents,reputation,gpu,edge,proposals}.ts` | POST handlers flush cached GET responses via app.responseCache.invalidate(). |
+| P-113 | Rate limiting on all POST handlers | ✅ done | — | `server/routes/{predictions,gpu,edge,seer,reputation,payments,proposals}.ts` | All 13 POST endpoints rate-limited via app.checkRateLimit(). |
+| P-114 | tx.wait() timeout wrappers | ✅ done | — | `server/routes/{predictions,gpu,edge,proposals}.ts` | All tx.wait() calls wrapped with 60s Promise.race timeout. |
+| P-115 | Singleton ethers providers in all routes | ✅ done | — | `server/routes/{predictions,gpu,edge,proposals}.ts` | Per-request JsonRpcProvider replaced with module-level singletons. |
+
+> Agents: Add new items here. Use IDs P-116+.

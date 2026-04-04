@@ -124,19 +124,22 @@ export async function mintCredential(
   tokenId: string,
   metadata: Uint8Array[],
 ): Promise<number[]> {
-  const client = initClient();
-  const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
+  const { withRetry, RETRY_POLICIES } = await import('../server/utils/retry');
+  return withRetry(async () => {
+    const client = initClient();
+    const operatorKey = PrivateKey.fromStringECDSA(HEDERA_PRIVATE_KEY);
 
-  const tx = new TokenMintTransaction()
-    .setTokenId(tokenId)
-    .setMetadata(metadata)
-    .freezeWith(client);
+    const tx = new TokenMintTransaction()
+      .setTokenId(tokenId)
+      .setMetadata(metadata)
+      .freezeWith(client);
 
-  const signed = await tx.sign(operatorKey);
-  const response = await signed.execute(client);
-  const receipt = await response.getReceipt(client);
+    const signed = await tx.sign(operatorKey);
+    const response = await signed.execute(client);
+    const receipt = await response.getReceipt(client);
 
-  return receipt.serials.map((s) => Number(s));
+    return receipt.serials.map((s) => Number(s));
+  }, RETRY_POLICIES.HEDERA_TX);
 }
 
 /**
@@ -303,14 +306,17 @@ export async function logAuditMessage(
   topicId: string,
   message: string,
 ): Promise<void> {
-  const client = initClient();
+  const { withRetry, RETRY_POLICIES } = await import('../server/utils/retry');
+  return withRetry(async () => {
+    const client = initClient();
 
-  const tx = new TopicMessageSubmitTransaction()
-    .setTopicId(topicId)
-    .setMessage(message);
+    const tx = new TopicMessageSubmitTransaction()
+      .setTopicId(topicId)
+      .setMessage(message);
 
-  const response = await tx.execute(client);
-  await response.getReceipt(client);
+    const response = await tx.execute(client);
+    await response.getReceipt(client);
+  }, RETRY_POLICIES.HEDERA_TX);
 }
 
 /**
@@ -321,8 +327,9 @@ export async function queryAuditTrail(
   topicId: string,
   limit = 100,
 ): Promise<HcsMessage[]> {
+  const { fetchWithTimeout, TIMEOUT_BUDGETS } = await import('../../server/utils/fetch-with-timeout');
   const url = `${MIRROR_NODE_BASE}/api/v1/topics/${topicId}/messages?limit=${limit}&order=desc`;
-  const res = await fetch(url);
+  const res = await fetchWithTimeout(url, { timeout: TIMEOUT_BUDGETS.HEDERA_MIRROR });
 
   if (!res.ok) {
     throw new Error(`Mirror Node query failed: ${res.status} ${res.statusText}`);

@@ -85,6 +85,7 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 | Hedera SDK | @hashgraph/sdk + hedera-agent-kit | ^2.81.0 / ^3.8.2-rc.1 | HTS tokens, HCS topics, transfers |
 | Smart Contracts | Solidity 0.8.24 + Hardhat | ^3.3.0 | ERC-8004 registries, CredentialGate, GPUProviderRegistry |
 | Chain Interaction | ethers + viem | ^6.16.0 / 2.45.3 | Contract calls, transaction signing |
+| Testing | vitest | ^4.1.2 | 125 tests across 12 test files |
 
 ---
 
@@ -279,8 +280,11 @@ vocaid-hub/
 ├── server/                     # Fastify backend (:5001) — all 25 API routes
 │   ├── index.ts                # Fastify app + Zod provider + WASM init
 │   ├── tsconfig.json           # Backend TS config
-│   ├── plugins/                # Auth, World ID gate, rate-limit, error, x402
+│   ├── plugins/                # Auth, World ID gate, rate-limit, error, x402, response-cache, security-headers
 │   ├── schemas/                # Zod request/response validation
+│   ├── utils/                  # Resilience: fetch-with-timeout, retry, circuit-breaker
+│   ├── clients.ts              # Singleton ethers/viem client factories
+│   ├── __tests__/              # 40 vitest tests (4 test files)
 │   └── routes/                 # 15 route modules (25 endpoints)
 ├── ecosystem.config.cjs        # PM2 config (api + next + claw)
 ├── src/
@@ -291,8 +295,8 @@ vocaid-hub/
 │   │       ├── home/           # Marketplace (ISR 30s) — resource cards
 │   │       ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │       ├── agent-decision/ # Seer agent resource ranking (ISR 30s) — 4-step visual
-│   │       ├── gpu-verify/     # Resources: Register (GPU/Agent/Human/DePIN) (SSR)
-│   │       └── profile/        # User profile + fleet deployment + proposals (SSR)
+│   │       ├── gpu-verify/     # Resources: Register + manage marketplace listings (SSR)
+│   │       └── profile/        # Fleet-only: deploy private trading agents (SSR)
 │   ├── types/                  # Shared TypeScript types (frontend + backend)
 │   │   └── resource.ts         # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                    # Shared server utilities (20 files)
@@ -305,7 +309,6 @@ vocaid-hub/
 │   │   ├── og-storage.ts       # 0G Storage KV persistence
 │   │   ├── agentkit.ts         # World AgentKit registration
 │   │   ├── world-id.ts         # World ID verification
-│   │   ├── x402-middleware.ts   # x402 payment middleware
 │   │   ├── reputation.ts       # ERC-8004 reputation queries
 │   │   ├── prediction-math.ts  # Prediction market math
 │   │   ├── contracts.ts        # ABIs + addresses
@@ -326,7 +329,7 @@ vocaid-hub/
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
 │   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
 │   │   ├── PostHireRating.tsx   # Post-hire rating + prediction suggestion
-│   │   ├── RegisterAgentModal.tsx # Agent registration with role selector
+│   │   ├── RegisterAgentModal.tsx # Agent registration (legacy, orphaned)
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card
 │   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization

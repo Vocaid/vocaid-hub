@@ -75,9 +75,9 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 | Time | Action | Say |
 |------|--------|-----|
 | 0:00 | Tap "Verify with World ID" | *"Everything starts with World ID. No verification, no access."* |
-| 0:25 | Profile → deploy fleet + approve proposal | *"Four agents deployed on ERC-8004 via AgentKit. Edge proposes a trade — owner approves on-chain."* |
-| 0:55 | Resources → GPU 3-step registration | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem."* |
-| 1:55 | Market → browse all types, hire a resource | *"All verified resources in one marketplace. Hire with x402 USDC on Hedera — $0.0001 gas."* |
+| 0:25 | Profile → show deployed fleet (fleet-only page) | *"Four private agents on ERC-8004 via AgentKit — not on the marketplace. Each linked to my World ID."* |
+| 0:55 | Resources → register GPU (data-driven stepper) | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem. Same stepper for agents, skills, DePIN."* |
+| 1:55 | Market → browse all types, hire a resource | *"Resources registered appear here. Fleet agents are private — filtered out. Hire with x402 USDC on Hedera — $0.0001 gas."* |
 | 2:25 | Predictions → signal ticker + place bet | *"Resource pricing prediction markets. Will H100 cost drop? The market decides."* |
 | 2:45 | Block explorer → show 0G contracts + Hedera HCS | *"Real contracts on 0G Chain. Immutable audit trail on Hedera. Three chains, each doing what it does best."* |
 
@@ -103,6 +103,7 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 | **"Why prediction markets for resource pricing?"** | $7.4B in GPU rentals trade at dynamic spot prices today with zero formal price discovery mechanism. This is the first prediction market for compute pricing. |
 | **"How do you bootstrap liquidity?"** | Seeded with 0G providers (already on their network). Agents are the first consumers. Human providers come via World App distribution (17.9M users). |
 | **"What about regulatory risk?"** | Prediction markets for resource pricing (not elections or securities). CFTC rulemaking is focused on event contracts. Resource pricing is closer to commodity futures — established legal framework. |
+| **"Is the backend production-ready?"** | Yes. Fastify backend has 125 tests, fetch timeouts on all external calls (15-30s budgets), exponential backoff retry on payments, per-service circuit breakers, rate limiting on every POST endpoint, response caching with mutation invalidation, security headers, and graceful shutdown. |
 
 ---
 

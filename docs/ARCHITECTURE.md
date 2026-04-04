@@ -48,8 +48,11 @@ vocaid-hub/
 ├── server/                    # Fastify backend (:5001) — all API routes
 │   ├── index.ts               # Fastify app + Zod provider + WASM init
 │   ├── tsconfig.json          # Backend TS config (extends root)
-│   ├── plugins/               # Fastify plugins (auth, world-id-gate, rate-limit, error, x402)
+│   ├── plugins/               # Fastify plugins (auth, world-id-gate, rate-limit, error, x402, response-cache, security-headers)
 │   ├── schemas/               # Zod request/response schemas
+│   ├── utils/                 # Resilience utilities (fetch-with-timeout, retry, circuit-breaker)
+│   ├── clients.ts             # Singleton chain client factories (ethers + viem)
+│   ├── __tests__/             # vitest tests (4 files, 34 tests)
 │   └── routes/                # Route handlers (25 endpoints)
 │       ��── world-id.ts        # /api/rp-signature, /api/verify-proof, /api/world-id/check
 │       ├── auth.ts            # /api/auth/* (session from JWT)
@@ -76,8 +79,8 @@ vocaid-hub/
 │   │       ├── home/          # Marketplace (ISR 30s)
 │   │       ├── predictions/   # Prediction markets (ISR 10s)
 │   │       ├── agent-decision/# Seer agent GPU selection flow (ISR 30s)
-│   │       ├── gpu-verify/    # Resources: Register (GPU/Agent/Human/DePIN) (SSR)
-│   │       └── profile/       # User profile + agent fleet (SSR)
+│   │       ├── gpu-verify/    # Resources: Register + manage marketplace listings (SSR)
+│   │       └── profile/       # Fleet-only: deploy private trading agents (SSR)
 │   ├── types/                 # Shared TypeScript types
 │   │   └── resource.ts        # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                   # Shared server utilities (used by both Next.js + Fastify)
@@ -153,9 +156,9 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 | Route | Method | Revalidation | Data Source | Why |
 |-------|--------|-------------|-------------|-----|
 | `/` | **ISR** | 30 seconds | Fastify → 0G Chain (IdentityRegistry) | Resource list changes slowly |
-| `/gpu-verify` | **SSR** | Every request | Fastify → 0G SDK + ERC-8004 | Resource registration + verification (GPU, Agent, Human, DePIN) |
+| `/gpu-verify` | **SSR** | Every request | Fastify → 0G SDK + ERC-8004 | Register + manage marketplace resources (GPU, Agent, Human, DePIN) |
 | `/predictions` | **ISR** | 10 seconds | Fastify → 0G Chain (ResourcePrediction) | Near-real-time pool updates |
-| `/profile` | **SSR** | Every request | Fastify → World Chain + 0G Chain | User-specific verified status |
+| `/profile` | **SSR** | Every request | Fastify → World Chain + 0G Chain | Fleet-only: deploy private trading agents |
 | `/agent-decision` | **ISR** | 30 seconds | Fastify → 0G Chain (ReputationRegistry) | Seer agent resource ranking |
 | `/api/*` | **Fastify** | N/A | Persistent process, direct SDK calls | Holds keys, WASM singleton, calls chains |
 
@@ -228,6 +231,68 @@ Browser                 Next.js :3000              Fastify :5001          OpenCl
 │    npm run dev:stop  → pm2 delete all                │
 └──────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Backend Hardening (`server/utils/` + `server/plugins/`)
+
+Production-grade resilience utilities, all with vitest tests (40 tests across 4 files):
+
+| Utility | File | Purpose |
+|---------|------|---------|
+| **Fetch Timeout** | `server/utils/fetch-with-timeout.ts` | AbortController wrapper with per-service timeout budgets (World ID 10s, Hedera Mirror 8s, Blocky402 15s, 0G Inference 30s) |
+| **Retry** | `server/utils/retry.ts` | Exponential backoff with jitter (`delay = min(base * 2^attempt + rand(200), maxDelay)`). Per-service policies (e.g. HEDERA_TX: 2 retries/1s, RPC_WRITE: 0 retries) |
+| **Circuit Breaker** | `server/utils/circuit-breaker.ts` | Per-service CLOSED→OPEN→HALF_OPEN state machine. `getBreaker(service)` singleton factory. 6 pre-configured services |
+| **Security Headers** | `server/plugins/security-headers.ts` | CSP, CORS, X-Frame-Options, X-Content-Type-Options, HSTS |
+| **Response Cache** | `server/plugins/response-cache.ts` | TTL-based GET response cache with `Cache-Control` headers + `X-Cache: HIT/MISS` |
+| **Graceful Shutdown** | `server/index.ts` | SIGTERM/SIGINT handler — drains connections before exit |
+| **Chain Clients** | `server/clients.ts` | Singleton ethers JsonRpcProvider + viem PublicClient factories — reused across requests |
+
+### Integration Wiring
+
+Resilience utilities are wired into the shared `src/lib/` layer:
+
+| Library | Utility Applied | Details |
+|---------|----------------|---------|
+| `src/lib/blocky402.ts` | `fetchWithTimeout` + `withRetry` | verifyPayment: 15s timeout + 2 retries; settlePayment: 15s + 1 retry; getSupportedNetworks: 15s timeout |
+| `src/lib/og-broker.ts` | `fetchWithTimeout` | callInference: 30s timeout (`TIMEOUT_BUDGETS.OG_INFERENCE`) |
+| `server/routes/predictions.ts` | `waitWithTimeout` | All 5 `tx.wait()` calls wrapped with 60s timeout |
+| `server/routes/gpu.ts` | `waitWithTimeout` | Both `tx.wait()` calls wrapped with 60s timeout |
+| `server/routes/proposals.ts` | `waitWithTimeout` | All 3 `tx.wait()` calls wrapped with 60s timeout |
+| `server/routes/edge.ts` | `waitWithTimeout` | Bet `tx.wait()` wrapped with 60s timeout |
+
+### Cache Invalidation on Mutations
+
+POST handlers flush cached GET responses to prevent stale data:
+
+| POST Route | Invalidates |
+|-----------|-------------|
+| `POST /predictions` (create, bet, claim, resolve) | `/api/predictions`, `/api/agent-decision` |
+| `POST /agents/register` | `/api/agents`, `/api/resources` |
+| `POST /reputation` | `/api/resources`, `/api/reputation` |
+| `POST /gpu/register` | `/api/resources` |
+| `POST /edge/trade` | `/api/predictions` |
+| `POST /proposals` (submit, approve, reject) | `/api/proposals`, `/api/predictions` |
+
+### Rate Limiting Coverage
+
+All POST handlers are rate-limited via `app.checkRateLimit(ip, path, max, windowMs)`:
+
+| Route | Limit |
+|-------|-------|
+| `POST /rp-signature` | 30/min |
+| `POST /verify-proof` | 10/min |
+| `POST /predictions` | 5/min |
+| `POST /predictions/:id/bet` | 10/min |
+| `POST /predictions/:id/claim` | 10/min |
+| `POST /predictions/:id/resolve` | 5/min |
+| `POST /gpu/register` | 3/min |
+| `POST /edge/trade` | 10/min |
+| `POST /seer/inference` | 10/min |
+| `POST /reputation` | 10/min |
+| `POST /payments` | 5/min |
+| `POST /initiate-payment` | 10/min |
+| `POST /proposals` | 5/min |
 
 ---
 

@@ -61,6 +61,7 @@ describe('queryAuditTrail', () => {
     await queryAuditTrail('0.0.12345', 5);
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('limit=5'),
+      expect.any(Object),
     );
   });
 });
