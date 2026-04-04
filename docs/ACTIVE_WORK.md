@@ -45,6 +45,7 @@
 | 4 | P-020 + P-021: vitest setup + 22 tests + auth type fix | `src/auth/index.ts`, `vitest.config.ts`, `src/lib/__tests__/*.test.ts`, `package.json` | done | 2026-04-04T11:00Z | 2026-04-04T11:30Z |
 | 6 | P-062: Agent-to-agent fleet demo script | `scripts/demo-agent-fleet.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T11:30Z | 2026-04-04T12:00Z |
 | 3 | P-071: Fix verify-proof to World ID v4 API (was invalid_action) | `src/app/api/verify-proof/route.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T13:00Z | 2026-04-04T13:15Z |
+| 6 | P-061: Edge trade API route + fleet script wiring | `src/app/api/edge/trade/route.ts` (new), `scripts/demo-agent-fleet.ts` | done | 2026-04-04T13:30Z | 2026-04-04T14:00Z |
 
 ---
 

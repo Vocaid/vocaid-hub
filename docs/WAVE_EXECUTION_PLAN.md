@@ -312,11 +312,11 @@ All agents deploy contracts and set up infrastructure. Zero file overlap.
 
 ### Unplanned Gaps (Agent Autonomy Layer)
 
-Agents exist as OpenClaw configs (soul.md + skills). Most gaps now addressed:
+All agent autonomy gaps now addressed:
 - P-058: Lens writes `giveFeedback()` — DONE (Agent 3, auto-writes after payment)
+- P-060: Seer 0G Compute inference — DONE (Agent 4, `/api/seer/inference` with mock fallback)
+- P-061: Edge trade execution — DONE (Agent 6, `/api/edge/trade` — Shield clearance + placeBet + HCS audit)
 - P-062: Agent-to-agent messaging — DONE (Agent 6, `scripts/demo-agent-fleet.ts` exercises Seer→Edge→Shield→Lens relay)
-- P-060: Seer 0G Compute inference — needs live 0G provider (testnet SSL issues)
-- P-061: Edge trade execution — needs OpenClaw Gateway running
 
 See `docs/PENDING_WORK.md` for full gap list with bounty impact.
 
