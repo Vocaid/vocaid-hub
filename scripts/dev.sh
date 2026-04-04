@@ -90,62 +90,81 @@ echo -e "${TAG_DEV} ${GREEN}✓ Contracts: using existing deployments${NC}"
 # ============================================================
 # 5. Start ngrok FIRST (env vars must be set before Next.js compiles)
 # ============================================================
-NGROK_URL=""
+NGROK_FRONTEND=""
+NGROK_BACKEND=""
 
 start_ngrok() {
   NGROK_BIN=$(command -v ngrok 2>/dev/null)
   if [ -z "$NGROK_BIN" ]; then
     echo -e "${TAG_NGROK} ${RED}Not found. Install: brew install ngrok${NC}"
-    echo -e "${TAG_NGROK} ${YELLOW}Continuing without tunnel — localhost only${NC}"
+    echo -e "${TAG_NGROK} ${YELLOW}Continuing without tunnels — localhost only${NC}"
     return
   fi
 
-  echo -e "${TAG_NGROK} Starting tunnel (${NGROK_BIN})..."
+  echo -e "${TAG_NGROK} Starting 2 tunnels (frontend :3000 + backend :5001)..."
 
-  if [ -z "$NGROK_AUTHTOKEN" ]; then
-    echo -e "${TAG_NGROK} ${YELLOW}No NGROK_AUTHTOKEN — tunnel will be rate-limited${NC}"
-  fi
+  # Start both tunnels from ngrok.yml config (requires paid plan)
+  "$NGROK_BIN" start --all --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
+  sleep 1
 
-  "$NGROK_BIN" http 3000 --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
-  NGROK_PID=$!
-  PIDS+=($NGROK_PID)
-
-  echo -e "${TAG_NGROK} Waiting for tunnel URL..."
-  for i in {1..10}; do
+  echo -e "${TAG_NGROK} Waiting for tunnel URLs..."
+  for i in {1..15}; do
     sleep 1
-    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | node -e "
-      const c=[];process.stdin.on('data',d=>c.push(d));
-      process.stdin.on('end',()=>{
-        try{const t=JSON.parse(Buffer.concat(c));
-        console.log(t.tunnels[0]?.public_url||'')}
-        catch(e){console.log('')}
-      })
-    " 2>/dev/null || echo "")
-    if [ -n "$NGROK_URL" ]; then break; fi
+    # Extract both tunnel URLs from the ngrok API
+    TUNNELS=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null)
+    if [ -n "$TUNNELS" ]; then
+      NGROK_FRONTEND=$(echo "$TUNNELS" | node -e "
+        const c=[];process.stdin.on('data',d=>c.push(d));
+        process.stdin.on('end',()=>{
+          try{const t=JSON.parse(Buffer.concat(c));
+          const fe=t.tunnels.find(x=>x.name==='frontend');
+          console.log(fe?.public_url||'')}
+          catch{console.log('')}
+        })
+      " 2>/dev/null || echo "")
+      NGROK_BACKEND=$(echo "$TUNNELS" | node -e "
+        const c=[];process.stdin.on('data',d=>c.push(d));
+        process.stdin.on('end',()=>{
+          try{const t=JSON.parse(Buffer.concat(c));
+          const be=t.tunnels.find(x=>x.name==='backend');
+          console.log(be?.public_url||'')}
+          catch{console.log('')}
+        })
+      " 2>/dev/null || echo "")
+      if [ -n "$NGROK_FRONTEND" ] && [ -n "$NGROK_BACKEND" ]; then break; fi
+    fi
   done
 
-  if [ -n "$NGROK_URL" ]; then
-    echo -e "${TAG_NGROK} ${GREEN}✓ Tunnel: ${NGROK_URL}${NC}"
+  if [ -n "$NGROK_FRONTEND" ] && [ -n "$NGROK_BACKEND" ]; then
+    echo -e "${TAG_NGROK} ${GREEN}✓ Frontend: ${NGROK_FRONTEND}${NC}"
+    echo -e "${TAG_NGROK} ${GREEN}✓ Backend:  ${NGROK_BACKEND}${NC}"
 
-    # Auto-patch .env.local
+    # Auto-patch .env.local with both URLs
     if [ -f ".env.local" ]; then
-      sed -i '' "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
-      sed -i '' "s|AUTH_URL=.*|AUTH_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
+      sed -i '' "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=${NGROK_FRONTEND}|" .env.local 2>/dev/null || true
+      sed -i '' "s|AUTH_URL=.*|AUTH_URL=${NGROK_FRONTEND}|" .env.local 2>/dev/null || true
       if grep -q "NEXT_PUBLIC_APP_URL" .env.local 2>/dev/null; then
-        sed -i '' "s|NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
+        sed -i '' "s|NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=${NGROK_FRONTEND}|" .env.local 2>/dev/null || true
       else
-        echo "NEXT_PUBLIC_APP_URL=${NGROK_URL}" >> .env.local
+        echo "NEXT_PUBLIC_APP_URL=${NGROK_FRONTEND}" >> .env.local
+      fi
+      if grep -q "BACKEND_URL" .env.local 2>/dev/null; then
+        sed -i '' "s|BACKEND_URL=.*|BACKEND_URL=${NGROK_BACKEND}|" .env.local 2>/dev/null || true
+      else
+        echo "BACKEND_URL=${NGROK_BACKEND}" >> .env.local
       fi
       set -a; source .env.local; set +a
-      echo -e "${TAG_NGROK} ${GREEN}✓ .env.local patched with tunnel URL${NC}"
+      echo -e "${TAG_NGROK} ${GREEN}✓ .env.local patched (frontend + backend URLs)${NC}"
     fi
 
     echo ""
-    echo -e "${TAG_NGROK} ${YELLOW}MANUAL: Update World Developer Portal → App URL: ${NGROK_URL}${NC}"
+    echo -e "${TAG_NGROK} ${YELLOW}World Developer Portal:${NC}"
+    echo -e "${TAG_NGROK}   App URL: ${GREEN}your-vercel-domain.vercel.app${NC}"
+    echo -e "${TAG_NGROK}   Additional domain: ${GREEN}${NGROK_FRONTEND}${NC}"
     echo ""
   else
-    echo -e "${TAG_NGROK} ${RED}Tunnel failed. Check /tmp/ngrok.log${NC}"
-    echo -e "${TAG_NGROK} ${YELLOW}Continuing without tunnel${NC}"
+    echo -e "${TAG_NGROK} ${RED}Tunnel setup failed. Check /tmp/ngrok.log${NC}"
+    echo -e "${TAG_NGROK} ${YELLOW}Continuing without tunnels${NC}"
   fi
 }
 
@@ -190,7 +209,8 @@ echo -e "${BLUE}═════════════════════�
 echo ""
 echo -e "  ${GREEN}[api]${NC}    http://localhost:5001  (Fastify + Zod + dotenv)"
 echo -e "  ${CYAN}[next]${NC}   http://localhost:3000  (Next.js + Turbopack)"
-[ -n "$NGROK_URL" ] && echo -e "  ${MAGENTA}[ngrok]${NC}  ${NGROK_URL}"
+[ -n "$NGROK_FRONTEND" ] && echo -e "  ${MAGENTA}[ngrok]${NC}  ${NGROK_FRONTEND}  (frontend tunnel)"
+[ -n "$NGROK_BACKEND" ] && echo -e "  ${MAGENTA}[ngrok]${NC}  ${NGROK_BACKEND}  (backend tunnel)"
 echo -e "  ${YELLOW}[claw]${NC}   ws://127.0.0.1:18789  (OpenClaw Gateway)"
 echo ""
 echo -e "  Chains:"
