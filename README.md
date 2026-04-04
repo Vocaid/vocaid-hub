@@ -36,8 +36,8 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                            MINI APP (Next.js 15)                            │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
-│  │    /     │ │/gpu-verify│ │/predict  │ │  /seer   │ │ /profile │         │
-│  │Marketplace│ │Resources │ │Pred Mkt  │ │Agent Dec.│ │  My Hub  │         │
+│  │    /     │ │/resources │ │/predict  │ │/agent-dec│ │ /profile │         │
+│  │Marketplace│ │ Register │ │Pred Mkt  │ │Seer Flow │ │  My Hub  │         │
 │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘         │
 │       │             │            │             │             │               │
 │  ┌────┴─────────────┴────────────┴─────────────┴─────────────┴──────┐       │
@@ -173,6 +173,7 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/resources` | GET | Unified resource listing (all types) | 0G + Hedera |
 | `/api/agent-decision` | GET | Seer agent GPU ranking + selection decision | 0G |
 | `/api/activity` | GET | Live on-chain activity feed (reputation, trades, DePIN, skills, payments) | 0G + Hedera |
+| `/api/proposals` | GET/POST | Agent prediction proposals — submit, approve, reject | 0G |
 | `/api/agents/[name]/a2a` | GET/POST | A2A capability card + task execution per agent | 0G + Hedera |
 | `/api/agents/[name]/mcp` | GET/POST | MCP tool schema + tool execution per agent | 0G + Hedera |
 
@@ -228,6 +229,9 @@ Explorer: [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai)
 | GPUProviderRegistry | `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
 | MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
 | ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
+| AgentProposalRegistry | `0x4093025085ea8a3ef36cff0a28e6e7acdf356392` |
+| HumanSkillRegistry | `0xcAc906DB5F68c45a059131A45BeA476897b6D2bb` |
+| DePINRegistry | `0x1C7FB282c65071d0d5d55704E3CC3FE3C634fB35` |
 | OG Inference Serving | `0xa79F4c8311FF93C06b8CfB403690cc987c93F91E` |
 | OG Ledger | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` |
 
@@ -263,10 +267,10 @@ vocaid-hub/
 │   │   │   ├── home/           # Marketplace (ISR 30s) — Seer panel + resource cards
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
-│   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
-│   │   ├── gpu-verify/         # Resource registration portal — GPU, Agent, Human, DePIN (SSR)
-│   │   └── api/                # 25 server-side API routes
-│   ├── lib/                    # Shared server utilities (19 files)
+│   │   │   ├── gpu-verify/     # Resources hub: Dashboard + Register + Trading Desk (SSR)
+│   │   │   └── profile/        # User profile + fleet deployment + proposals (SSR)
+│   │   └── api/                # 24 server-side API routes
+│   ├── lib/                    # Shared server utilities (20 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
 │   │   ├── blocky402.ts        # x402 facilitator client
@@ -295,6 +299,8 @@ vocaid-hub/
 │   │   ├── ActivityFeed.tsx    # Live activity feed with filter chips
 │   │   ├── GPUStepper.tsx      # GPU registration stepper
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
+│   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
+│   │   ├── PostHireRating.tsx   # Post-hire rating + prediction suggestion
 │   │   ├── RegisterAgentModal.tsx # Agent registration with role selector
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card

@@ -91,6 +91,8 @@ vocaid-hub/
 │       │   └── route.ts       # Query reputation scores
 │       ├── agent-decision/
 │       │   └── route.ts       # Seer agent GPU ranking + selection
+│       ├── proposals/
+│       │   └── route.ts       # Agent prediction proposals (submit/approve/reject)
 │       ├── resources/
 │       │   └── route.ts       # Unified resource listing
 │       └── agents/
@@ -140,6 +142,8 @@ vocaid-hub/
 │   ├── SignalTicker.tsx       # 2-row auto-scrolling market signal ticker
 │   ├── ActivityFeed.tsx       # Live activity feed with filter chips
 │   ├── TradingDesk.tsx        # 5-step agent pipeline visualization (Register→Shield→Lens→Seer→Edge)
+│   ├── ProposalQueue.tsx      # Agent prediction proposal approval queue
+│   ├── PostHireRating.tsx     # Post-hire rating + prediction market suggestion
 │   ├── VerificationStatus.tsx # TEE/World ID verification badge
 │   └── Verify/               # MiniKit verify command wrapper
 │
@@ -164,6 +168,7 @@ vocaid-hub/
 │   │   ├── ValidationRegistryUpgradeable.sol
 │   │   ├── GPUProviderRegistry.sol
 │   │   ├── ResourcePrediction.sol
+│   │   ├── AgentProposalRegistry.sol
 │   │   ├── MockTEEValidator.sol
 │   │   ├── ERC1967Proxy.sol
 │   │   └── interfaces/
@@ -232,6 +237,7 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 | `/gpu-verify` | **SSR** | Every request | API route → 0G SDK + ERC-8004 | Resource registration (GPU, Agent, Human, DePIN) with reputation dashboard |
 | `/predictions` | **ISR** | 10 seconds | API route → 0G Chain (ResourcePrediction) | Near-real-time pool updates |
 | `/profile` | **SSR** | Every request | API route → World Chain + 0G Chain | User-specific verified status |
+| `/agent-decision` | **ISR** | 30 seconds | API route → 0G Chain (ReputationRegistry) | Seer agent resource ranking |
 | `/api/*` | **API Route** | N/A | Server-side, direct SDK calls | Holds keys, calls chains |
 
 ### Next.js Best Practices
@@ -472,6 +478,7 @@ Vocaid provides **backward-compatible reputation** for the entire 0G provider ec
 | TEE validation results | 0G | ERC-8004 ValidationRegistry |
 | GPU provider registration | 0G | GPUProviderRegistry |
 | Prediction market state | 0G | ResourcePrediction.sol |
+| Agent prediction proposals | 0G | AgentProposalRegistry.sol |
 | World ID verification | World | CredentialGate.sol |
 | HTS credential tokens | Hedera | HTS (via @hashgraph/sdk) |
 | HCS audit trail | Hedera | HCS (via @hashgraph/sdk) |
@@ -568,6 +575,9 @@ No traditional database. No Redis. No Postgres.
 | GPUProviderRegistry | `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
 | MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
 | ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
+| AgentProposalRegistry | `0x4093025085ea8a3ef36cff0a28e6e7acdf356392` |
+| HumanSkillRegistry | `0xcAc906DB5F68c45a059131A45BeA476897b6D2bb` |
+| DePINRegistry | `0x1C7FB282c65071d0d5d55704E3CC3FE3C634fB35` |
 | 0G Inference Serving (external) | `0xa79F4c8311FF93C06b8CfB403690cc987c93F91E` |
 | 0G Ledger (external) | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` |
 

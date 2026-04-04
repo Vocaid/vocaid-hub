@@ -99,6 +99,8 @@ Explorer: https://chainscan-galileo.0g.ai
 | MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
 | ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
 | AgentProposalRegistry | `0x4093025085ea8a3ef36cff0a28e6e7acdf356392` |
+| HumanSkillRegistry | `0xcAc906DB5F68c45a059131A45BeA476897b6D2bb` |
+| DePINRegistry | `0x1C7FB282c65071d0d5d55704E3CC3FE3C634fB35` |
 
 ### World Sepolia (Chain ID 4801)
 
