@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import {
-  Bot, Check, Cpu, ExternalLink, Loader2, ShieldCheck, User, Wallet, Wifi, Zap,
+  Bot, Check, ChevronDown, Cpu, ExternalLink, Loader2, ShieldCheck, User, Wallet, Wifi, Zap,
 } from 'lucide-react';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
@@ -116,7 +116,7 @@ const TYPE_META: Record<ResourceType, {
 
 /* ─── Shared input styles ─────────────────────────── */
 
-const INPUT_CLASS = 'w-full min-h-11 rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30';
+const INPUT_CLASS = 'w-full min-h-11 rounded-lg border border-border-card bg-surface px-4 text-sm placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary-accent/30';
 const SELECT_CLASS = `${INPUT_CLASS} cursor-pointer`;
 
 /* ─── Helper Components ───────────────────────────── */
@@ -211,6 +211,85 @@ function FieldRenderer({ fields, form, onChange }: {
         ),
       )}
     </>
+  );
+}
+
+/* ─── Resource Type Selector ─────────────────────── */
+
+const RESOURCE_TYPES: ResourceType[] = ['gpu', 'agent', 'human', 'depin'];
+
+function ResourceTypeSelect({ value, onChange }: {
+  value: ResourceType;
+  onChange: (t: ResourceType) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [open]);
+
+  const selected = TYPE_META[value];
+  const SelectedIcon = selected.icon;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`${SELECT_CLASS} flex items-center gap-2.5 cursor-pointer`}
+      >
+        <SelectedIcon className="h-4 w-4 text-primary-accent" />
+        <span className="text-sm font-medium text-primary">
+          {value === 'depin' ? 'DePIN' : value.charAt(0).toUpperCase() + value.slice(1)}
+        </span>
+        <ChevronDown className={`ml-auto h-4 w-4 text-secondary transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          className="absolute z-20 mt-1 w-full rounded-lg border border-border-card bg-white shadow-lg overflow-hidden motion-safe:animate-fade-in"
+        >
+          {RESOURCE_TYPES.map((t) => {
+            const Icon = TYPE_META[t].icon;
+            const isSelected = t === value;
+            return (
+              <button
+                key={t}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => { onChange(t); setOpen(false); }}
+                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                  isSelected
+                    ? 'bg-surface text-primary font-medium'
+                    : 'text-secondary hover:bg-surface hover:text-primary'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                {isSelected && <Check className="ml-auto h-3.5 w-3.5 text-primary-accent" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -390,25 +469,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
   return (
     <div className="mx-auto w-full max-w-[428px] space-y-4">
       {/* Type Selector */}
-      <div className="flex gap-1 rounded-lg border border-border-card bg-surface p-1">
-        {(['gpu', 'agent', 'human', 'depin'] as const).map((t) => {
-          const Icon = TYPE_META[t].icon;
-          return (
-            <button
-              key={t}
-              onClick={() => handleTypeChange(t)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer ${
-                resourceType === t
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-secondary hover:text-primary'
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          );
-        })}
-      </div>
+      <ResourceTypeSelect value={resourceType} onChange={handleTypeChange} />
 
       {/* Stepper Card */}
       <div className="rounded-xl border border-border-card bg-white p-5 shadow-sm">

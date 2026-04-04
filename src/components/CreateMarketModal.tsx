@@ -82,7 +82,7 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="e.g. Will H100 spot price drop 20% by June?"
-            className="rounded-xl border border-border-card bg-surface px-4 p-3 text-sm text-primary placeholder:text-secondary/50 resize-none focus:outline-none focus:ring-2 focus:ring-chain-hedera/30"
+            className="w-full min-h-11 rounded-lg border border-border-card bg-surface px-4 py-3 text-sm text-primary placeholder:text-secondary/60 resize-none focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
           />
         </div>
 

@@ -221,7 +221,7 @@ export function PredictionCard({
                   const val = parseFloat(e.target.value);
                   if (!isNaN(val) && val > 0) setSelectedAmount(val);
                 }}
-                className="w-full mt-2 rounded-lg border border-border bg-white px-3 py-2 text-sm text-primary placeholder:text-secondary"
+                className="w-full mt-2 min-h-11 rounded-lg border border-border-card bg-surface px-4 text-sm text-primary placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
               />
             </div>
           )}
