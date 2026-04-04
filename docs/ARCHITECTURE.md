@@ -485,16 +485,52 @@ No traditional database. No Redis. No Postgres.
 
 ---
 
-## Key Addresses
+## Key Addresses (All Deployed — April 3-4, 2026)
 
-| Item | Value | Chain |
-|------|-------|-------|
-| Wallet | `0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE` | All EVM |
-| World APP_ID | `app_74d7b06d88b9e220ad1cc06e387c55f3` | World |
-| World RP_ID | `rp_21826eb5449cc811` | World |
-| 0G Inference Serving | `0xa79F4c8311FF93C06b8CfB403690cc987c93F91E` | 0G (16602) |
-| 0G Ledger | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` | 0G (16602) |
-| Blocky402 Facilitator | `https://api.testnet.blocky402.com` | Hedera |
-| Blocky402 Fee Payer | `0.0.7162784` | Hedera |
-| USDC on Hedera | `0.0.429274` | Hedera |
-| Vercel URL | `https://vocaid-hub.vercel.app` | — |
+### Wallet
+| Item | Value |
+|------|-------|
+| Deployer (EVM) | `0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE` |
+| Hedera Operator | `0.0.8368570` |
+
+### World Chain Sepolia (chainId 4801)
+| Contract | Address |
+|----------|---------|
+| CredentialGate | `0x0AD24045c38Df31CE7fdBeba81F8774644ADEEd0` |
+
+### 0G Galileo (chainId 16602)
+| Contract | Address |
+|----------|---------|
+| IdentityRegistry (proxy) | `0x0bd938c2021ba9de937b03f2a4ac793de453e993` |
+| ReputationRegistry (proxy) | `0x3a7d70e5037811aaf0ccc89d4180917a112f3eed` |
+| ValidationRegistry (proxy) | `0x345f915375d935298605888926429b9378bddebe` |
+| GPUProviderRegistry | `0x9f522055c682237cf685b8214e1e6c233199abe4` |
+| MockTEEValidator | `0x80597d12e953d7519a248c9eb750339b1c54fb34` |
+| ResourcePrediction | `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e` |
+| 0G Inference Serving (external) | `0xa79F4c8311FF93C06b8CfB403690cc987c93F91E` |
+| 0G Ledger (external) | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` |
+
+### Hedera Testnet
+| Resource | ID |
+|----------|-----|
+| HTS Credential Token (VCRED) | `0.0.8499633` |
+| HCS Audit Topic | `0.0.8499635` |
+| USDC | `0.0.429274` |
+| Blocky402 Facilitator | `https://api.testnet.blocky402.com` |
+| Blocky402 Fee Payer | `0.0.7162784` |
+
+### Other
+| Item | Value |
+|------|-------|
+| World APP_ID | `app_74d7b06d88b9e220ad1cc06e387c55f3` |
+| World RP_ID | `rp_21826eb5449cc811` |
+| Vercel URL | `https://vocaid-hub.vercel.app` |
+
+### Seed Data (On-Chain)
+| Item | Count | IDs |
+|------|-------|-----|
+| ERC-8004 Identities | 6 | #25-30 (GPU-Alpha, GPU-Beta, Seer, Edge, Maria, Carlos) |
+| GPU Providers | 1 (Alpha registered) | Via GPUProviderRegistry |
+| Prediction Markets | 2 | #9, #10 |
+| Reputation Entries | 3 | GPU-Alpha: quality 87, uptime 99.2%, latency 120ms |
+| TEE Validations | 1 | GPU-Alpha via MockTEEValidator |

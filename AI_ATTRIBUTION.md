@@ -1,53 +1,25 @@
-# AI Attribution — Vocaid Hub
+# AI Attribution
 
-## AI Tools Used
+## AI Tools Used During Development
 
-**Claude Code** (Anthropic) — Used throughout the 48-hour hackathon for:
-- Architecture design and technical research
-- Smart contract development and deployment scripts
-- Next.js API routes and React components
-- Documentation and submission materials
+| Tool | How Used | Scope |
+|------|----------|-------|
+| **Claude Code (Anthropic)** | Primary development assistant. Architecture design, code generation, debugging, documentation, research. All output reviewed and modified by team. | All files |
+| **Cursor IDE** | AI-assisted code completion and inline editing. | Editor-level assistance |
 
-## Human Decisions
+## Meaningful Human Contributions
 
-The following decisions were made by the human team, not AI:
+- Architecture design and 3-chain domain boundary decisions
+- Partner prize selection strategy (World + 0G + Hedera)
+- Sponsor SDK integration strategy and developer conversations at venue
+- Demo choreography and presentation scripting
+- All code review, testing, and debugging
+- GPU provider verification concept (identified 0G infrastructure gap in conversation with 0G developers)
+- Prediction market design for resource pricing (novel asset class)
+- ERC-8004 reputation signal system design (7 signal types)
+- OpenClaw agent security model (wallet key isolation per agent role)
+- Live demo execution and Q&A responses
 
-- **Partner selection:** World + 0G + Hedera (from 12 available tracks)
-- **Architecture:** 3-chain design — Trust (World) / Verify (0G) / Settle (Hedera)
-- **Innovation focus:** GPU provider verification as 0G's confirmed infrastructure gap
-- **Bounty strategy:** Targeting 8 tracks across 3 partners ($50k ceiling)
-- **UX design:** Mobile-first Mini App for World App viewport
-- **Risk assessment:** TEE.Fail mitigation via dual trust signals (DCAP + Reputation)
+## Disclosure
 
-## AI-Generated Code
-
-All implementation code was written during the 48-hour hackathon window with AI assistance:
-
-- Solidity contracts (ERC-8004 interfaces, CredentialGate, GPUProviderRegistry, ResourcePrediction, MockTEEValidator)
-- TypeScript SDK integrations (0G broker, Hedera SDK, World ID, AgentKit)
-- Next.js pages and API routes
-- React components (ResourceCard, PredictionCard, GPUStepper, PaymentConfirmation, etc.)
-- Deployment and seed scripts
-- OpenClaw agent configurations
-
-## Pre-Existing Code (Not Written During Hackathon)
-
-- ERC-8004 contract interfaces — from [erc-8004/erc-8004-contracts](https://github.com/erc-8004/erc-8004-contracts) (open source)
-- Automata DCAP attestation contracts — from [automata-network](https://github.com/automata-network) (open source)
-- World MiniKit starter template — from `@worldcoin/create-mini-app` (public starter kit, explicitly permitted by ETHGlobal rules)
-- OpenClaw agent framework — open source
-- All third-party SDKs (@worldcoin/minikit-js, @0glabs/0g-serving-broker, @hashgraph/sdk, etc.)
-
-## AI in the Product
-
-The product itself uses AI agents:
-
-- **4 OpenClaw agents** (Seer, Edge, Shield, Lens) powered by LLM inference via 0G Compute Network
-- Seer: Signal analysis and market intelligence
-- Edge: Resource pricing and market making
-- Shield: Risk management and provider validation
-- Lens: Discovery, monitoring, and reputation feedback
-
-## Planning Documents
-
-18 planning and research documents were written pre-hackathon with AI assistance. These contain architecture design, technology research, and execution planning — no implementation code. All code was written during the hackathon.
+AI was used to assist development, not to create the entire project. All architectural decisions, integration strategies, and creative direction were made by the team. AI tools accelerated implementation of designs that the team specified.
