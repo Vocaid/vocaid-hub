@@ -17,14 +17,16 @@ async function getResources(): Promise<ResourceCardProps[]> {
 
   // Mock data for development / demo — diverse verified resources
   return [
-    { type: 'gpu', name: 'GPU-Alpha', reputation: 87, verified: true, chain: '0g', price: '$0.04/1K tok', verificationType: 'tee', subtitle: 'H100 · EU Frankfurt' },
-    { type: 'gpu', name: 'GPU-Beta', reputation: 92, verified: true, chain: '0g', price: '$0.06/1K tok', verificationType: 'tee', subtitle: 'H200 · US East' },
-    { type: 'human', name: 'Maria', reputation: 91, verified: true, chain: 'world', price: '$45/hr', verificationType: 'world-id', subtitle: 'Rust Developer · L4' },
-    { type: 'human', name: 'Aisha', reputation: 88, verified: true, chain: 'world', price: '$55/hr', verificationType: 'world-id', subtitle: 'Solidity Engineer · L5' },
-    { type: 'agent', name: 'Seer Agent', reputation: 95, verified: true, chain: '0g', price: '$0.01/query', verificationType: 'agentkit', subtitle: 'Signal Analysis' },
-    { type: 'agent', name: 'Edge Agent', reputation: 90, verified: true, chain: '0g', price: '$0.02/trade', verificationType: 'agentkit', subtitle: 'Market Maker' },
-    { type: 'depin', name: 'SolarNode-EU', reputation: 85, verified: true, chain: 'hedera', price: '$0.08/kWh', verificationType: 'tee', subtitle: '50kW · Frankfurt' },
-    { type: 'depin', name: 'BandwidthRelay-US', reputation: 82, verified: true, chain: 'hedera', price: '$0.003/GB', verificationType: 'tee', subtitle: '10Gbps · Virginia' },
+    { type: 'gpu', name: 'Nebula-H100', reputation: 87, verified: true, chain: '0g', price: '$0.04/1K tok', verificationType: 'tee', subtitle: 'H100 80GB · EU Frankfurt' },
+    { type: 'gpu', name: 'Titan-H200', reputation: 92, verified: true, chain: '0g', price: '$0.06/1K tok', verificationType: 'tee', subtitle: 'H200 141GB · US East' },
+    { type: 'human', name: 'Camila Torres', reputation: 91, verified: true, chain: 'world', price: '$45/hr', verificationType: 'world-id', subtitle: 'Rust Developer · L4' },
+    { type: 'human', name: 'Yuki Tanaka', reputation: 88, verified: true, chain: 'world', price: '$55/hr', verificationType: 'world-id', subtitle: 'Solidity Engineer · L5' },
+    { type: 'human', name: 'Kwame Asante', reputation: 84, verified: true, chain: 'world', price: '$40/hr', verificationType: 'world-id', subtitle: 'ML Engineer · L4' },
+    { type: 'agent', name: 'Orion', reputation: 95, verified: true, chain: '0g', price: '$0.01/query', verificationType: 'agentkit', subtitle: 'Signal Analysis Agent' },
+    { type: 'agent', name: 'Vega', reputation: 90, verified: true, chain: '0g', price: '$0.02/trade', verificationType: 'agentkit', subtitle: 'Market Maker Agent' },
+    { type: 'agent', name: 'Lyra', reputation: 93, verified: true, chain: '0g', price: '$0.005/check', verificationType: 'agentkit', subtitle: 'Compliance Agent' },
+    { type: 'depin', name: 'Helios Solar Farm', reputation: 85, verified: true, chain: 'hedera', price: '$0.08/kWh', verificationType: 'tee', subtitle: '50kW · Frankfurt' },
+    { type: 'depin', name: 'FiberLink Relay', reputation: 82, verified: true, chain: 'hedera', price: '$0.003/GB', verificationType: 'tee', subtitle: '10Gbps · Virginia' },
   ];
 }
 
