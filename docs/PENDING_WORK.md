@@ -124,8 +124,8 @@
 | P-067 | Landing page used 3 chain colors (spec requires purple-only) | done | Agent 2 | `src/app/page.tsx` | All 3 chain icon circles changed to chain-hedera (brand purple). |
 
 | P-068 | PRIVATE_KEY in .env.local didn't match deployer wallet | ✅ done | Agent 8 | `.env.local` | Agents set a different key during dev. Fixed: restored deployer key (0x58c4...) for seed script. |
-| P-069 | ReputationRegistry self-feedback blocks demo seeding | known-limitation | — | `contracts/0g/ReputationRegistryUpgradeable.sol` | Deployer owns all identities, cannot giveFeedback to self. Mock fallback data in API routes provides scores. Would need 2nd wallet for on-chain reputation. |
-| P-070 | GPUProviderRegistry 1-provider-per-wallet limit | known-limitation | — | `contracts/0g/GPUProviderRegistry.sol` | Only GPU-Alpha registered. GPU-Beta skipped. Would need 2nd wallet address. |
+| P-069 | ReputationRegistry self-feedback blocks demo seeding | ✅ done | Agent 4 | `scripts/seed-demo-data.ts` | 2nd wallet (0xf45b...670) bypasses self-feedback check. 4 on-chain reputation scores seeded. |
+| P-070 | GPUProviderRegistry 1-provider-per-wallet limit | ✅ done | Agent 4 | `scripts/seed-demo-data.ts` | 2nd wallet + ERC-721 approve step. GPU-Beta (H200/AMD SEV) registered on-chain. |
 | P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `src/app/api/agents/register/route.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
 | P-073 | README.md missing `/api/edge/trade` route | ✅ done | Agent 9 | `README.md` | Added Edge trade route to API Routes table |
 | P-074 | ARCHITECTURE.md missing `/api/edge/trade` + `prediction-math.ts` | ✅ done | Agent 9 | `docs/ARCHITECTURE.md` | Added edge/trade route tree + prediction-math.ts to lib listing |

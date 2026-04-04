@@ -52,6 +52,7 @@
 | 5 | Fix /api/resources self-fetch + add on-chain GPU listing (P-051, P-052) | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | done | 2026-04-04T15:30Z | 2026-04-04T16:00Z |
 | 5 | P-072: Address validation in agents/register + world-id/check | `src/app/api/agents/register/route.ts`, `src/app/api/world-id/check/route.ts` | done | 2026-04-04T16:00Z | 2026-04-04T16:15Z |
 | 5 | P-071: Pass signal in verify flow + v4/v2 fallback | `src/components/Verify/index.tsx`, `src/app/api/verify-proof/route.ts` | done | 2026-04-04T16:15Z | 2026-04-04T16:30Z |
+| 4 | P-069 + P-070: 2nd wallet for reputation + GPU-Beta | `scripts/seed-demo-data.ts`, `.env.local`, `docs/PENDING_WORK.md` | done | 2026-04-04T17:00Z | 2026-04-04T17:30Z |
 
 ---
 
