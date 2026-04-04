@@ -17,7 +17,7 @@ NC='\033[0m'
 # Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-export PATH="/usr/local/bin:$HOME/.npm-global/bin:$HOME/.foundry/bin:$PATH"
+export PATH="/opt/homebrew/bin:$HOME/bin:/usr/local/bin:$HOME/.npm-global/bin:$HOME/.foundry/bin:$PATH"
 
 # PID tracking for cleanup
 PIDS=()
@@ -65,6 +65,15 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 echo -e "${GREEN}✓ Dependencies ready${NC}"
+
+# ============================================================
+# 2b. Clear stale .next cache
+# ============================================================
+if [ -d ".next" ]; then
+  echo -e "${YELLOW}Clearing stale .next cache...${NC}"
+  rm -rf .next
+fi
+echo -e "${GREEN}✓ Cache cleared${NC}"
 
 # ============================================================
 # 3. Deploy contracts if changes detected
@@ -134,14 +143,77 @@ setup_hedera() {
 setup_hedera
 
 # ============================================================
-# 5. Start Next.js dev server
+# 5. Start ngrok tunnel FIRST (env vars must be set before Next.js)
+# ============================================================
+NGROK_URL=""
+
+start_ngrok() {
+  NGROK_BIN=$(command -v ngrok 2>/dev/null)
+  if [ -z "$NGROK_BIN" ]; then
+    echo -e "${RED}ngrok not found. Install: brew install ngrok${NC}"
+    echo -e "${YELLOW}Running without tunnel — MiniKit will only work on localhost${NC}"
+    return
+  fi
+
+  echo -e "${BLUE}Starting ngrok tunnel (using $NGROK_BIN)...${NC}"
+
+  if [ -z "$NGROK_AUTHTOKEN" ]; then
+    echo -e "${YELLOW}NGROK_AUTHTOKEN not set. Tunnel will be rate-limited.${NC}"
+  fi
+
+  "$NGROK_BIN" http 3000 --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
+  NGROK_PID=$!
+  PIDS+=($NGROK_PID)
+
+  echo -e "${YELLOW}Waiting for ngrok tunnel...${NC}"
+  for i in {1..10}; do
+    sleep 1
+    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | node -e "
+      const c=[];process.stdin.on('data',d=>c.push(d));
+      process.stdin.on('end',()=>{
+        try{const t=JSON.parse(Buffer.concat(c));
+        console.log(t.tunnels[0]?.public_url||'')}
+        catch(e){console.log('')}
+      })
+    " 2>/dev/null || echo "")
+    if [ -n "$NGROK_URL" ]; then break; fi
+  done
+
+  if [ -n "$NGROK_URL" ]; then
+    echo -e "${GREEN}✓ ngrok tunnel: ${NGROK_URL}${NC}"
+
+    if [ -f ".env.local" ]; then
+      sed -i '' "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
+      sed -i '' "s|AUTH_URL=.*|AUTH_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
+      if grep -q "NEXT_PUBLIC_APP_URL" .env.local 2>/dev/null; then
+        sed -i '' "s|NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
+      else
+        echo "NEXT_PUBLIC_APP_URL=${NGROK_URL}" >> .env.local
+      fi
+      # Re-source so Next.js picks up new values
+      set -a; source .env.local; set +a
+      echo -e "${GREEN}✓ Updated .env.local with tunnel URL${NC}"
+    fi
+
+    echo ""
+    echo -e "${YELLOW}MANUAL STEP: Update World Developer Portal → App URL: ${NGROK_URL}${NC}"
+    echo ""
+  else
+    echo -e "${RED}ngrok tunnel failed to start. Check /tmp/ngrok.log${NC}"
+    echo -e "${YELLOW}Running without tunnel — MiniKit will only work on localhost${NC}"
+  fi
+}
+
+start_ngrok
+
+# ============================================================
+# 6. Start Next.js dev server
 # ============================================================
 echo -e "${BLUE}Starting Next.js dev server on :3000...${NC}"
 npm run dev &
 NEXTJS_PID=$!
 PIDS+=($NEXTJS_PID)
 
-# Wait for Next.js to be ready
 echo -e "${YELLOW}Waiting for Next.js...${NC}"
 for i in {1..30}; do
   if curl -s http://localhost:3000 > /dev/null 2>&1; then
@@ -150,55 +222,6 @@ for i in {1..30}; do
   fi
   sleep 1
 done
-
-# ============================================================
-# 6. Start ngrok tunnel
-# ============================================================
-start_ngrok() {
-  echo -e "${BLUE}Starting ngrok tunnel...${NC}"
-
-  # Check for ngrok authtoken
-  if [ -z "$NGROK_AUTHTOKEN" ]; then
-    echo -e "${YELLOW}NGROK_AUTHTOKEN not set. Tunnel will be rate-limited.${NC}"
-    echo -e "${YELLOW}Get a free token at https://dashboard.ngrok.com/signup${NC}"
-  fi
-
-  # Start ngrok in background
-  ngrok http 3000 --log=stdout --log-format=json > /tmp/ngrok.log 2>&1 &
-  NGROK_PID=$!
-  PIDS+=($NGROK_PID)
-
-  # Wait for tunnel URL
-  sleep 3
-  NGROK_URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | node -e "
-    const c=[];process.stdin.on('data',d=>c.push(d));
-    process.stdin.on('end',()=>{
-      try{const t=JSON.parse(Buffer.concat(c));
-      console.log(t.tunnels[0]?.public_url||'FAILED')}
-      catch(e){console.log('FAILED')}
-    })
-  " 2>/dev/null || echo "FAILED")
-
-  if [ "$NGROK_URL" != "FAILED" ] && [ -n "$NGROK_URL" ]; then
-    echo -e "${GREEN}✓ ngrok tunnel: ${NGROK_URL}${NC}"
-    echo ""
-    echo -e "${YELLOW}UPDATE THESE:${NC}"
-    echo -e "  1. World Developer Portal → App URL: ${NGROK_URL}"
-    echo -e "  2. .env.local → NEXTAUTH_URL=${NGROK_URL}"
-    echo -e "  3. World App simulator → Use: ${NGROK_URL}"
-    echo ""
-
-    # Auto-update .env.local with ngrok URL
-    if [ -f ".env.local" ]; then
-      sed -i '' "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=${NGROK_URL}|" .env.local 2>/dev/null || true
-    fi
-  else
-    echo -e "${RED}ngrok tunnel failed to start. Check /tmp/ngrok.log${NC}"
-    echo -e "${YELLOW}Running without tunnel — MiniKit will only work on localhost${NC}"
-  fi
-}
-
-start_ngrok
 
 # ============================================================
 # 7. Start OpenClaw Gateway (if configured)
