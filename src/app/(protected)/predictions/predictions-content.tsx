@@ -20,8 +20,12 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   const refreshMarkets = useCallback(async () => {
     try {
       const res = await fetch('/api/predictions');
-      if (res.ok) setMarkets(await res.json());
-    } catch { /* ISR will catch up */ }
+      if (!res.ok) return; // keep current state on failure
+      const data = await res.json();
+      // Handle both { markets: [...] } and plain array responses
+      const list = Array.isArray(data) ? data : data.markets ?? [];
+      if (list.length > 0) setMarkets(list);
+    } catch { /* keep current state — ISR will catch up */ }
   }, []);
 
   const fetchActivity = useCallback(async () => {
@@ -38,8 +42,12 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   useEffect(() => {
     refreshMarkets();
     fetchActivity();
-    const interval = setInterval(fetchActivity, 15000);
-    return () => clearInterval(interval);
+    const activityInterval = setInterval(fetchActivity, 15_000);
+    const marketInterval = setInterval(refreshMarkets, 30_000);
+    return () => {
+      clearInterval(activityInterval);
+      clearInterval(marketInterval);
+    };
   }, [refreshMarkets, fetchActivity]);
 
   // Auto-dismiss toast

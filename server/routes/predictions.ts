@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ethers } from 'ethers';
 import { logAuditMessage } from '@/lib/hedera';
+import { cachedFetch, cacheInvalidate } from '@/lib/cache';
 import { sendRateLimited } from '../plugins/rate-limit';
 import {
   CreateMarketSchema,
@@ -50,36 +51,37 @@ export default async function predictionRoutes(app: FastifyInstance) {
   const f = app.withTypeProvider<ZodTypeProvider>();
 
   // ── GET /api/predictions ───────────────────────────────────────────────
-  f.get('/predictions', async (request) => {
-    try {
-      const contract = getContract();
-      const nextId = await contract.nextMarketId();
-      const count = Number(nextId);
+  f.get('/predictions', async () => {
+    const { data, _demo } = await cachedFetch(
+      'predictions:markets',
+      'og-predictions',
+      15_000, // 15s TTL — matches ISR pace
+      async () => {
+        const contract = getContract();
+        const nextId = await contract.nextMarketId();
+        const count = Number(nextId);
+        if (count === 0) return [];
 
-      if (count === 0) return [];
+        return Promise.all(
+          Array.from({ length: count }, async (_, i) => {
+            const m = await contract.getMarket(i);
+            return {
+              id: i,
+              question: m.question,
+              resolutionTime: Number(m.resolutionTime),
+              state: Number(m.state),
+              winningOutcome: Number(m.winningOutcome),
+              yesPool: m.yesPool.toString(),
+              noPool: m.noPool.toString(),
+              creator: m.creator,
+            };
+          }),
+        );
+      },
+      [], // fallback: empty array (better than fake data)
+    );
 
-      const markets = await Promise.all(
-        Array.from({ length: count }, async (_, i) => {
-          const m = await contract.getMarket(i);
-          return {
-            id: i,
-            question: m.question,
-            resolutionTime: Number(m.resolutionTime),
-            state: Number(m.state),
-            winningOutcome: Number(m.winningOutcome),
-            yesPool: m.yesPool.toString(),
-            noPool: m.noPool.toString(),
-            creator: m.creator,
-          };
-        }),
-      );
-
-      return markets;
-    } catch (error) {
-      request.log.error({ err: error }, 'Failed to fetch prediction markets');
-      reply.code(502);
-      return { error: 'Failed to fetch markets — 0G Galileo may be unreachable' };
-    }
+    return { markets: data, _stale: _demo };
   });
 
   // ── POST /api/predictions ──────────────────────────────────────────────
@@ -116,6 +118,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
         }
 
         app.responseCache.invalidate('/api/predictions');
+        cacheInvalidate('predictions:markets');
         app.responseCache.invalidate('/api/agent-decision');
         return { success: true, marketId, txHash: createReceipt!.hash, betTxHash };
       } catch (err) {
@@ -145,6 +148,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
         const receipt = await waitWithTimeout(tx);
 
         app.responseCache.invalidate('/api/predictions');
+        cacheInvalidate('predictions:markets');
         return {
           success: true,
           txHash: receipt!.hash,
@@ -189,6 +193,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
 
         const receipt = await waitWithTimeout(tx);
         app.responseCache.invalidate('/api/predictions');
+        cacheInvalidate('predictions:markets');
         return { success: true, txHash: receipt!.hash, marketId, action };
       } catch (err) {
         request.log.error({ err }, 'Failed to claim winnings');
@@ -238,6 +243,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
         }
 
         app.responseCache.invalidate('/api/predictions');
+        cacheInvalidate('predictions:markets');
         app.responseCache.invalidate('/api/agent-decision');
         return { success: true, txHash: receipt!.hash, marketId, outcome };
       } catch (err) {

@@ -124,7 +124,6 @@ export async function mintCredential(
   tokenId: string,
   metadata: Uint8Array[],
 ): Promise<number[]> {
-  // @ts-expect-error — server utility, resolved at runtime in Fastify context only
   const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   return withRetry(async () => {
     const client = initClient();
@@ -307,7 +306,6 @@ export async function logAuditMessage(
   topicId: string,
   message: string,
 ): Promise<void> {
-  // @ts-expect-error — server utility, resolved at runtime in Fastify context only
   const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   return withRetry(async () => {
     const client = initClient();
@@ -330,7 +328,6 @@ export async function queryAuditTrail(
   limit = 100,
 ): Promise<HcsMessage[]> {
   const { fetchWithTimeout, TIMEOUT_BUDGETS } = await import('../../server/utils/fetch-with-timeout');
-  // @ts-expect-error — server utility, resolved at runtime in Fastify context only
   const { withRetry, RETRY_POLICIES } = await import('../../server/utils/retry');
   const url = `${MIRROR_NODE_BASE}/api/v1/topics/${topicId}/messages?limit=${limit}&order=desc`;
 

@@ -2,6 +2,7 @@ import { Page } from '@/components/PageLayout';
 import type { PredictionMarket } from '@/components/PredictionCard';
 import { PredictionsContent } from './predictions-content';
 import { ethers } from 'ethers';
+import { cacheGet, cacheSet } from '@/lib/cache';
 
 export const revalidate = 10; // ISR every 10 seconds
 
@@ -22,7 +23,7 @@ async function getMarkets(): Promise<PredictionMarket[]> {
     const count = Number(nextId);
     if (count === 0) return [];
 
-    return await Promise.all(
+    const markets = await Promise.all(
       Array.from({ length: count }, async (_, i) => {
         const m = await contract.getMarket(i);
         return {
@@ -37,8 +38,14 @@ async function getMarkets(): Promise<PredictionMarket[]> {
         };
       })
     );
+    // Cache successful read for SSR fallback
+    cacheSet('predictions:markets', markets, 60_000);
+    return markets;
   } catch (err) {
     console.error('SSR getMarkets failed:', err);
+    // Fallback to last-known-good cached data
+    const cached = cacheGet<PredictionMarket[]>('predictions:markets');
+    if (cached) return cached;
   }
   return [];
 }

@@ -467,7 +467,7 @@
 | `ChainBadge` | Static (from resource type) | — | — | — |
 | `ReputationBar` | ReputationRegistry.getSummary() | — | 0G | `GET /api/reputation/:agentId` |
 | `VerificationStatus` | ValidationRegistry.getValidationStatus() | — | 0G | `GET /api/validation/:agentId` |
-| `PredictionCard` | ResourcePrediction.markets() | ResourcePrediction.placeBet() | Hedera | `GET /api/predictions`, `POST /api/predictions/:id/bet` |
+| `PredictionCard` | ResourcePrediction.markets() | ResourcePrediction.placeBet() | 0G | `GET /api/predictions`, `POST /api/predictions/:id/bet` |
 | `PaymentConfirmation` | Blocky402 x402 settlement receipt | — | Hedera | — (client-side SDK) |
 | `AgentCard` | IdentityRegistry, AgentKit status | — | 0G + World | `GET /api/agents` |
 | `ResourceStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |

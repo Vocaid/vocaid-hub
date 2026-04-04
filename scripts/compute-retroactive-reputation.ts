@@ -79,12 +79,18 @@ async function main() {
   const { computeSignals, computeMedianPrice } = await import('../src/lib/retroactive-reputation.js');
 
   const demoPk = process.env.DEMO_WALLET_KEY;
+  const reputationPk = process.env.REPUTATION_WRITER_KEY;
   if (!demoPk) {
     console.error('DEMO_WALLET_KEY not set.');
     process.exit(1);
   }
+  if (!reputationPk) {
+    console.error('REPUTATION_WRITER_KEY not set. This wallet writes reputation feedback and must NOT own the agents.');
+    process.exit(1);
+  }
 
   const demoAccount = privateKeyToAccount(demoPk as `0x${string}`);
+  const reputationAccount = privateKeyToAccount(reputationPk as `0x${string}`);
   const publicClient = createPublicClient({
     chain: ogGalileo,
     transport: http(rpcUrl, { timeout: 60_000 }),
@@ -95,11 +101,18 @@ async function main() {
     chain: ogGalileo,
     transport: http(rpcUrl, { timeout: 60_000 }),
   });
+  // Separate wallet for reputation writes — avoids self-feedback prevention
+  const reputationWallet = createWalletClient({
+    account: reputationAccount,
+    chain: ogGalileo,
+    transport: http(rpcUrl, { timeout: 60_000 }),
+  });
 
   console.log('='.repeat(60));
   console.log('Retroactive Reputation Engine');
   console.log('='.repeat(60));
-  console.log('Demo wallet:', demoAccount.address);
+  console.log('Registration wallet:', demoAccount.address);
+  console.log('Reputation writer:', reputationAccount.address);
 
   // ── Phase 1: Scan events ──────────────────────────────────
   console.log('\nPhase 1: Scanning InferenceServing events (last 2M blocks)...');
@@ -132,33 +145,18 @@ async function main() {
     console.log(`  ${addr.slice(0, 12)}... composite:${s.composite} [act:${s.activity} set:${s.settlementHealth} tee:${s.teeCompliance} pri:${s.pricing} dis:${s.disputeRate} age:${s.longevity}]`);
   }
 
-  // ── Phase 4: Auto-register ────────────────────────────────
-  console.log('\nPhase 4: Auto-registering unregistered providers...');
+  // ── Phase 4: Register identities for providers ─────────────
+  // Only IdentityRegistry (no 1-per-wallet limit). GPUProviderRegistry uses msg.sender
+  // as key, so the demo wallet can only register itself once — we skip it.
+  // IdentityRegistry allows unlimited registrations per wallet (each gets a unique agentId).
+  console.log('\nPhase 4: Registering provider identities on ERC-8004...');
   const agentIds = new Map<string, bigint>();
 
   for (const addr of activityMap.keys()) {
-    // Check existing registration
-    try {
-      const existing = await publicClient.readContract({
-        address: C.GPUProviderRegistry as `0x${string}`,
-        abi: gpuProviderABI,
-        functionName: 'providers',
-        args: [addr as `0x${string}`],
-      });
-      if (Number(existing[4]) > 0) {
-        agentIds.set(addr, existing[0] as bigint);
-        console.log(`  ${addr.slice(0, 12)}... already registered (agentId: ${existing[0]})`);
-        continue;
-      }
-    } catch {
-      // Not registered — proceed
-    }
-
     const svc = services.get(addr);
     const agentURI = `https://vocaid-hub.vercel.app/retroactive/${addr.slice(2, 12)}.json`;
 
     try {
-      // Register identity
       const h1 = await demoWallet.writeContract({
         address: C.IdentityRegistry as `0x${string}`,
         abi: identityABI,
@@ -176,29 +174,15 @@ async function main() {
       const agentId = BigInt(log!.topics[1] as string);
       agentIds.set(addr, agentId);
 
-      // Register as GPU provider
-      const model = svc?.model || 'Unknown';
-      const tee = svc?.verifiability || 'none';
-      const attestHash = keccak256(toHex(`retroactive-${addr}`));
-
-      const h2 = await demoWallet.writeContract({
-        address: C.GPUProviderRegistry as `0x${string}`,
-        abi: gpuProviderABI,
-        functionName: 'registerProvider',
-        args: [agentId, model, tee, attestHash],
-        chain: ogGalileo,
-      });
-      await publicClient.waitForTransactionReceipt({ hash: h2, ...WAIT_OPTS });
-
-      console.log(`  ${addr.slice(0, 12)}... registered agentId:${agentId} model:${model}`);
+      console.log(`  ${addr.slice(0, 12)}... agentId:${agentId} model:${svc?.model || 'offline'}`);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message.slice(0, 60) : String(e).slice(0, 60);
       console.log(`  ${addr.slice(0, 12)}... failed: ${msg}`);
     }
   }
 
-  // ── Phase 5: Write reputation ─────────────────────────────
-  console.log('\nPhase 5: Writing reputation scores...');
+  // ── Phase 5: Write reputation (uses separate wallet to avoid self-feedback block) ──
+  console.log('\nPhase 5: Writing reputation scores (via reputation writer wallet)...');
 
   const TAGS = [
     'retroactive-activity', 'retroactive-settlement', 'retroactive-tee',
@@ -218,7 +202,7 @@ async function main() {
       const value = s[KEYS[i]];
       const fbHash = keccak256(toHex(`retro-${addr}-${TAGS[i]}-${Date.now()}`));
       try {
-        const h = await demoWallet.writeContract({
+        const h = await reputationWallet.writeContract({
           address: C.ReputationRegistry as `0x${string}`,
           abi: reputationABI,
           functionName: 'giveFeedback',
