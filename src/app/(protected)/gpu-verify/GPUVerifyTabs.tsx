@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, Bot, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
+import { BarChart3, Bot, ChevronDown, Cpu, Plus, User, Wifi, Loader2, Check } from 'lucide-react';
 import GPUStepper from '@/components/GPUStepper';
 import { ResourceCard, type ResourceCardProps } from '@/components/ResourceCard';
 import {
@@ -35,8 +35,8 @@ export default function GPUVerifyTabs() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [resources, setResources] = useState<ResourceWithSignals[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<string>('quality');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedResource, setSelectedResource] =
     useState<ResourceWithSignals | null>(null);
   const [registerType, setRegisterType] = useState<'gpu' | 'agent' | 'human' | 'depin'>('gpu');
@@ -44,12 +44,16 @@ export default function GPUVerifyTabs() {
   useEffect(() => {
     if (activeTab !== 'dashboard') return;
     setLoading(true);
-    fetch(`/api/resources?sort=${sortBy}&type=${filterType === 'all' ? '' : filterType}`)
-      .then((r) => (r.ok ? r.json() : { resources: [] }))
-      .then((data) => setResources(data.resources || []))
+    fetch('/api/resources')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setResources(Array.isArray(data) ? data : data.resources || []))
       .catch(() => setResources([]))
       .finally(() => setLoading(false));
-  }, [activeTab, sortBy, filterType]);
+  }, [activeTab]);
+
+  const filtered = filterTypes.size === 0
+    ? resources
+    : resources.filter((r) => filterTypes.has(r.type));
 
   return (
     <div className="space-y-4">
@@ -105,33 +109,56 @@ export default function GPUVerifyTabs() {
 
       {activeTab === 'dashboard' && !selectedResource && (
         <>
-          {/* Sort + Filter Bar */}
-          <div className="flex gap-2">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-md border border-border bg-white px-3 py-1.5 text-xs text-primary"
+          {/* Resource Type Filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className="w-full min-h-[40px] px-3 rounded-lg border border-border-card bg-white text-sm text-primary flex items-center justify-between cursor-pointer"
             >
-              <option value="quality">Quality</option>
-              <option value="cost">Cost</option>
-              <option value="latency">Latency</option>
-              <option value="uptime">Uptime</option>
-            </select>
-            <div className="flex gap-1">
-              {['all', 'gpu', 'agent', 'human', 'depin'].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setFilterType(t)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    filterType === t
-                      ? 'bg-primary-accent text-white'
-                      : 'bg-surface text-secondary hover:text-primary'
-                  }`}
-                >
-                  {t === 'all' ? 'All' : t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
+              <span className="truncate">
+                {filterTypes.size === 0
+                  ? 'All Resource Types'
+                  : [...filterTypes].map((t) => t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}
+              </span>
+              <ChevronDown className="w-4 h-4 text-secondary shrink-0 ml-2" />
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-lg border border-border-card bg-white shadow-lg py-1 animate-fade-in">
+                {(['gpu', 'agent', 'human', 'depin'] as const).map((t) => {
+                  const active = filterTypes.has(t);
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => {
+                        setFilterTypes((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(t)) next.delete(t); else next.add(t);
+                          return next;
+                        });
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 cursor-pointer ${
+                        active ? 'text-primary-accent font-medium' : 'text-primary hover:bg-surface'
+                      }`}
+                    >
+                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                        active ? 'bg-primary-accent border-primary-accent' : 'border-border-card'
+                      }`}>
+                        {active && <Check className="w-3 h-3 text-white" />}
+                      </span>
+                      {t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                  );
+                })}
+                {filterTypes.size > 0 && (
+                  <button
+                    onClick={() => { setFilterTypes(new Set()); setShowFilterDropdown(false); }}
+                    className="w-full px-3 py-2 text-left text-xs text-secondary hover:text-primary border-t border-border-card mt-1 pt-2 cursor-pointer"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Resource List */}
@@ -144,7 +171,7 @@ export default function GPUVerifyTabs() {
                 />
               ))}
             </div>
-          ) : resources.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center">
               <Cpu className="mx-auto mb-2 h-8 w-8 text-secondary" />
               <p className="text-sm text-secondary">
@@ -159,7 +186,7 @@ export default function GPUVerifyTabs() {
             </div>
           ) : (
             <div className="space-y-3">
-              {resources.map((resource, idx) => (
+              {filtered.map((resource, idx) => (
                 <div key={idx} className="space-y-2">
                   <ResourceCard
                     {...resource}
