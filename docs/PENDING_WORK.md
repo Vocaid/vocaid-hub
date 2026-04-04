@@ -70,7 +70,7 @@
 | ID | Item | Status | Agent | Bounty at Risk | Target Files | Fix |
 |----|------|--------|-------|---------------|-------------|-----|
 | P-057 | Shield doesn't block unverified providers | unclaimed | — | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | Add ValidationRegistry check before returning resources. ~30 min. |
-| P-058 | Lens never writes `giveFeedback()` | unclaimed | — | 0G OpenClaw $6k | `src/lib/reputation.ts`, `scripts/seed-demo-data.ts` | Add write function to reputation.ts + trigger from seed. ~20 min. |
+| P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
 | P-059 | MiniKit.pay() never called | unclaimed | — | World MiniKit $4k | `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Wire MiniKit pay command into hire flow. ~30 min. |
 | P-060 | Seer never runs 0G Compute inference | unclaimed | — | 0G OpenClaw $6k | `src/lib/og-compute.ts`, `agents/.agents/seer/soul.md` | Needs live 0G provider + funded broker. Hard without testnet. |
 | P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |

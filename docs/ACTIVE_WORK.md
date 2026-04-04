@@ -38,7 +38,7 @@
 | 2 | Landing page: purple-only icons, fix auth crash (remove auto-auth useEffect) | `src/app/page.tsx`, `src/components/AuthButton/index.tsx` | done | 2026-04-04T04:00Z | 2026-04-04T04:30Z |
 | 2 | Add brand logo assets to git (untracked — broke production image) | `public/app-logo.png`, `public/compact-logo.png`, `public/white-favicon.png` | done | 2026-04-04T04:30Z | 2026-04-04T04:45Z |
 | 2 | MiniKit v2 fix: haptic shim (commands.sendHapticFeedback) + verify wallet auth | `src/providers/index.tsx`, `src/auth/wallet/index.ts` | done | 2026-04-04T05:00Z | 2026-04-04T05:30Z |
-| 3 | P-049: Wire giveFeedback + HCS audit for AI/Agentic track | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | in-progress | 2026-04-04T10:00Z | — |
+| 3 | P-058: Wire giveFeedback + HCS audit for AI/Agentic track | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
 | 6 | Full gap audit vs SESSION_CONTEXT + doc updates (PENDING_WORK dedup, WAVE_EXECUTION_PLAN status, ARCHITECTURE structure) | `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
 
 ---
