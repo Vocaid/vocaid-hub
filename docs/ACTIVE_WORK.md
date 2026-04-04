@@ -35,6 +35,7 @@
 | 4 | Add OG + Twitter metadata + metadataBase to layout.tsx | `src/app/layout.tsx` | done | 2026-04-04T02:30Z | 2026-04-04T02:45Z |
 | 9 | Audit cleanup: Arc refs + unused SVGs + PENDING_WORK accuracy | `agents/.agents/edge/soul.md`, `docs/TECHNOLOGY_RESEARCH.md`, `public/*.svg`, `docs/PENDING_WORK.md` | done | 2026-04-04T03:00Z | 2026-04-04T03:15Z |
 | 4 | Title/slogan consistency: "Reliable Resources for the Agentic Economy" across 20 files | all docs + layout.tsx + package.json + README + SUBMISSION | done | 2026-04-04T03:30Z | 2026-04-04T03:45Z |
+| 3 | P-049: Wire giveFeedback + HCS audit for AI/Agentic track | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | in-progress | 2026-04-04T10:00Z | — |
 
 ---
 
