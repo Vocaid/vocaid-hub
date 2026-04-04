@@ -27,7 +27,8 @@ A Python backend would need to shell out to Node.js for MiniKit, 0G broker, and 
 
 ```
 vocaid-hub/
-├── app/                       # Next.js 15 App Router
+├── src/
+│   ├── app/                   # Next.js 15 App Router
 │   ├── layout.tsx             # Root layout with MiniKit provider
 │   ├── page.tsx               # Landing / entry point
 │   ├── (protected)/           # Auth-gated route group
@@ -68,8 +69,12 @@ vocaid-hub/
 │       ├── predictions/
 │       │   ├── route.ts       # List/create markets
 │       │   └── [id]/
-│       │       └── bet/
-│       │           └── route.ts # Place bet
+│       │       ├── bet/
+│       │       │   └── route.ts # Place bet
+│       │       ├── claim/
+│       │       │   └── route.ts # Claim winnings
+│       │       └── resolve/
+│       │           └── route.ts # Resolve market outcome
 │       ├── agents/
 │       │   ├── register/
 │       │   │   └── route.ts   # AgentKit registration

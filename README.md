@@ -155,6 +155,8 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/agents/register` | POST | Register agent via AgentKit + ERC-8004 | 0G + World |
 | `/api/predictions` | GET/POST | List or create prediction markets | 0G |
 | `/api/predictions/[id]/bet` | POST | Place bet on prediction market | 0G |
+| `/api/predictions/[id]/claim` | POST | Claim prediction market winnings | 0G |
+| `/api/predictions/[id]/resolve` | POST | Resolve prediction market outcome | 0G |
 | `/api/payments` | GET/POST | x402 USDC payments via Blocky402 | Hedera |
 | `/api/initiate-payment` | POST | MiniKit payment initiation | Hedera |
 | `/api/hedera/audit` | GET | Query HCS audit trail via Mirror Node | Hedera |
@@ -216,7 +218,7 @@ vocaid-hub/
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s)
 │   │   │   └── profile/        # User profile + agent fleet (SSR)
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
-│   │   └── api/                # 15 server-side API routes
+│   │   └── api/                # 17 server-side API routes
 │   ├── lib/                    # Shared server utilities
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── blocky402.ts        # x402 facilitator client

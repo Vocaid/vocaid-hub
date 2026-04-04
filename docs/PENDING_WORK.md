@@ -72,5 +72,8 @@
 | P-040 | Edge agent card references "Arc network" | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed to reference Hedera |
 | P-041 | AgentCard.tsx used hardcoded dark theme colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Replaced gray-800/900, blue-400 etc with design system tokens |
 | P-042 | AuthButton error text used hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Changed to text-status-failed |
+| P-043 | predictions/claim and predictions/resolve have no World ID gating | unclaimed | — | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Anyone can resolve markets or claim winnings without verification |
+| P-044 | /api/agents/register has no UI caller | unclaimed | — | `src/app/api/agents/register/route.ts` | Orphaned endpoint — functional but not wired to any frontend component |
+| P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | unclaimed | — | `src/app/api/rp-signature/route.ts`, `.env.local` | World ID 4.0 IDKit verification flow requires RP signing key |
 
-> Agents: Add new items here as you discover them during implementation. Use IDs P-041+.
+> Agents: Add new items here as you discover them during implementation. Use IDs P-046+.
