@@ -1,8 +1,6 @@
 import { createPublicClient, createWalletClient, http, type Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { worldchainSepolia } from "viem/chains";
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 
 // ABI subset for CredentialGate
 const CREDENTIAL_GATE_ABI = [
@@ -103,45 +101,3 @@ export async function isVerifiedOnChain(address: Address): Promise<boolean> {
   return verified;
 }
 
-/**
- * @deprecated Use server/plugins/world-id-gate.ts (Fastify plugin) instead.
- * Kept for backward compat with Next.js routes until Wave 3 migration.
- *
- * Gate an API route behind World ID verification.
- * Reads the session, extracts wallet address, checks on-chain verification.
- * Returns { address } on success, or a 401/403 NextResponse on failure.
- */
-export async function requireWorldId(): Promise<{ address: Address } | NextResponse> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
-  const address = session.user.id as Address;
-  const verified = await isVerifiedOnChain(address);
-  if (!verified) {
-    return NextResponse.json(
-      { error: "World ID verification required", verifyUrl: "/verify" },
-      { status: 403 },
-    );
-  }
-
-  return { address };
-}
-
-/**
- * @deprecated Use server/plugins/world-id-gate.ts (Fastify plugin) instead.
- * Higher-order function to wrap a route handler with World ID gating.
- */
-export function withWorldIdGate(
-  handler: (
-    req: Request,
-    context: { verifiedAddress: Address },
-  ) => Promise<NextResponse>,
-) {
-  return async (req: Request) => {
-    const result = await requireWorldId();
-    if (result instanceof NextResponse) return result;
-    return handler(req, { verifiedAddress: result.address });
-  };
-}
