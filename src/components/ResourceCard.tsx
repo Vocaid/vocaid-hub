@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, Cpu, User } from 'lucide-react';
+import { Bot, Cpu, Loader2, User } from 'lucide-react';
 import { ChainBadge, type Chain } from './ChainBadge';
 import { ReputationBar } from './ReputationBar';
 import { VerificationStatus, type VerificationType } from './VerificationStatus';
@@ -17,6 +17,7 @@ export interface ResourceCardProps {
   verificationType?: VerificationType;
   subtitle?: string;
   onHire?: (resource: { name: string; price: string; type: ResourceType }) => void;
+  hiring?: boolean;
 }
 
 const typeConfig: Record<ResourceType, { icon: typeof Cpu; label: string }> = {
@@ -35,11 +36,16 @@ export function ResourceCard({
   verificationType,
   subtitle,
   onHire,
+  hiring,
 }: ResourceCardProps) {
   const { icon: TypeIcon, label } = typeConfig[type];
 
   return (
-    <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3">
+    <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
+      verified
+        ? 'border-border-card bg-surface'
+        : 'border-status-inactive/30 bg-surface/80 opacity-75'
+    }`}>
       {/* Header row */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -65,12 +71,33 @@ export function ResourceCard({
           <span className="text-xs text-secondary capitalize">{label}</span>
           <VerificationStatus verified={verified} type={verificationType} />
         </div>
-        <button
-          onClick={() => onHire?.({ name, price, type })}
-          className="min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg bg-primary-accent text-white text-sm font-semibold active:scale-95 transition-transform"
-        >
-          Hire {price}
-        </button>
+        {verified ? (
+          <button
+            onClick={() => onHire?.({ name, price, type })}
+            disabled={hiring}
+            className={`min-h-11 min-w-11 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              hiring
+                ? 'bg-primary-accent/60 text-white/80 cursor-wait'
+                : 'bg-primary-accent text-white cursor-pointer active:scale-95'
+            }`}
+          >
+            {hiring ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Paying...
+              </span>
+            ) : (
+              `Hire ${price}`
+            )}
+          </button>
+        ) : (
+          <span
+            className="min-h-11 min-w-11 px-4 py-2 rounded-lg bg-status-inactive/20 text-status-inactive text-sm font-semibold flex items-center"
+            title="Provider has not passed Shield verification"
+          >
+            Unverified
+          </span>
+        )}
       </div>
     </div>
   );

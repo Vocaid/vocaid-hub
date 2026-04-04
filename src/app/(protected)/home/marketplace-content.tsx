@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
+import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
 
@@ -28,6 +29,8 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [payingResource, setPayingResource] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => activeTab === 'all' ? resources : resources.filter((r) => r.type === activeTab),
@@ -37,9 +40,11 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
   async function handleHire(resource: { name: string; price: string; type: ResourceType }) {
     if (paying) return;
     setPaying(true);
+    setPayError(null);
+    setPayingResource(resource.name);
 
     try {
-      // Step 1: Initiate payment — get x402 requirements from server
+      // Step 1: Get payment requirements from server
       const initRes = await fetch('/api/initiate-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,11 +57,41 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
       const initData = await initRes.json();
       if (!initRes.ok) {
-        console.error('Payment initiation failed:', initData.error);
+        setPayError(initData.error ?? 'Payment initiation failed');
         return;
       }
 
-      // Step 2: Construct x402 payment header with requirements
+      // Step 2: Try MiniKit.pay() (native World App payment)
+      let miniKitSuccess = false;
+      let miniKitTxHash = '';
+
+      try {
+        const payResult = await pay({
+          reference: initData.paymentId,
+          to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
+          tokens: [{ symbol: Tokens.USDC, token_amount: initData.requirements.amount }],
+          description: `Hire ${resource.name}`,
+          fallback: () => null,
+        });
+
+        if (payResult.executedWith === 'minikit' && payResult.data) {
+          miniKitSuccess = true;
+          miniKitTxHash = (payResult.data as { transactionId?: string }).transactionId ?? '';
+        }
+      } catch {
+        // Not in World App or pay failed — fall through to x402
+      }
+
+      if (miniKitSuccess) {
+        setPaymentResult({
+          amount: initData.requirements.amount,
+          txHash: miniKitTxHash,
+          resourceName: resource.name,
+        });
+        return;
+      }
+
+      // Step 3: Fallback — x402 payment via server
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,
@@ -67,7 +102,6 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         timestamp: Date.now(),
       }));
 
-      // Step 3: Send payment to /api/payments with X-PAYMENT header
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: {
@@ -85,14 +119,14 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
           txHash: data.payment?.txHash ?? 'pending',
           resourceName: resource.name,
         });
-      } else if (res.status === 402) {
-        // x402: server returned payment requirements (shouldn't happen with header)
-        console.error('Payment required:', data.accepts);
       } else {
-        console.error('Payment failed:', data.error);
+        setPayError(data.error ?? 'Payment failed');
       }
+    } catch {
+      setPayError('Network error — please try again');
     } finally {
       setPaying(false);
+      setPayingResource(null);
     }
   }
 
@@ -117,6 +151,23 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         ))}
       </div>
 
+      {/* Payment error feedback */}
+      {payError && (
+        <div
+          role="alert"
+          className="flex items-center justify-between rounded-lg border border-status-failed/30 bg-status-failed/5 px-4 py-3 text-sm text-status-failed animate-fade-in"
+        >
+          <span>{payError}</span>
+          <button
+            onClick={() => setPayError(null)}
+            className="ml-2 text-status-failed/60 hover:text-status-failed text-lg leading-none"
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
       {/* Resource cards */}
       {filtered.length > 0 ? (
         <div className="flex flex-col gap-3 stagger-children">
@@ -125,6 +176,7 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
               key={`${resource.type}-${resource.name}`}
               {...resource}
               onHire={handleHire}
+              hiring={paying && payingResource === resource.name}
             />
           ))}
         </div>

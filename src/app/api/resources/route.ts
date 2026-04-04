@@ -19,7 +19,7 @@ export async function GET() {
     // Dynamic imports to avoid SSG initialization failures
     const { listRegisteredAgents } = await import("@/lib/agentkit");
     const { listProviders } = await import("@/lib/og-compute");
-    const { getRegisteredProviders } = await import("@/lib/og-chain");
+    const { getRegisteredProviders, getValidationSummary } = await import("@/lib/og-chain");
 
     // Fetch from all sources in parallel — each can fail independently
     const [agentsResult, brokerResult, onChainResult] = await Promise.allSettled([
@@ -32,9 +32,10 @@ export async function GET() {
     const broker = brokerResult.status === "fulfilled" ? brokerResult.value : [];
     const onChain = onChainResult.status === "fulfilled" ? onChainResult.value : [];
 
+    const gpuResources = await mapGpuToResources(broker, onChain, getValidationSummary);
     const resources: ResourceCardProps[] = [
       ...mapAgentsToResources(agents),
-      ...mapGpuToResources(broker, onChain),
+      ...gpuResources,
     ];
 
     return NextResponse.json(resources);
@@ -71,10 +72,13 @@ function mapAgentsToResources(agents: AgentData[]): ResourceCardProps[] {
   }));
 }
 
-function mapGpuToResources(
+type ValidateFn = (agentId: bigint, tag: string) => Promise<{ count: bigint; avgResponse: number }>;
+
+async function mapGpuToResources(
   broker: OGServiceInfo[],
   onChain: OnChainGPUProvider[],
-): ResourceCardProps[] {
+  validateFn: ValidateFn,
+): Promise<ResourceCardProps[]> {
   // Merge: on-chain providers first, enriched with broker data where available
   const brokerByAddr = new Map(
     broker.map((b) => [b.provider.toLowerCase(), b]),
@@ -88,19 +92,29 @@ function mapGpuToResources(
     seen.add(addr);
     const b = brokerByAddr.get(addr);
 
+    // Shield check: query ValidationRegistry for this provider's agentId
+    let validated = false;
+    try {
+      const summary = await validateFn(BigInt(p.agentId), "gpu-tee-attestation");
+      validated = summary.count > 0n && summary.avgResponse >= 50;
+    } catch {
+      // ValidationRegistry unreachable — fall back to broker TEE acknowledgment
+      validated = b?.teeSignerAcknowledged ?? false;
+    }
+
     resources.push({
       type: "gpu" as const,
       name: b?.model || p.gpuModel || "GPU Provider",
       subtitle: b?.url || `${p.teeType} · Agent #${p.agentId}`,
       reputation: 75,
-      verified: b?.teeSignerAcknowledged ?? true,
+      verified: validated,
       chain: "0g" as const,
       price: "$0.05/call",
       verificationType: "tee" as const,
     });
   }
 
-  // Broker-only providers (not registered via our stepper)
+  // Broker-only providers (not registered via our stepper) — always unverified
   for (const b of broker) {
     if (seen.has(b.provider.toLowerCase())) continue;
     resources.push({
@@ -108,7 +122,7 @@ function mapGpuToResources(
       name: b.model || "GPU Provider",
       subtitle: b.url || b.provider.slice(0, 10) + "...",
       reputation: 75,
-      verified: !!b.teeSignerAcknowledged,
+      verified: false,
       chain: "0g" as const,
       price: "$0.05/call",
       verificationType: "tee" as const,
