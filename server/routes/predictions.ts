@@ -126,6 +126,8 @@ export default async function predictionRoutes(app: FastifyInstance) {
           betTxHash = betReceipt!.hash;
         }
 
+        app.responseCache.invalidate('/api/predictions');
+        app.responseCache.invalidate('/api/agent-decision');
         return { success: true, marketId, txHash: createReceipt!.hash, betTxHash };
       } catch (err) {
         request.log.error({ err }, 'Failed to create market');
@@ -153,6 +155,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
         const tx = await contract.placeBet(marketId, outcomeEnum, { value });
         const receipt = await waitWithTimeout(tx);
 
+        app.responseCache.invalidate('/api/predictions');
         return {
           success: true,
           txHash: receipt!.hash,
@@ -196,6 +199,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
         }
 
         const receipt = await waitWithTimeout(tx);
+        app.responseCache.invalidate('/api/predictions');
         return { success: true, txHash: receipt!.hash, marketId, action };
       } catch (err) {
         request.log.error({ err }, 'Failed to claim winnings');
@@ -244,6 +248,8 @@ export default async function predictionRoutes(app: FastifyInstance) {
           }
         }
 
+        app.responseCache.invalidate('/api/predictions');
+        app.responseCache.invalidate('/api/agent-decision');
         return { success: true, txHash: receipt!.hash, marketId, outcome };
       } catch (err) {
         request.log.error({ err }, 'Failed to resolve market');

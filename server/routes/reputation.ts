@@ -90,6 +90,8 @@ export default async function reputationRoutes(app: FastifyInstance) {
           feedbackURI,
         });
 
+        app.responseCache.invalidate('/api/resources');
+        app.responseCache.invalidate('/api/reputation');
         return {
           success: true,
           txHash: result.txHash,

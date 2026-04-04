@@ -120,6 +120,8 @@ export default async function agentRoutes(app: FastifyInstance) {
 
       const result = await registerAgent({ agentURI, operatorWorldId, role, agentkitId });
 
+      app.responseCache.invalidate('/api/agents');
+      app.responseCache.invalidate('/api/resources');
       return {
         success: true,
         agentId: result.agentId.toString(),
