@@ -82,6 +82,8 @@
 
 **Demo step 1 (30s):** Tap "Verify with World ID" → MiniKit verify dialog → proof validated on-chain via CredentialGate.sol
 
+**UI component:** `WorldIdGateModal.tsx` — bottom-sheet popup wrapping `<Verify />`. Auto-triggers `onVerified` callback on success. Used by both Marketplace (lease gate) and ResourceStepper (registration gate).
+
 **Architecture calls:**
 1. `MiniKit.commands.verify()` → World App handles ZK proof generation
 2. `POST /api/verify` → backend validates proof
@@ -469,7 +471,7 @@
 | `PaymentConfirmation` | Blocky402 x402 settlement receipt | — | Hedera | — (client-side SDK) |
 | `AgentCard` | IdentityRegistry, AgentKit status | — | 0G + World | `GET /api/agents` |
 | `ResourceStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |
-| `WorldIDVerify` | — | CredentialGate.verifyAndRegister() | World | `POST /api/verify` |
+| `WorldIdGateModal` | — | CredentialGate.verifyAndRegister() | World | `POST /api/verify-proof` |
 
 ---
 

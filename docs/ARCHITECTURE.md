@@ -110,6 +110,7 @@ vocaid-hub/
 │   ��   ├── SignalTicker.tsx   # 2-row auto-scrolling market signal ticker
 │   │   ├── ActivityFeed.tsx   # Live activity feed with filter chips
 ���   │   ├── ResourceStepper.tsx# Unified 3-step registration
+│   │   ├── WorldIdGateModal.tsx# Bottom-sheet World ID verification popup
 │   │   ├── ProposalQueue.tsx  # Agent prediction proposal approval queue
 │   │   ├── PostHireRating.tsx # Post-hire rating + prediction suggestion
 │   │   ��── AgentCard.tsx      # OpenClaw agent identity card

@@ -284,7 +284,7 @@ vocaid-hub/
 │   ├── schemas/                # Zod request/response validation
 │   ├── utils/                  # Resilience: fetch-with-timeout, retry, circuit-breaker
 │   ├── clients.ts              # Singleton ethers/viem client factories
-│   ├── __tests__/              # 40 vitest tests (4 test files)
+│   ├── __tests__/              # 34 vitest tests (4 test files)
 │   └── routes/                 # 15 route modules (25 endpoints)
 ├── ecosystem.config.cjs        # PM2 config (api + next + claw)
 ├── src/

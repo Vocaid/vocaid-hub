@@ -48,10 +48,10 @@
 
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
-| P-020 | Zero test files in project | ✅ done | Agent 4 | `src/lib/__tests__/*.test.ts`, `vitest.config.ts` | 91 tests (8 files): prediction-math (18) + hedera (4) + cache (12) + agent-router (10) + seer (11) + edge (15) + shield (10) + lens (11). Vitest framework |
+| P-020 | Zero test files in project | ✅ done | Agent 4 | `src/lib/__tests__/*.test.ts`, `server/__tests__/*.test.ts`, `vitest.config.ts` | 125 tests (12 files): src/lib 91 tests (8 files) + server/ 34 tests (4 files: fetch-with-timeout, retry, circuit-breaker, response-cache). Vitest framework |
 | P-021 | TODO in `src/auth/index.ts` (`@ts-expect-error`) | ✅ done | Agent 4 | `src/auth/index.ts` | Fixed: proper `(credentials, _request)` signature matching NextAuth types |
 | P-022 | Agent directory verification | ✅ done | Agent 4 | `agents/.agents/*/soul.md` | All 4 soul.md files exist (seer, edge, shield, lens) |
-| P-023 | Hedera deployment verification via Mirror Node | ✅ done | Agent 3 | `src/app/api/hedera/audit/route.ts` | Verified: VCRED token 0.0.8499633 + topic 0.0.8499635 confirmed on Mirror Node |
+| P-023 | Hedera deployment verification via Mirror Node | ✅ done | Agent 3 | `server/routes/hedera.ts` | Verified: VCRED token 0.0.8499633 + topic 0.0.8499635 confirmed on Mirror Node |
 
 ---
 
@@ -69,11 +69,11 @@
 
 | ID | Item | Status | Agent | Bounty at Risk | Target Files | Fix |
 |----|------|--------|-------|---------------|-------------|-----|
-| P-057 | Shield doesn't block unverified providers | ✅ done | Agent 6 | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | ValidationRegistry.getSummary() check per GPU provider; unverified show as "Unverified" |
-| P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
+| P-057 | Shield doesn't block unverified providers | ✅ done | Agent 6 | 0G OpenClaw $6k | `server/routes/resources.ts` | ValidationRegistry.getSummary() check per GPU provider; unverified show as "Unverified" |
+| P-058 | Lens never writes `giveFeedback()` | ✅ done | Agent 3 | 0G OpenClaw $6k | `server/routes/payments.ts`, `scripts/seed-demo-data.ts` | Lens auto-writes feedback after payment + seed script Phase 6 |
 | P-059 | MiniKit.pay() never called | ✅ done | Agent 7 | World MiniKit $4k | `src/app/(protected)/home/marketplace-content.tsx` | MiniKit.pay() wired with x402 fallback, loading spinner, error toast |
-| P-060 | Seer never runs 0G Compute inference | ✅ done | Agent 4 | 0G OpenClaw $6k | `src/app/api/seer/inference/route.ts` | API route calls listProviders() + callInference() from SDK. Falls back to mock when testnet empty. Logs to Hedera HCS. |
-| P-061 | Edge never executes trades | ✅ done | Agent 6 | 0G OpenClaw $6k | `src/app/api/edge/trade/route.ts` | API route: Shield clearance → placeBet() → HCS audit. Demo fallback when testnet unreachable. Fleet script calls it. |
+| P-060 | Seer never runs 0G Compute inference | ✅ done | Agent 4 | 0G OpenClaw $6k | `server/routes/seer.ts` | API route calls listProviders() + callInference() from SDK. Falls back to mock when testnet empty. Logs to Hedera HCS. |
+| P-061 | Edge never executes trades | ✅ done | Agent 6 | 0G OpenClaw $6k | `server/routes/edge.ts` | API route: Shield clearance → placeBet() → HCS audit. Demo fallback when testnet unreachable. Fleet script calls it. |
 | P-062 | No agent-to-agent messaging | ✅ done | Agent 6 | World AgentKit $8k | `scripts/demo-agent-fleet.ts` | 4-agent decision cycle: Seer→Edge→Shield→Lens with contract reads |
 | P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
 | P-071 | World ID `verify-human` action returns `invalid_action` from v2 API | ✅ done | Agent 3 | World ID $8k | `src/app/api/verify-proof/route.ts` | Fixed: switched to v4 endpoint (`api/v4/verify/{rp_id}`). Action now recognized. |
@@ -95,8 +95,8 @@
 | P-048 | TECHNOLOGY_RESEARCH Arc references | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Fixed |
 | P-049 | 0G Galileo testnet SSL timeout | ✅ resolved | Agent 8 | `~/.zshrc` | Root cause: Anaconda curl uses OpenSSL 3.0.x with broken chain-building. Node.js/viem/ethers all work fine. Fix: `alias curl=/usr/bin/curl` in .zshrc. Testnet fully operational. |
 | P-050 | GPU stepper e2e fallback | ✅ done | Agent 5 | `src/components/GPUStepper.tsx` | Verified |
-| P-051 | `/api/resources` self-fetch hits World ID gate | ✅ done | Agent 5 | `src/app/api/resources/route.ts` | Replaced HTTP self-fetch with direct imports (listProviders, listRegisteredAgents, getRegisteredProviders) |
-| P-052 | GPUProviderRegistry != Broker listing source | ✅ done | Agent 5 | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | Added getRegisteredProviders() to read on-chain registry; resources route merges broker + on-chain data |
+| P-051 | `/api/resources` self-fetch hits World ID gate | ✅ done | Agent 5 | `server/routes/resources.ts` | Replaced HTTP self-fetch with direct imports (listProviders, listRegisteredAgents, getRegisteredProviders) |
+| P-052 | GPUProviderRegistry != Broker listing source | ✅ done | Agent 5 | `src/lib/og-chain.ts`, `server/routes/resources.ts` | Added getRegisteredProviders() to read on-chain registry; resources route merges broker + on-chain data |
 
 ---
 
@@ -138,7 +138,7 @@
 | P-079 | CredentialGate: bind signal to msg.sender | ✅ done | Agent 5 | `contracts/world/CredentialGate.sol` | Added `require(signal == msg.sender)`. Redeployed to World Sepolia: `0x6B927bA02FE8E5e15D5d5f742380A49876ad3E02` |
 | P-080 | Security assessment: error response sanitization | ✅ done | Agent 4 | All `src/app/api/*/route.ts` + `src/lib/agents/*.ts` | 13 catch blocks sanitized: 9 API routes + 2 agent handlers. Removed `details` fields, replaced `err.message` with generic strings. Added `console.error` where missing. |
 | P-081 | Retroactive reputation: on-chain writes need 3rd wallet | known limitation | Agent 1 | `scripts/compute-retroactive-reputation.ts` | Demo wallet registered providers (owns them) so can't give self-feedback. Primary wallet also owns seed providers. Fix: generate 3rd wallet for reputation writes only, or use primary wallet for registration + demo wallet for feedback. Signal computation (Phases 1-3) works perfectly — 8 providers, 239 txs, scores computed. |
-| P-081 | Payment ledger persistence | ✅ done | Agent 6 | `src/lib/payment-ledger.ts`, `src/app/api/payments/route.ts` | File-based JSON at `data/payments.json`. Survives server restart. data/ gitignored. |
+| P-081 | Payment ledger persistence | ✅ done | Agent 6 | `src/lib/payment-ledger.ts`, `server/routes/payments.ts` | File-based JSON at `data/payments.json`. Survives server restart. data/ gitignored. |
 
 | P-082 | Predictions SSR self-fetch fails behind World ID gate | ✅ done | Agent 5 | `src/app/(protected)/predictions/page.tsx` | Replaced HTTP self-fetch with direct ethers contract read. Added useEffect refresh on mount. |
 | P-083 | World ID gates block prediction demo | ✅ done | Agent 5 | `src/app/api/predictions/[id]/bet/route.ts`, `resolve/route.ts`, `claim/route.ts` | Removed requireWorldId() from bet/resolve/claim routes for demo. |
@@ -152,7 +152,7 @@
 | P-089 | Seer panel removed from Market — agents trade via A2A only | ✅ done | — | `marketplace-content.tsx`, `home/page.tsx` | Market = human browsing. Seer responds to agent queries via `/api/agents/seer/a2a`. |
 | P-090 | Trading Desk removed from Resources page | ✅ done | — | `GPUVerifyTabs.tsx` | Resources = register + verify only. Trading via A2A from Profile fleet. |
 | P-091 | Fleet deployment moved to Profile page | ✅ done | — | `profile-content.tsx` | OpenClaw Seer/Edge/Shield/Lens deploy from Profile, not Resources. |
-| P-092 | Demo seed: 3 agents + 2 DePIN when registries empty | ✅ done | — | `src/app/api/resources/route.ts` | Orion, Vega, Lyra (agents) + Tesla Model Y Fleet, SkyLens Satellite (DePIN). Auto-hides when real data exists. |
+| P-092 | Demo seed: 3 agents + 2 DePIN when registries empty | ✅ done | — | `server/routes/resources.ts` | Orion, Vega, Lyra (agents) + Tesla Model Y Fleet, SkyLens Satellite (DePIN). Auto-hides when real data exists. |
 | P-093 | Resources page: dropdown multiselect filter | ✅ done | — | `GPUVerifyTabs.tsx` | Replaced quality sort + pill buttons with multiselect dropdown. |
 | P-094 | Favicon replaced with white brand icon | ✅ done | — | `src/app/icon.png` | Next.js serves icon.png automatically. Old favicon.ico deleted. |
 | P-095 | Vercel build fix: 6 untracked files | ✅ done | — | Multiple | PostHireRating, ProposalQueue, AgentProposalRegistry, /api/proposals, deploy script were never committed. |
@@ -162,7 +162,7 @@
 | P-098 | Backend migration: Fastify + Zod + PM2 (Wave 4 cleanup) | ✅ done | — | `src/app/api/` (deleted), `server/`, `middleware.ts`, `src/types/resource.ts`, docs | Deleted all Next.js API routes. Extracted ResourceCardProps to shared types. Updated middleware, ARCHITECTURE.md, README.md. All routes now on Fastify :5001. |
 | P-099 | Separate fleet vs resource agent flows | ✅ done | — | `profile-content.tsx`, `server/routes/resources.ts`, `gpu-verify/page.tsx`, `GPUVerifyTabs.tsx` | Profile = fleet-only (removed RegisterAgentModal + resource agents section). Resources = marketplace registration. FLEET_ROLES filter excludes fleet agents from /api/resources. Cross-links between pages. |
 | P-100 | ResourceStepper data-driven refactor | ✅ done | — | `src/components/ResourceStepper.tsx` | Replaced 7 individual state vars + 3 per-type JSX blocks with TYPE_META config + generic FieldRenderer. Single `form` Record. `buildPayload()` per type. Adding new resource type = 1 config entry, 0 JSX. |
-| P-101 | RegisterAgentModal orphaned | unclaimed | — | `src/components/RegisterAgentModal.tsx` | No longer imported anywhere after Profile cleanup. Can be deleted safely. |
+| P-101 | RegisterAgentModal orphaned | ✅ done | — | `src/components/RegisterAgentModal.tsx` | Orphaned by P-099 (fleet vs resource separation). Safe to delete — no imports remain. |
 | P-102 | Prediction market persistence fix (caching + tx hash detection) | unclaimed | — | `server/routes/predictions.ts`, `predictions-content.tsx` | Root cause: catch block returns hardcoded mock pools; client never polls markets. Fix: cache last-known-good data, detect new txs before re-fetching, add client polling. |
 
 | P-103 | Backend hardening: fetch-with-timeout utility | ✅ done | Agent 5 | `server/utils/fetch-with-timeout.ts`, `server/__tests__/fetch-with-timeout.test.ts` | AbortController wrapper with per-service TIMEOUT_BUDGETS (World ID 10s, Hedera Mirror 8s, Blocky402 15s, 0G Inference 30s). 5 vitest tests. |
