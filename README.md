@@ -401,24 +401,6 @@ See [`ARCHITECTURE.md`](docs/ARCHITECTURE.md#retroactive-reputation-engine) for 
 
 ---
 
-## ETHGlobal Tracks
-
-Targeting **9 tracks** across **3 partners** ($50k accessible prize pool).
-
-| Partner | Track | Prize | Key Requirement |
-|---------|-------|-------|----------------|
-| World | Best use of Agent Kit | $8k (3 winners) | AgentKit to distinguish human-backed agents from bots |
-| World | Best use of World ID 4.0 | $8k (3 winners) | World ID as meaningful constraint (hard gate) |
-| World | Best use of MiniKit 2.0 | $4k (3 winners) | Mini App with MiniKit SDK commands |
-| 0G | Best OpenClaw Agent on 0G | $6k (3 winners) | OpenClaw + 0G infrastructure (Compute, Storage, Chain) |
-| 0G | Wildcard on 0G | $3k (2 winners) | Creative project on 0G full stack |
-| 0G | Best DeFi App on 0G | $6k (3 winners) | AI-native DeFi using Chain + Compute + Storage |
-| Hedera | AI & Agentic Payments | $6k (2 winners) | AI agent executing payments on Hedera Testnet |
-| Hedera | No Solidity Allowed | $3k (3 winners) | @hashgraph/sdk only, 2+ native services (HTS + HCS) |
-| Hedera | Tokenization | $2.5k (2 winners) | Create/manage tokens with HTS on Hedera Testnet |
-
----
-
 ## License
 
 MIT — see [`package.json`](package.json)

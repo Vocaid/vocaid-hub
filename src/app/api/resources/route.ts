@@ -56,11 +56,19 @@ export async function GET(request: NextRequest) {
     const depinDevices = depinResult.status === "fulfilled" ? depinResult.value : [];
 
     const gpuResources = await mapGpuToResources(broker, onChain, getValidationSummary);
+    const agentResources = await mapAgentsToResources(agents);
+    const humanResources = mapHumanToResources(humans);
+    const depinResources = mapDePINToResources(depinDevices);
+
     const rawResources: ResourceWithAgent[] = [
-      ...(await mapAgentsToResources(agents)),
+      ...agentResources,
       ...gpuResources,
-      ...mapHumanToResources(humans),
-      ...mapDePINToResources(depinDevices),
+      ...humanResources,
+      ...depinResources,
+      // Demo seed: verified agents tied to operator World ID
+      ...(agentResources.length === 0 ? getDemoAgents() : []),
+      // Demo seed: DePIN devices
+      ...(depinResources.length === 0 ? getDemoDePIN() : []),
     ];
 
     // Enrich with reputation signals (best-effort, never fails the whole request)
@@ -216,6 +224,23 @@ function mapDePINToResources(devices: OnChainDePINDevice[]): ResourceWithAgent[]
     verificationType: "tee" as const,
     _agentId: d.agentId,
   }));
+}
+
+// --- Demo seed data (shown when on-chain registries are empty) ---
+
+function getDemoAgents(): ResourceWithAgent[] {
+  return [
+    { type: "agent", name: "Orion", subtitle: "Signal Analysis · World ID Verified", reputation: 95, verified: true, chain: "0g", price: "$0.01/query", verificationType: "world-id", _agentId: "27" },
+    { type: "agent", name: "Vega", subtitle: "Market Maker · World ID Verified", reputation: 90, verified: true, chain: "0g", price: "$0.02/trade", verificationType: "world-id", _agentId: "28" },
+    { type: "agent", name: "Lyra", subtitle: "Compliance Auditor · World ID Verified", reputation: 93, verified: true, chain: "0g", price: "$0.005/check", verificationType: "world-id", _agentId: "29" },
+  ];
+}
+
+function getDemoDePIN(): ResourceWithAgent[] {
+  return [
+    { type: "depin", name: "Tesla Model Y Fleet", subtitle: "Autonomous · 12 vehicles · Los Angeles", reputation: 88, verified: true, chain: "hedera", price: "$0.45/mi", verificationType: "tee", _agentId: "31" },
+    { type: "depin", name: "SkyLens Satellite", subtitle: "30cm resolution · Global coverage", reputation: 84, verified: true, chain: "hedera", price: "$2.50/photo", verificationType: "tee", _agentId: "32" },
+  ];
 }
 
 type ValidateFn = (agentId: bigint, tag: string) => Promise<{ count: bigint; avgResponse: number }>;
