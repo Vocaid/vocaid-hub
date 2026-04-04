@@ -111,7 +111,7 @@ export function PredictionCard({
   }
 
   return (
-    <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3">
+    <div className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-3 shadow-sm">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-chain-hedera/10 shrink-0">

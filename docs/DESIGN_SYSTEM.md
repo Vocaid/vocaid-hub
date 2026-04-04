@@ -13,7 +13,7 @@
 | Token | Hex | Usage |
 |-------|-----|-------|
 | `primary` | `#0F172A` | Headers, primary text, nav |
-| `primary-accent` | `#3B82F6` | Links, active states, CTAs |
+| `primary-accent` | `#8247E5` | Links, active states, CTAs |
 | `secondary` | `#64748B` | Secondary text, labels |
 | `background` | `#FFFFFF` | Page background |
 | `surface` | `#F8FAFC` | Cards, elevated surfaces |
@@ -24,14 +24,14 @@
 | Chain | Color | Hex | Usage |
 |-------|-------|-----|-------|
 | World | Blue | `#3B82F6` | World ID verified badges, trust indicators |
-| 0G | Green | `#10B981` | GPU verification, compute indicators |
+| 0G | Violet | `#7C3AED` | GPU verification, compute indicators |
 | Hedera | Purple | `#8247E5` | USDC payments, prediction markets |
 
 ### Status Colors
 
 | Status | Hex | Usage |
 |--------|-----|-------|
-| Verified | `#10B981` | TEE attestation passed, World ID verified |
+| Verified | `#8247E5` | TEE attestation passed, World ID verified |
 | Pending | `#F59E0B` | Awaiting verification, transaction pending |
 | Failed | `#EF4444` | Attestation failed, blocked by Shield |
 | Inactive | `#94A3B8` | Offline provider, expired |
@@ -46,11 +46,11 @@
       colors: {
         chain: {
           world: '#3B82F6',
-          og: '#10B981',
+          og: '#7C3AED',
           hedera: '#8247E5',
         },
         status: {
-          verified: '#10B981',
+          verified: '#8247E5',
           pending: '#F59E0B',
           failed: '#EF4444',
           inactive: '#94A3B8',

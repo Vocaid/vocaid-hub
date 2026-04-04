@@ -41,7 +41,7 @@ export function ResourceCard({
   const { icon: TypeIcon, label } = typeConfig[type];
 
   return (
-    <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
+    <div className={`rounded-xl border p-4 flex flex-col gap-3 shadow-sm ${
       verified
         ? 'border-border-card bg-surface'
         : 'border-status-inactive/30 bg-surface/80 opacity-75'

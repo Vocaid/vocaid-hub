@@ -13,18 +13,18 @@
 
   /* Brand */
   --color-primary: #0f172a;
-  --color-primary-accent: #3b82f6;
+  --color-primary-accent: #8247e5;
   --color-secondary: #64748b;
   --color-surface: #f8fafc;
   --color-border-card: #e2e8f0;
 
   /* Chain colors */
   --color-chain-world: #3b82f6;
-  --color-chain-og: #10b981;
+  --color-chain-og: #7c3aed;
   --color-chain-hedera: #8247e5;
 
   /* Status colors */
-  --color-status-verified: #10b981;
+  --color-status-verified: #8247e5;
   --color-status-pending: #f59e0b;
   --color-status-failed: #ef4444;
   --color-status-inactive: #94a3b8;
@@ -111,4 +111,20 @@ body {
 /* World App bottom bar reserve */
 .pb-world-safe {
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Focus ring utility */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus {
+  box-shadow: 0 0 0 2px var(--color-primary-accent), 0 0 0 4px rgba(130, 71, 229, 0.2);
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

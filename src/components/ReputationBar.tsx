@@ -5,7 +5,7 @@ export function ReputationBar({ score }: { score: number }) {
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-border-card overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-chain-og to-chain-world transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-chain-hedera to-primary-accent transition-all duration-500"
           style={{ width: `${clamped}%` }}
         />
       </div>

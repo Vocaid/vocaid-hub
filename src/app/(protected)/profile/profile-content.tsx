@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Globe, ShieldCheck, Zap, Eye, TrendingUp, Search, Bot, Loader2, Plus } from 'lucide-react';
+import { Globe, ShieldCheck, Zap, Eye, TrendingUp, Search, Bot, Plus } from 'lucide-react';
 import { ChainBadge } from '@/components/ChainBadge';
+import { RegisterAgentModal } from '@/components/RegisterAgentModal';
 
 interface AgentData {
   agentId: string;
@@ -31,34 +32,7 @@ function truncateAddress(addr?: string): string {
 }
 
 export function ProfileContent({ username, walletAddress, agents }: ProfileContentProps) {
-  const [registering, setRegistering] = useState(false);
-  const [registerError, setRegisterError] = useState<string | null>(null);
-  const [registerSuccess, setRegisterSuccess] = useState(false);
-
-  async function handleRegisterAgent() {
-    setRegistering(true);
-    setRegisterError(null);
-    try {
-      const res = await fetch('/api/agents/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: 'Custom Agent',
-          agentType: 'general',
-          capabilities: ['inference', 'prediction'],
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Registration failed');
-      }
-      setRegisterSuccess(true);
-    } catch (err) {
-      setRegisterError(err instanceof Error ? err.message : 'Failed to register');
-    } finally {
-      setRegistering(false);
-    }
-  }
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   return (
     <>
@@ -138,28 +112,20 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
       </div>
 
       {/* Register Agent CTA */}
-      {registerSuccess ? (
-        <div className="rounded-lg bg-status-verified/10 border border-status-verified/30 p-3 text-center text-sm text-status-verified">
-          Agent registered successfully
-        </div>
-      ) : (
-        <button
-          onClick={handleRegisterAgent}
-          disabled={registering}
-          className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-chain-hedera text-white text-sm font-semibold w-full active:scale-95 transition-transform disabled:opacity-50"
-        >
-          {registering ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-          Register New Agent
-        </button>
-      )}
-      {registerError && (
-        <div className="rounded-lg bg-status-failed/10 border border-status-failed/30 p-3 text-center text-sm text-status-failed">
-          {registerError}
-        </div>
+      <button
+        onClick={() => setShowRegisterModal(true)}
+        className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary-accent text-white text-sm font-semibold w-full active:scale-95 transition-transform cursor-pointer"
+      >
+        <Plus className="w-4 h-4" />
+        Register New Agent
+      </button>
+
+      {showRegisterModal && (
+        <RegisterAgentModal
+          walletAddress={walletAddress ?? ''}
+          onClose={() => setShowRegisterModal(false)}
+          onRegistered={() => setShowRegisterModal(false)}
+        />
       )}
     </>
   );
