@@ -102,7 +102,7 @@ export function AgentDecisionContent({ decision, resourceType, signal, compact =
             <div key={i} className="flex flex-col items-center gap-1 flex-1">
               <button
                 onClick={() => { setAutoPlay(false); setCurrentStep(i); }}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
+                className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer ${
                   done ? 'bg-status-verified text-white' :
                   active ? 'bg-primary-accent text-white shadow-lg scale-110' :
                   'bg-surface border border-border-card text-secondary'
@@ -119,7 +119,7 @@ export function AgentDecisionContent({ decision, resourceType, signal, compact =
       </div>
 
       {/* Step Content */}
-      <div className="min-h-[300px]">
+      <div className={compact ? 'min-h-[180px]' : 'min-h-[300px]'}>
         {currentStep === 0 && <DiscoverStep providers={data.providers} />}
         {currentStep === 1 && <RankStep providers={data.providers} reasoning={data.reasoning} />}
         {currentStep === 2 && <VerifyStep providers={data.providers} />}
