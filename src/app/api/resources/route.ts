@@ -157,7 +157,9 @@ interface AgentData {
 }
 
 async function mapAgentsToResources(agents: AgentData[]): Promise<ResourceWithAgent[]> {
-  return Promise.all(agents.map(async (a) => {
+  // Only show agents with World ID verification (operator_world_id set)
+  const verified = agents.filter((a) => !!a.operatorWorldId);
+  return Promise.all(verified.map(async (a) => {
     let reputation = 85;
     try {
       const rep = await getReputationSummary(BigInt(a.agentId));
