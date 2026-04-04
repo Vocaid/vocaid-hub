@@ -7,7 +7,8 @@ import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-import { pay, Tokens } from '@worldcoin/minikit-js/commands';
+// MiniKit.pay() removed — uses mainnet USDC with $0.10 min, not compatible with testnet demo
+// x402 via Hedera testnet is used instead
 
 type FilterTab = 'all' | ResourceType;
 
@@ -78,37 +79,8 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         return;
       }
 
-      // Step 2: Try MiniKit.pay() (native World App payment)
-      let miniKitSuccess = false;
-      let miniKitTxHash = '';
-
-      try {
-        const payResult = await pay({
-          reference: initData.paymentId,
-          to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
-          tokens: [{ symbol: Tokens.USDC, token_amount: initData.requirements.amount }],
-          description: `Lease ${resource.name}`,
-          fallback: () => null,
-        });
-
-        if (payResult.executedWith === 'minikit' && payResult.data) {
-          miniKitSuccess = true;
-          miniKitTxHash = (payResult.data as { transactionId?: string }).transactionId ?? '';
-        }
-      } catch {
-        // Not in World App or pay failed — fall through to x402
-      }
-
-      if (miniKitSuccess) {
-        setPaymentResult({
-          amount: initData.requirements.amount,
-          txHash: miniKitTxHash,
-          resourceName: resource.name,
-        });
-        return;
-      }
-
-      // Step 3: Fallback — x402 payment via server
+      // Step 2: x402 testnet payment via Hedera (skip MiniKit.pay — requires mainnet + $0.10 min)
+      // MiniKit.pay() uses real USDC on World Chain mainnet which doesn't work for testnet demo
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,
