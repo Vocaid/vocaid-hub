@@ -128,3 +128,14 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Center World ID popup on mobile instead of bottom-sheet */
+@media (max-width: 1024px) {
+  .idkit-backdrop {
+    align-items: center !important;
+    padding: 16px !important;
+  }
+  .idkit-modal {
+    border-radius: 24px !important;
+  }
+}

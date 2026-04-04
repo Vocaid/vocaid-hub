@@ -44,8 +44,8 @@ export function WorldIdGateModal({ open, onClose, onVerified }: WorldIdGateModal
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
-      <div className="w-full max-w-[428px] rounded-t-2xl bg-white p-6 pb-10 flex flex-col gap-5 animate-slide-up">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-[428px] rounded-2xl bg-white p-6 pb-10 flex flex-col gap-5 animate-scale-in">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -52,6 +52,10 @@ export const Verify = () => {
         signal: walletAddress ? `${walletAddress.slice(0, 8)}...` : 'EMPTY',
       });
 
+      console.log('[verify] Step 2a: Initializing IDKit WASM...');
+      await IDKit.init();
+      console.log('[verify] Step 2a OK: WASM initialized');
+
       const request = await IDKit.request({
         app_id: process.env.NEXT_PUBLIC_APP_ID as `app_${string}`,
         action: 'verify-human',
