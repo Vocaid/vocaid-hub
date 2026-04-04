@@ -1,10 +1,10 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
 const AGENT_NAMES = ['seer', 'edge', 'shield', 'lens'] as const;
 
-const wellKnownRoutes: FastifyPluginAsync = async (app) => {
+export default async function wellKnownRoutes(app: FastifyInstance) {
   // GET /.well-known/agent-card.json — A2A discovery endpoint
   app.get('/.well-known/agent-card.json', async (request, reply) => {
     try {
@@ -36,9 +36,7 @@ const wellKnownRoutes: FastifyPluginAsync = async (app) => {
         .send(card);
     } catch (err) {
       request.log.error(err, 'Failed to build agent card');
-      return reply.status(500).send({ error: 'Failed to build agent card' });
+      return reply.code(500).send({ error: 'Failed to build agent card' });
     }
   });
-};
-
-export default wellKnownRoutes;
+}

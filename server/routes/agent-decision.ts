@@ -3,7 +3,7 @@ import { fetchAllResources } from './resources.js';
 
 export default async function agentDecisionRoutes(app: FastifyInstance) {
   // GET /api/agent-decision — Rank resources by composite score
-  app.get('/agent-decision', async (request) => {
+  app.get('/agent-decision', async (request, reply) => {
     try {
       // Import resources logic directly instead of HTTP self-fetch
       const resources = await fetchAllResources('quality', undefined);

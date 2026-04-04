@@ -1,4 +1,4 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { InitiatePaymentSchema, PaymentBodySchema } from '../schemas/payments.js';
 import { verifyPayment, settlePayment } from '@/lib/blocky402';
@@ -6,7 +6,6 @@ import { logAuditMessage } from '@/lib/hedera';
 import { executeAgentAction } from '@/lib/hedera-agent';
 import { giveFeedback } from '@/lib/reputation';
 import { readPayments, addPayment } from '@/lib/payment-ledger';
-import { isVerifiedOnChain } from '@/lib/world-id';
 
 const USDC_TOKEN_ID = process.env.HEDERA_USDC_TOKEN ?? '0.0.429274';
 const AUDIT_TOPIC_ID = process.env.HEDERA_AUDIT_TOPIC ?? '';
@@ -21,7 +20,7 @@ function getDefaultPrice(resourceType?: string): string {
   }
 }
 
-const paymentRoutes: FastifyPluginAsync = async (app) => {
+export default async function paymentRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/payments — List recent payments
@@ -32,20 +31,12 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
   // POST /api/payments — x402 USDC payment via Blocky402
   typed.post('/payments', {
     schema: { body: PaymentBodySchema },
+    preHandler: [app.requireWorldId],
   }, async (request, reply) => {
-    // World ID gate (inline check — uses session from auth plugin if available)
-    const session = (request as unknown as Record<string, unknown>).session as { user?: { id?: string; walletAddress?: string } } | undefined;
-    if (session?.user?.walletAddress) {
-      const verified = await isVerifiedOnChain(session.user.walletAddress as `0x${string}`);
-      if (!verified) {
-        return reply.status(403).send({ error: 'World ID verification required' });
-      }
-    }
-
     const paymentHeader = request.headers['x-payment'] as string | undefined;
 
     if (!paymentHeader) {
-      return reply.status(402).header('X-PAYMENT-REQUIRED', JSON.stringify({
+      return reply.code(402).header('X-PAYMENT-REQUIRED', JSON.stringify({
         network: 'hedera-testnet',
         token: USDC_TOKEN_ID,
         amount: '0.01',
@@ -66,7 +57,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       // Step 1: Verify the payment with Blocky402
       const verification = await verifyPayment(paymentHeader);
       if (!verification.valid) {
-        return reply.status(402).send({ error: 'Payment verification failed' });
+        return reply.code(402).send({ error: 'Payment verification failed' });
       }
 
       // Step 2: Settle the payment on-chain
@@ -141,7 +132,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       };
     } catch (err) {
       request.log.error(err, 'Payment processing error');
-      return reply.status(500).send({ error: 'Payment processing failed' });
+      return reply.code(500).send({ error: 'Payment processing failed' });
     }
   });
 
@@ -166,6 +157,4 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     };
   });
-};
-
-export default paymentRoutes;
+}

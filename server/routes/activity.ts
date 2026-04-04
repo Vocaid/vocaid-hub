@@ -1,4 +1,6 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import { getPublicClient } from '@/lib/og-chain';
+import { addresses, REPUTATION_REGISTRY_ABI } from '@/lib/contracts';
 
 interface ActivityItem {
   id: string;
@@ -12,7 +14,7 @@ interface ActivityItem {
   txHash?: string;
 }
 
-const activityRoutes: FastifyPluginAsync = async (app) => {
+export default async function activityRoutes(app: FastifyInstance) {
   // GET /api/activity — Recent on-chain activity
   app.get('/activity', async (request) => {
     try {
@@ -34,9 +36,7 @@ const activityRoutes: FastifyPluginAsync = async (app) => {
       return { activities: [] };
     }
   });
-};
-
-export default activityRoutes;
+}
 
 // ---------------------------------------------------------------------------
 // Data fetchers
@@ -44,9 +44,6 @@ export default activityRoutes;
 
 async function fetchReputationEvents(): Promise<ActivityItem[]> {
   try {
-    const { getPublicClient } = await import('@/lib/og-chain');
-    const { addresses, REPUTATION_REGISTRY_ABI } = await import('@/lib/contracts');
-
     const client = getPublicClient();
     const reputationAddr = addresses.reputationRegistry();
     if (!reputationAddr) return [];

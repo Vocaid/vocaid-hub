@@ -1,6 +1,6 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
-import { ProposalQuerySchema, ProposalActionSchema } from '../schemas/resources.js';
+import { ProposalQuerySchema, ProposalActionSchema } from '../schemas/proposals.js';
 import { ethers } from 'ethers';
 
 const PROPOSAL_ABI = [
@@ -30,7 +30,7 @@ function getContract(withSigner = false) {
   return new ethers.Contract(address, PROPOSAL_ABI, provider);
 }
 
-const proposalRoutes: FastifyPluginAsync = async (app) => {
+export default async function proposalRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/proposals — List proposals
@@ -98,7 +98,7 @@ const proposalRoutes: FastifyPluginAsync = async (app) => {
       return { proposals };
     } catch (err) {
       request.log.error(err, '[proposals/GET]');
-      return reply.status(500).send({ error: 'Failed to fetch proposals' });
+      return reply.code(500).send({ error: 'Failed to fetch proposals' });
     }
   });
 
@@ -149,9 +149,7 @@ const proposalRoutes: FastifyPluginAsync = async (app) => {
       return { success: true, txHash: receipt.hash };
     } catch (err) {
       request.log.error(err, '[proposals/POST]');
-      return reply.status(500).send({ error: 'Failed to process proposal' });
+      return reply.code(500).send({ error: 'Failed to process proposal' });
     }
   });
-};
-
-export default proposalRoutes;
+}

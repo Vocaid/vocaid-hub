@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react';
 import {
   Bot, Check, Cpu, ExternalLink, Loader2, ShieldCheck, User, Wallet, Wifi, Zap,
 } from 'lucide-react';
+import { WorldIdGateModal } from '@/components/WorldIdGateModal';
+import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 
 /* ─── Types ────────────────────────────────────────── */
 
@@ -13,38 +15,111 @@ type Step = 1 | 2 | 3;
 type StepStatus = 'idle' | 'loading' | 'success' | 'error';
 interface StepState { status: StepStatus; error?: string }
 
+/** A single form field — either a text input or a select dropdown. */
+interface FieldDef {
+  key: string;
+  type: 'text' | 'select';
+  placeholder: string;
+  options?: { id: string; label: string }[];
+  required?: boolean;
+}
+
 const OG_EXPLORER = 'https://chainscan-galileo.0g.ai';
 
-const TYPE_CONFIG = {
-  gpu: { icon: Cpu, label: 'GPU Compute', color: 'text-primary-accent' },
-  agent: { icon: Bot, label: 'AI Agent', color: 'text-primary-accent' },
-  human: { icon: User, label: 'Human Skills', color: 'text-primary-accent' },
-  depin: { icon: Wifi, label: 'DePIN', color: 'text-primary-accent' },
-} as const;
+/* ─── Per-type configuration (data, not JSX) ──────── */
 
-const AGENT_CAPABILITIES = [
-  { id: 'signal-analysis', label: 'Signal Analysis' },
-  { id: 'code-review', label: 'Code Review' },
-  { id: 'data-processing', label: 'Data Processing' },
-  { id: 'inference', label: 'AI Inference' },
-  { id: 'translation', label: 'Translation' },
-];
+const TYPE_META: Record<ResourceType, {
+  icon: typeof Cpu;
+  label: string;
+  fields: FieldDef[];
+  verifyLabel: string;
+  verifyLoadingLabel: string;
+  /** Build agentURI + role from form values for /api/agents/register */
+  buildPayload?: (form: Record<string, string>) => { agentURI: string; role: string };
+}> = {
+  gpu: {
+    icon: Cpu,
+    label: 'GPU Compute',
+    fields: [], // GPU fields are auto-discovered, no manual input
+    verifyLabel: 'Verify Node on 0G',
+    verifyLoadingLabel: 'Discovering node...',
+  },
+  agent: {
+    icon: Bot,
+    label: 'AI Agent',
+    fields: [
+      { key: 'name', type: 'text', placeholder: 'Agent name (e.g. Orion, DataBot-7)', required: true },
+      {
+        key: 'capability', type: 'select', placeholder: 'Select capability...', required: true,
+        options: [
+          { id: 'signal-analysis', label: 'Signal Analysis' },
+          { id: 'code-review', label: 'Code Review' },
+          { id: 'data-processing', label: 'Data Processing' },
+          { id: 'inference', label: 'AI Inference' },
+          { id: 'translation', label: 'Translation' },
+        ],
+      },
+    ],
+    verifyLabel: 'Verify Identity',
+    verifyLoadingLabel: 'Verifying...',
+    buildPayload: (f) => ({
+      agentURI: `resource-agent:${f.capability}:${f.name}`,
+      role: 'resource-agent',
+    }),
+  },
+  human: {
+    icon: User,
+    label: 'Human Skills',
+    fields: [
+      { key: 'name', type: 'text', placeholder: 'Skill name (e.g. Rust Developer L4)', required: true },
+      {
+        key: 'category', type: 'select', placeholder: 'Select category...', required: true,
+        options: [
+          { id: 'engineering', label: 'Engineering — Rust, Solidity, ML/AI' },
+          { id: 'design', label: 'Design — UI/UX, Brand, Motion' },
+          { id: 'operations', label: 'Operations — DevOps, QA, PM' },
+          { id: 'research', label: 'Research — Security, Protocol, Data' },
+        ],
+      },
+    ],
+    verifyLabel: 'Verify Identity',
+    verifyLoadingLabel: 'Verifying...',
+    buildPayload: (f) => ({
+      agentURI: `human:${f.category}:${f.name}`,
+      role: 'human-provider',
+    }),
+  },
+  depin: {
+    icon: Wifi,
+    label: 'DePIN',
+    fields: [
+      { key: 'name', type: 'text', placeholder: 'Device name (e.g. Tesla Powerwall)' },
+      {
+        key: 'deviceType', type: 'select', placeholder: 'Select type...', required: true,
+        options: [
+          { id: 'compute', label: 'Compute — CPU/GPU bare metal' },
+          { id: 'storage', label: 'Storage — NVMe, HDD arrays' },
+          { id: 'bandwidth', label: 'Bandwidth — Network capacity' },
+          { id: 'energy', label: 'Energy — Solar, grid power' },
+        ],
+      },
+      { key: 'capacity', type: 'text', placeholder: 'Capacity (e.g. 13.5 kWh, 5kW)' },
+    ],
+    verifyLabel: 'Verify Identity',
+    verifyLoadingLabel: 'Verifying...',
+    buildPayload: (f) => ({
+      agentURI: `depin:${f.deviceType}:${f.name || 'device'}:${f.capacity || ''}`,
+      role: 'depin-provider',
+    }),
+  },
+};
 
-const SKILL_CATEGORIES = [
-  { id: 'engineering', label: 'Engineering — Rust, Solidity, ML/AI' },
-  { id: 'design', label: 'Design — UI/UX, Brand, Motion' },
-  { id: 'operations', label: 'Operations — DevOps, QA, PM' },
-  { id: 'research', label: 'Research — Security, Protocol, Data' },
-];
+/* ─── Shared input styles ─────────────────────────── */
 
-const DEPIN_TYPES = [
-  { id: 'compute', label: 'Compute — CPU/GPU bare metal' },
-  { id: 'storage', label: 'Storage — NVMe, HDD arrays' },
-  { id: 'bandwidth', label: 'Bandwidth — Network capacity' },
-  { id: 'energy', label: 'Energy — Solar, grid power' },
-];
+const INPUT_CLASS = 'w-full min-h-11 rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30';
+const SELECT_CLASS = `${INPUT_CLASS} cursor-pointer`;
 
-/* ─── Helper Components ────────────────────────────── */
+/* ─── Helper Components ───────────────────────────── */
 
 function StepIndicator({ step, current, state, label }: {
   step: Step; current: Step; state: StepState; label: string;
@@ -100,7 +175,46 @@ function truncateAddress(addr: string) {
   return addr.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;
 }
 
-/* ─── Main Component ───────────────────────────────── */
+/** Generic field renderer — renders any FieldDef[] with a shared form state. */
+function FieldRenderer({ fields, form, onChange }: {
+  fields: FieldDef[];
+  form: Record<string, string>;
+  onChange: (key: string, value: string) => void;
+}) {
+  if (fields.length === 0) {
+    return <p className="text-xs text-secondary">GPU provider details will be discovered automatically from the 0G network.</p>;
+  }
+  return (
+    <>
+      {fields.map((f) =>
+        f.type === 'select' ? (
+          <select
+            key={f.key}
+            value={form[f.key] ?? ''}
+            onChange={(e) => onChange(f.key, e.target.value)}
+            className={SELECT_CLASS}
+          >
+            <option value="">{f.placeholder}</option>
+            {f.options?.map((o) => (
+              <option key={o.id} value={o.id}>{o.label}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            key={f.key}
+            type="text"
+            placeholder={f.placeholder}
+            value={form[f.key] ?? ''}
+            onChange={(e) => onChange(f.key, e.target.value)}
+            className={INPUT_CLASS}
+          />
+        ),
+      )}
+    </>
+  );
+}
+
+/* ─── Main Component ──────────────────────────────── */
 
 export default function ResourceStepper({ defaultType }: { defaultType?: ResourceType }) {
   const { data: session } = useSession();
@@ -108,26 +222,29 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
     ?? (session?.user as Record<string, string> | undefined)?.id
     ?? null;
 
+  const { isVerified, recheckStatus } = useWorldIdGate();
+  const [showGateModal, setShowGateModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'verify' | 'register' | null>(null);
+
   const [resourceType, setResourceType] = useState<ResourceType>(defaultType ?? 'gpu');
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [step1, setStep1] = useState<StepState>({ status: 'idle' });
   const [step2, setStep2] = useState<StepState>({ status: 'idle' });
   const [step3, setStep3] = useState<StepState>({ status: 'idle' });
 
-  // Type-specific form fields
-  const [agentName, setAgentName] = useState('');
-  const [capability, setCapability] = useState('');
-  const [skillName, setSkillName] = useState('');
-  const [skillCategory, setSkillCategory] = useState('');
-  const [deviceName, setDeviceName] = useState('');
-  const [depinType, setDepinType] = useState('');
-  const [depinCapacity, setDepinCapacity] = useState('');
+  // Single form state for all field values
+  const [form, setForm] = useState<Record<string, string>>({});
+  const updateField = (key: string, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
   // Verify result
   const [verifyInfo, setVerifyInfo] = useState<Record<string, string> | null>(null);
 
   // Registration result
   const [registration, setRegistration] = useState<{ agentId: string; txHash: string } | null>(null);
+
+  const meta = TYPE_META[resourceType];
+  const TypeIcon = meta.icon;
 
   // Auto-complete step 1 if wallet available
   useEffect(() => {
@@ -145,26 +262,29 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
     setStep3({ status: 'idle' });
     setVerifyInfo(null);
     setRegistration(null);
+    setForm({});
   }
 
-  // Can proceed to verify?
+  // Can proceed to verify? All required fields must be filled.
   function canVerify(): boolean {
-    switch (resourceType) {
-      case 'gpu': return !!walletAddress;
-      case 'agent': return !!agentName && !!capability;
-      case 'human': return !!skillName && !!skillCategory;
-      case 'depin': return !!depinType;
-      default: return false;
-    }
+    if (!walletAddress) return false;
+    return meta.fields
+      .filter((f) => f.required)
+      .every((f) => !!form[f.key]);
   }
 
   /* ── Step 2: Verify ──────────────────────────────── */
 
   const handleVerify = useCallback(async () => {
+    // Gate: require World ID before verify step
+    if (!isVerified) {
+      setPendingAction('verify');
+      setShowGateModal(true);
+      return;
+    }
     setStep2({ status: 'loading' });
     try {
       if (resourceType === 'gpu') {
-        // GPU: discover service from 0G broker
         const res = await fetch(`/api/gpu/list?address=${encodeURIComponent(walletAddress!)}`);
         if (!res.ok) throw new Error('Could not discover service on 0G network');
         const data = await res.json();
@@ -175,7 +295,6 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
           tee: svc.teeSignerAcknowledged ? 'Verified' : 'Pending',
         });
       } else {
-        // Agent/Human/DePIN: just verify wallet is valid
         setVerifyInfo({
           wallet: walletAddress!,
           type: resourceType,
@@ -193,11 +312,17 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
       setStep2({ status: 'success' });
       setCurrentStep(3);
     }
-  }, [resourceType, walletAddress]);
+  }, [resourceType, walletAddress, isVerified]);
 
   /* ── Step 3: Register on ERC-8004 ────────────────── */
 
   const handleRegister = useCallback(async () => {
+    // Gate: require World ID before registration
+    if (!isVerified) {
+      setPendingAction('register');
+      setShowGateModal(true);
+      return;
+    }
     setStep3({ status: 'loading' });
     try {
       let res: Response;
@@ -213,33 +338,13 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
           }),
         });
       } else {
-        // Agent, Human, DePIN all use /api/agents/register
-        let agentURI: string;
-        let role: string;
-
-        switch (resourceType) {
-          case 'agent':
-            agentURI = `resource-agent:${capability}:${agentName}`;
-            role = 'resource-agent';
-            break;
-          case 'human':
-            agentURI = `human:${skillCategory}:${skillName}`;
-            role = 'human-provider';
-            break;
-          case 'depin':
-            agentURI = `depin:${depinType}:${deviceName || 'device'}`;
-            role = 'depin-provider';
-            break;
-          default:
-            throw new Error('Unknown type');
-        }
-
+        const payload = TYPE_META[resourceType].buildPayload!(form);
         res = await fetch('/api/agents/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            agentURI,
-            role,
+            agentURI: payload.agentURI,
+            role: payload.role,
             operatorWorldId: walletAddress,
             operatorAddress: walletAddress,
           }),
@@ -248,6 +353,13 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        // 403 = World ID not verified — show gate modal instead of generic error
+        if (res.status === 403) {
+          setPendingAction('register');
+          setShowGateModal(true);
+          setStep3({ status: 'idle' });
+          return;
+        }
         throw new Error(data.error || 'Registration failed');
       }
 
@@ -263,7 +375,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
         error: err instanceof Error ? err.message : 'Registration failed',
       });
     }
-  }, [resourceType, walletAddress, verifyInfo, agentName, capability, skillName, skillCategory, deviceName, depinType]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [resourceType, walletAddress, verifyInfo, form, isVerified]);
 
   /* ── Render ──────────────────────────────────────── */
 
@@ -275,14 +387,12 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
     );
   }
 
-  const TypeIcon = TYPE_CONFIG[resourceType].icon;
-
   return (
     <div className="mx-auto w-full max-w-[428px] space-y-4">
       {/* Type Selector */}
       <div className="flex gap-1 rounded-lg border border-border-card bg-surface p-1">
         {(['gpu', 'agent', 'human', 'depin'] as const).map((t) => {
-          const Icon = TYPE_CONFIG[t].icon;
+          const Icon = TYPE_META[t].icon;
           return (
             <button
               key={t}
@@ -314,85 +424,10 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
             </div>
           )}
 
-          {/* Type-specific fields */}
+          {/* Type-specific fields — rendered from config */}
           {currentStep >= 2 && (
             <div className="mt-3 flex flex-col gap-3 animate-fade-in">
-              {resourceType === 'agent' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Agent name (e.g. Orion, DataBot-7)"
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
-                  />
-                  <select
-                    value={capability}
-                    onChange={(e) => setCapability(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
-                  >
-                    <option value="">Select capability...</option>
-                    {AGENT_CAPABILITIES.map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {resourceType === 'human' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Skill name (e.g. Rust Developer L4)"
-                    value={skillName}
-                    onChange={(e) => setSkillName(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
-                  />
-                  <select
-                    value={skillCategory}
-                    onChange={(e) => setSkillCategory(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
-                  >
-                    <option value="">Select category...</option>
-                    {SKILL_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {resourceType === 'depin' && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Device name (e.g. Tesla Powerwall)"
-                    value={deviceName}
-                    onChange={(e) => setDeviceName(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
-                  />
-                  <select
-                    value={depinType}
-                    onChange={(e) => setDepinType(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30 cursor-pointer"
-                  >
-                    <option value="">Select type...</option>
-                    {DEPIN_TYPES.map((t) => (
-                      <option key={t.id} value={t.id}>{t.label}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Capacity (e.g. 13.5 kWh, 5kW)"
-                    value={depinCapacity}
-                    onChange={(e) => setDepinCapacity(e.target.value)}
-                    className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-accent/30"
-                  />
-                </>
-              )}
-
-              {resourceType === 'gpu' && (
-                <p className="text-xs text-secondary">GPU provider details will be discovered automatically from the 0G network.</p>
-              )}
+              <FieldRenderer fields={meta.fields} form={form} onChange={updateField} />
             </div>
           )}
         </div>
@@ -400,8 +435,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
         <StepConnector complete={step1.status === 'success'} />
 
         {/* ── Step 2: Verify ───────────────────────── */}
-        <StepIndicator step={2} current={currentStep} state={step2}
-          label={resourceType === 'gpu' ? 'Verify Node' : 'Verify Identity'} />
+        <StepIndicator step={2} current={currentStep} state={step2} label={meta.verifyLabel} />
         <div className="ml-11 mt-3 mb-1">
           {step2.status === 'success' && verifyInfo ? (
             <div className="space-y-2 rounded-lg bg-surface p-3">
@@ -428,7 +462,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
                     <span className="text-xs font-medium text-status-verified">Identity Verified</span>
                   </div>
                   <InfoRow label="Wallet" value={truncateAddress(walletAddress)} />
-                  <InfoRow label="Type" value={TYPE_CONFIG[resourceType].label} />
+                  <InfoRow label="Type" value={meta.label} />
                 </>
               )}
             </div>
@@ -446,9 +480,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
               className="w-full rounded-lg bg-primary-accent px-4 py-3 text-sm font-semibold text-white shadow-md shadow-primary-accent/20 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
             >
               {step2.status === 'loading' ? <Loader2 className="h-4 w-4 animate-spin" /> : <TypeIcon className="h-4 w-4" />}
-              {step2.status === 'loading'
-                ? resourceType === 'gpu' ? 'Discovering node...' : 'Verifying...'
-                : resourceType === 'gpu' ? 'Verify Node on 0G' : 'Verify Identity'}
+              {step2.status === 'loading' ? meta.verifyLoadingLabel : meta.verifyLabel}
             </button>
           ) : null}
         </div>
@@ -466,7 +498,7 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
               />
               <SuccessRow
                 icon={<TypeIcon className="h-4 w-4 text-status-verified" />}
-                text={`${TYPE_CONFIG[resourceType].label} Registered`}
+                text={`${meta.label} Registered`}
               />
               <SuccessRow
                 icon={<Zap className="h-4 w-4 text-status-verified" />}
@@ -511,6 +543,24 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
           ) : null}
         </div>
       </div>
+
+      {/* World ID verification gate modal */}
+      <WorldIdGateModal
+        open={showGateModal}
+        onClose={() => { setShowGateModal(false); recheckStatus(); }}
+        onVerified={async () => {
+          setShowGateModal(false);
+          await recheckStatus();
+          // Auto-resume the interrupted action
+          if (pendingAction === 'verify') {
+            setPendingAction(null);
+            handleVerify();
+          } else if (pendingAction === 'register') {
+            setPendingAction(null);
+            handleRegister();
+          }
+        }}
+      />
     </div>
   );
 }

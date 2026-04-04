@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useMemo, useRef } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
-import { Verify } from '@/components/Verify';
+import { WorldIdGateModal } from '@/components/WorldIdGateModal';
+import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
@@ -31,32 +31,15 @@ function parsePrice(price: string): string {
 }
 
 export function MarketplaceContent({ resources }: { resources: ResourceCardProps[] }) {
-  const { data: session } = useSession();
+  const { isVerified, recheckStatus } = useWorldIdGate();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [showRating, setShowRating] = useState<{ name: string; agentId?: number } | null>(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [payingResource, setPayingResource] = useState<string | null>(null);
-  const [worldIdVerified, setWorldIdVerified] = useState<boolean | null>(null);
-  const [showVerify, setShowVerify] = useState(false);
-
-  // Check World ID verification status on mount
-  const walletAddress = (session?.user as { walletAddress?: string } | undefined)?.walletAddress;
-  const checkVerification = useCallback(async () => {
-    if (!walletAddress) return;
-    try {
-      const res = await fetch(`/api/world-id/check?address=${walletAddress}`);
-      const data = await res.json();
-      setWorldIdVerified(data.verified === true);
-    } catch {
-      setWorldIdVerified(false);
-    }
-  }, [walletAddress]);
-
-  useEffect(() => {
-    checkVerification();
-  }, [checkVerification]);
+  const [showGateModal, setShowGateModal] = useState(false);
+  const pendingHireRef = useRef<{ name: string; price: string; type: ResourceType } | null>(null);
 
   const filtered = useMemo(
     () => activeTab === 'all' ? resources : resources.filter((r) => r.type === activeTab),
@@ -67,8 +50,9 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
     if (paying) return;
 
     // Gate: require World ID verification before lease
-    if (!worldIdVerified) {
-      setShowVerify(true);
+    if (!isVerified) {
+      pendingHireRef.current = resource;
+      setShowGateModal(true);
       return;
     }
 
@@ -166,9 +150,9 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
   return (
     <>
       {/* World ID verification banner */}
-      {worldIdVerified === false && !showVerify && (
+      {isVerified === false && (
         <button
-          onClick={() => setShowVerify(true)}
+          onClick={() => setShowGateModal(true)}
           className="flex items-center gap-3 w-full p-3 rounded-xl border border-amber-200 bg-amber-50 text-left animate-fade-in"
         >
           <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
@@ -179,18 +163,21 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         </button>
       )}
 
-      {/* World ID verification flow */}
-      {showVerify && (
-        <div className="rounded-xl border border-border bg-white p-4 animate-fade-in">
-          <Verify />
-          <button
-            onClick={() => { setShowVerify(false); checkVerification(); }}
-            className="mt-3 w-full text-xs text-secondary text-center"
-          >
-            Done — check status
-          </button>
-        </div>
-      )}
+      {/* World ID verification modal */}
+      <WorldIdGateModal
+        open={showGateModal}
+        onClose={() => { setShowGateModal(false); recheckStatus(); }}
+        onVerified={async () => {
+          setShowGateModal(false);
+          await recheckStatus();
+          // Auto-retry the pending hire action
+          if (pendingHireRef.current) {
+            const resource = pendingHireRef.current;
+            pendingHireRef.current = null;
+            handleHire(resource);
+          }
+        }}
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1 p-1 rounded-lg bg-surface border border-border-card" role="tablist">
