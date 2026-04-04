@@ -1,3 +1,7 @@
+import { config } from 'dotenv';
+config({ path: '.env' });
+config({ path: '.env.local', override: true });
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';

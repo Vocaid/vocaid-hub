@@ -5,6 +5,7 @@ module.exports = {
       script: 'npx',
       args: 'tsx watch server/index.ts',
       env: { NODE_ENV: 'development', BACKEND_PORT: '5001' },
+      // dotenv loaded inside server/index.ts (reads .env + .env.local)
       watch: false,
       log_date_format: 'HH:mm:ss',
       merge_logs: true,
