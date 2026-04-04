@@ -9,7 +9,10 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['*'],
   reactStrictMode: false,
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:5001';
+    // Only rewrite to Fastify backend in local dev (BACKEND_URL set)
+    // On Vercel, there's no Fastify process — skip rewrites
+    const backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl) return { fallback: [] };
     return {
       fallback: [
         { source: '/api/:path*', destination: `${backendUrl}/api/:path*` },
