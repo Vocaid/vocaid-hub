@@ -3,6 +3,9 @@
 // https://api.testnet.blocky402.com
 // ---------------------------------------------------------------------------
 
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../../server/utils/fetch-with-timeout';
+import { withRetry, RETRY_POLICIES } from '../../server/utils/retry';
+
 const BLOCKY402_BASE =
   process.env.BLOCKY402_URL ?? "https://api.testnet.blocky402.com";
 
@@ -37,18 +40,21 @@ export interface SupportedNetwork {
 export async function verifyPayment(
   paymentHeader: string,
 ): Promise<PaymentVerification> {
-  const res = await fetch(`${BLOCKY402_BASE}/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ payment: paymentHeader }),
-  });
+  return withRetry(async () => {
+    const res = await fetchWithTimeout(`${BLOCKY402_BASE}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payment: paymentHeader }),
+      timeout: TIMEOUT_BUDGETS.BLOCKY402,
+    });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Blocky402 /verify failed (${res.status}): ${text}`);
-  }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Blocky402 /verify failed (${res.status}): ${text}`);
+    }
 
-  return (await res.json()) as PaymentVerification;
+    return (await res.json()) as PaymentVerification;
+  }, RETRY_POLICIES.BLOCKY402_VERIFY);
 }
 
 // ---------------------------------------------------------------------------
@@ -58,18 +64,21 @@ export async function verifyPayment(
 export async function settlePayment(
   paymentPayload: string,
 ): Promise<PaymentSettlement> {
-  const res = await fetch(`${BLOCKY402_BASE}/settle`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ payment: paymentPayload }),
-  });
+  return withRetry(async () => {
+    const res = await fetchWithTimeout(`${BLOCKY402_BASE}/settle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payment: paymentPayload }),
+      timeout: TIMEOUT_BUDGETS.BLOCKY402,
+    });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Blocky402 /settle failed (${res.status}): ${text}`);
-  }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Blocky402 /settle failed (${res.status}): ${text}`);
+    }
 
-  return (await res.json()) as PaymentSettlement;
+    return (await res.json()) as PaymentSettlement;
+  }, RETRY_POLICIES.BLOCKY402_SETTLE);
 }
 
 // ---------------------------------------------------------------------------
@@ -77,9 +86,10 @@ export async function settlePayment(
 // ---------------------------------------------------------------------------
 
 export async function getSupportedNetworks(): Promise<SupportedNetwork[]> {
-  const res = await fetch(`${BLOCKY402_BASE}/supported`, {
+  const res = await fetchWithTimeout(`${BLOCKY402_BASE}/supported`, {
     method: "GET",
     headers: { Accept: "application/json" },
+    timeout: TIMEOUT_BUDGETS.BLOCKY402,
   });
 
   if (!res.ok) {
