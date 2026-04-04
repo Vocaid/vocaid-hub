@@ -1,7 +1,7 @@
 # Pending Work — Gap Tracker for Agent Coordination
 
 **Purpose:** Structured list of all known gaps, missing files, and incomplete features — prioritized by submission impact.
-**Last Audited:** 2026-04-03T23:45Z
+**Last Audited:** 2026-04-04T10:00Z
 **Cross-Reference:** [`ACTIVE_WORK.md`](ACTIVE_WORK.md) for current ownership claims and file locks.
 
 > **🤖 AGENTS:** This file is your task board. Do NOT start work without checking [`ACTIVE_WORK.md`](ACTIVE_WORK.md) first.
@@ -75,8 +75,29 @@
 | P-043 | predictions/claim and predictions/resolve have no World ID gating | unclaimed | — | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Anyone can resolve markets or claim winnings without verification |
 | P-044 | /api/agents/register has no UI caller | unclaimed | — | `src/app/api/agents/register/route.ts` | Orphaned endpoint — functional but not wired to any frontend component |
 | P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | unclaimed | — | `src/app/api/rp-signature/route.ts`, `.env.local` | World ID 4.0 IDKit verification flow requires RP signing key |
-| P-046 | 0G Galileo testnet unreachable (SSL timeout on evmrpc-testnet.0g.ai) | mitigated | 5 | `src/app/api/gpu/*` routes have demo fallback | Demo-flow.md fallback section |
-| P-047 | GPU stepper e2e verified with demo fallback | ✅ done | 5 | `src/components/GPUStepper.tsx`, `src/app/api/gpu/*` | Plan: `docs/plans/2026-04-04-gpu-stepper-e2e-verification.md` |
-| P-048 | Shield agent doesn't block unverified providers | unclaimed | — | `src/app/api/resources/route.ts`, `src/lib/reputation.ts` | Wave 3 deliverable: Shield reads ValidationRegistry to block unverified providers from allocation. No code checks validation status before serving resources. |
+| P-046 | Edge soul.md references "Arc Testnet" + "Circle x402" | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed: Arc→Hedera, Circle→Blocky402 (3 lines) |
+| P-047 | 5 unused scaffold SVGs in public/ | ✅ done | Agent 9 | `public/*.svg` | Deleted next.svg, vercel.svg, file.svg, globe.svg, window.svg |
+| P-048 | TECHNOLOGY_RESEARCH.md references "Arc Testnet" | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Removed Arc Testnet from ERC-8004 deployment list |
+| P-046b | 0G Galileo testnet unreachable (SSL timeout on evmrpc-testnet.0g.ai) | mitigated | 5 | `src/app/api/gpu/*` routes have demo fallback | Demo-flow.md fallback section |
+| P-047b | GPU stepper e2e verified with demo fallback | ✅ done | 5 | `src/components/GPUStepper.tsx`, `src/app/api/gpu/*` | Plan: `docs/plans/2026-04-04-gpu-stepper-e2e-verification.md` |
+| P-048b | Shield agent doesn't block unverified providers | unclaimed | — | `src/app/api/resources/route.ts`, `src/lib/reputation.ts` | Wave 3 deliverable: Shield reads ValidationRegistry to block unverified providers from allocation. No code checks validation status before serving resources. |
+| P-049 | Lens agent never writes `giveFeedback()` | unclaimed | — | `src/lib/reputation.ts`, `scripts/seed-demo-data.ts` | `reputation.ts` has read queries only. No code path ever calls `giveFeedback()`. Wave 3 deliverable for 0G OpenClaw track ($6k). Fix: add write function to reputation.ts + trigger from seed script. |
+| P-050 | MiniKit.pay() never called anywhere | unclaimed | — | `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Payment uses x402 HTTP headers, never invokes MiniKit pay command. Wave 4 deliverable for World MiniKit track ($4k). Fix: wire MiniKit.pay() into hire flow. |
+| P-051 | Seer agent never connects to 0G Compute inference | unclaimed | — | `agents/.agents/seer/soul.md`, `src/lib/og-compute.ts` | soul.md describes Seer using streaming-chat + provider-discovery skills. No TypeScript code actually executes inference. 0G OpenClaw track ($6k). Fix: add API route or script that runs Seer inference via og-compute.ts. |
+| P-052 | Edge agent never executes trades | unclaimed | — | `agents/.agents/edge/soul.md` | soul.md describes market making + trade execution. No code implements this. 0G OpenClaw track ($6k). Would need OpenClaw Gateway running. |
+| P-053 | No agent-to-agent messaging implemented | unclaimed | — | `agents/openclaw.json` | OpenClaw config has 4 agents with mentionPatterns but agentToAgent messaging never exercised. World AgentKit track ($8k). Fix: add demo script showing Seer→Edge signal relay. |
+| P-054 | Demo video not recorded | unclaimed | — | — | Wave 4 deliverable: <3 min for 0G, <5 min for World/Hedera. No video file exists. Requires running demo + screen capture. |
+| P-055 | `/api/resources` self-fetch hits World ID gate | unclaimed | — | `src/app/api/resources/route.ts` | Route fetches `/api/gpu/list` internally but that route requires World ID. Internal server-side fetch lacks session cookies. Falls back to mock data via home page, not blocking for demo. Fix: call `listProviders()` directly instead of self-fetching. |
+| P-056 | GPUProviderRegistry ≠ Broker listing data source | unclaimed | — | `src/app/api/gpu/list/route.ts`, `src/lib/og-compute.ts` | Registration writes to GPUProviderRegistry contract, listing reads from 0G Broker InferenceServing (different contract). Providers registered via stepper won't appear in marketplace unless also running 0G inference software. Works for demo via mock fallbacks. Fix: add `getRegisteredProviders()` that reads GPUProviderRegistry and merges with broker data. |
 
-> Agents: Add new items here as you discover them during implementation. Use IDs P-046+.
+---
+
+## 🏗️ Agent Autonomy Gap (Cross-Cutting)
+
+> **Context:** The codebase has complete infrastructure (contracts, APIs, UI) but the OpenClaw agent fleet (Seer, Edge, Shield, Lens) exists only as configuration (soul.md + skill definitions). No agent TypeScript code runs autonomously. All "agent actions" are frontend-triggered API calls. This affects 0G OpenClaw ($6k), World AgentKit ($8k), and demo credibility.
+>
+> **Affected items:** P-048, P-049, P-051, P-052, P-053
+>
+> **Minimum viable fix:** Wire `src/lib/reputation.ts` writes (P-049) + Shield validation check in `/api/resources` (P-048) + a demo script that exercises agent-to-agent flow (P-053). This makes the agent fleet appear functional without needing full OpenClaw Gateway runtime.
+
+> Agents: Add new items here as you discover them during implementation. Use IDs P-055+.
