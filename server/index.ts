@@ -32,12 +32,16 @@ import worldIdGatePlugin from './plugins/world-id-gate.js';
 import rateLimitPlugin from './plugins/rate-limit.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
 import x402Plugin from './plugins/x402.js';
+import responseCachePlugin from './plugins/response-cache.js';
+import securityHeadersPlugin from './plugins/security-headers.js';
 
 await app.register(errorHandlerPlugin);
 await app.register(authPlugin);
 await app.register(worldIdGatePlugin);
 await app.register(rateLimitPlugin);
 await app.register(x402Plugin);
+await app.register(responseCachePlugin);
+await app.register(securityHeadersPlugin);
 
 // Health check
 app.get('/health', async () => ({
@@ -45,7 +49,7 @@ app.get('/health', async () => ({
   wasm: true,
   port: process.env.BACKEND_PORT ?? 5001,
   uptime: process.uptime(),
-  plugins: ['auth', 'world-id-gate', 'rate-limit', 'error-handler', 'x402'],
+  plugins: ['auth', 'world-id-gate', 'rate-limit', 'error-handler', 'x402', 'response-cache', 'security-headers'],
 }));
 
 // Wave 3A: World ID + Auth routes
@@ -86,6 +90,16 @@ await app.register(hederaRoutes, { prefix: '/api' });
 await app.register(proposalRoutes, { prefix: '/api' });
 await app.register(agentDecisionRoutes, { prefix: '/api' });
 await app.register(wellKnownRoutes);
+
+// Graceful shutdown
+const shutdownSignals = ['SIGTERM', 'SIGINT'] as const;
+for (const signal of shutdownSignals) {
+  process.on(signal, async () => {
+    app.log.info(`Received ${signal}, shutting down gracefully...`);
+    await app.close();
+    process.exit(0);
+  });
+}
 
 // Start server after WASM initialization
 async function start() {
