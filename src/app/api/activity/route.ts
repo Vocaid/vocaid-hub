@@ -136,11 +136,15 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
 function getDemoActivities(): ActivityItem[] {
   const now = Date.now();
   return [
-    { id: 'd1', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'GPU-Alpha quality', value: '87/100', chain: '0g', timestamp: now - 120000 },
-    { id: 'd2', type: 'prediction', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03', value: '0.005 A0GI', chain: '0g', timestamp: now - 300000 },
-    { id: 'd3', type: 'payment', agent: 'User', action: 'hired', detail: 'GPU-Alpha', value: '0.04 USDC', chain: 'hedera', timestamp: now - 480000 },
-    { id: 'd4', type: 'verification', agent: 'Shield', action: 'verified', detail: 'GPU-Alpha TEE attestation', value: 'PASS', chain: '0g', timestamp: now - 720000 },
-    { id: 'd5', type: 'signal', agent: 'Seer', action: 'detected', detail: 'GPU demand spike +18%', chain: '0g', timestamp: now - 900000 },
-    { id: 'd6', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'Seer Agent uptime', value: '99.9%', chain: '0g', timestamp: now - 1200000 },
+    { id: 'd1', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'GPU-Alpha quality', value: '87/100', chain: '0g', timestamp: now - 60000 },
+    { id: 'd2', type: 'signal', agent: 'Seer', action: 'analyzed', detail: 'GPU demand spike EU +18%', chain: '0g', timestamp: now - 180000 },
+    { id: 'd3', type: 'prediction', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.005 A0GI', chain: '0g', timestamp: now - 300000 },
+    { id: 'd4', type: 'payment', agent: 'User', action: 'hired', detail: 'GPU-Alpha via x402', value: '0.04 USDC', chain: 'hedera', timestamp: now - 420000 },
+    { id: 'd5', type: 'verification', agent: 'Shield', action: 'verified', detail: 'SolarNode-EU TEE', value: 'PASS', chain: '0g', timestamp: now - 600000 },
+    { id: 'd6', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'Maria (Rust) quality', value: '91/100', chain: '0g', timestamp: now - 780000 },
+    { id: 'd7', type: 'payment', agent: 'Agent', action: 'leased', detail: 'BandwidthRelay-US', value: '0.003 USDC', chain: 'hedera', timestamp: now - 900000 },
+    { id: 'd8', type: 'signal', agent: 'Seer', action: 'detected', detail: 'Solidity dev shortage', chain: '0g', timestamp: now - 1200000 },
+    { id: 'd9', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'Edge Agent uptime', value: '99.8%', chain: '0g', timestamp: now - 1500000 },
+    { id: 'd10', type: 'prediction', agent: 'Edge', action: 'bet NO', detail: 'GPU count > 50 by June', value: '0.003 A0GI', chain: '0g', timestamp: now - 1800000 },
   ];
 }

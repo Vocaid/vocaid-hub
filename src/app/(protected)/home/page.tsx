@@ -15,68 +15,16 @@ async function getResources(): Promise<ResourceCardProps[]> {
     // API not available yet — fall back to mock data
   }
 
-  // Mock data for development / demo
+  // Mock data for development / demo — diverse verified resources
   return [
-    {
-      type: 'gpu',
-      name: 'GPU-Alpha',
-      subtitle: 'H100 · 80GB VRAM',
-      reputation: 82,
-      verified: true,
-      chain: '0g',
-      price: '$0.05/call',
-      verificationType: 'tee',
-    },
-    {
-      type: 'agent',
-      name: 'Seer Agent',
-      subtitle: 'Signal Analysis',
-      reputation: 95,
-      verified: true,
-      chain: 'world',
-      price: '$0.02/call',
-      verificationType: 'world-id',
-    },
-    {
-      type: 'human',
-      name: 'Maria (Rust)',
-      subtitle: 'Skill: L4 Verified',
-      reputation: 78,
-      verified: true,
-      chain: 'world',
-      price: '$25/hr',
-      verificationType: 'world-id',
-    },
-    {
-      type: 'gpu',
-      name: 'GPU-Beta',
-      subtitle: 'H200 · 141GB VRAM',
-      reputation: 64,
-      verified: false,
-      chain: '0g',
-      price: '$0.08/call',
-      verificationType: 'tee',
-    },
-    {
-      type: 'agent',
-      name: 'Edge Agent',
-      subtitle: 'Market Pricing',
-      reputation: 88,
-      verified: true,
-      chain: '0g',
-      price: '$0.01/call',
-      verificationType: 'tee',
-    },
-    {
-      type: 'human',
-      name: 'Carlos (ML)',
-      subtitle: 'Skill: L3',
-      reputation: 71,
-      verified: true,
-      chain: 'hedera',
-      price: '$30/hr',
-      verificationType: 'world-id',
-    },
+    { type: 'gpu', name: 'GPU-Alpha', reputation: 87, verified: true, chain: '0g', price: '$0.04/1K tok', verificationType: 'tee', subtitle: 'H100 · EU Frankfurt' },
+    { type: 'gpu', name: 'GPU-Beta', reputation: 92, verified: true, chain: '0g', price: '$0.06/1K tok', verificationType: 'tee', subtitle: 'H200 · US East' },
+    { type: 'human', name: 'Maria', reputation: 91, verified: true, chain: 'world', price: '$45/hr', verificationType: 'world-id', subtitle: 'Rust Developer · L4' },
+    { type: 'human', name: 'Aisha', reputation: 88, verified: true, chain: 'world', price: '$55/hr', verificationType: 'world-id', subtitle: 'Solidity Engineer · L5' },
+    { type: 'agent', name: 'Seer Agent', reputation: 95, verified: true, chain: '0g', price: '$0.01/query', verificationType: 'agentkit', subtitle: 'Signal Analysis' },
+    { type: 'agent', name: 'Edge Agent', reputation: 90, verified: true, chain: '0g', price: '$0.02/trade', verificationType: 'agentkit', subtitle: 'Market Maker' },
+    { type: 'depin', name: 'SolarNode-EU', reputation: 85, verified: true, chain: 'hedera', price: '$0.08/kWh', verificationType: 'tee', subtitle: '50kW · Frankfurt' },
+    { type: 'depin', name: 'BandwidthRelay-US', reputation: 82, verified: true, chain: 'hedera', price: '$0.003/GB', verificationType: 'tee', subtitle: '10Gbps · Virginia' },
   ];
 }
 

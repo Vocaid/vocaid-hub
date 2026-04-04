@@ -1,10 +1,11 @@
 import { ShieldCheck } from 'lucide-react';
 
-export type VerificationType = 'tee' | 'world-id';
+export type VerificationType = 'tee' | 'world-id' | 'agentkit';
 
 const labels: Record<VerificationType, string> = {
   tee: 'TEE Verified',
   'world-id': 'World ID',
+  agentkit: 'AgentKit',
 };
 
 export function VerificationStatus({
