@@ -261,9 +261,10 @@ vocaid-hub/
 │   │   ├── (protected)/        # Auth-gated routes (World ID required)
 │   │   │   ├── home/           # Marketplace (ISR 30s) — page, loading, error
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
+│   │   │   ├── agent-decision/ # Seer agent GPU selection flow (ISR 30s) — 4-step visual
 │   │   │   └── profile/        # User profile + agent fleet (SSR) — page, loading, error
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
-│   │   └── api/                # 19 server-side API routes
+│   │   └── api/                # 22 server-side API routes
 │   ├── lib/                    # Shared server utilities (14 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
@@ -348,6 +349,7 @@ Four OpenClaw agents operate autonomously with ERC-8004 identities on 0G Chain, 
 | [`PARTNER_BOUNTIES.md`](docs/PARTNER_BOUNTIES.md) | All 12 ETHGlobal partner tracks with requirements | Wave 4 (submission) |
 | [`PITCH_STRATEGY.md`](docs/PITCH_STRATEGY.md) | Slide deck, demo script, Q&A prep, booth pitches | Wave 4 (submission) |
 | [`DEVELOPER_CONVERSATIONS.md`](docs/DEVELOPER_CONVERSATIONS.md) | Talking points for 0G, Hedera, World sponsor booths | Hour 0 meetings |
+| [`SECURITY_ASSESSMENT.md`](docs/SECURITY_ASSESSMENT.md) | 15 findings across 7 contracts + 19 routes, mitigations applied | All agents |
 | [`OPENCLAW_RISK_ASSESSMENT.md`](docs/OPENCLAW_RISK_ASSESSMENT.md) | 5 attack surfaces, 9 CVEs, security hardening | Wave 1 (Agent 4) |
 | [`MARKET_RISK_ASSESSMENT.md`](docs/MARKET_RISK_ASSESSMENT.md) | $7.6B market, 15 companies, SWOT analysis | Wave 4 (README) |
 | [`STRATEGIC_ASSESSMENT.md`](docs/STRATEGIC_ASSESSMENT.md) | One-liner, partner selection, doc index | Overview |

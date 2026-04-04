@@ -132,4 +132,10 @@
 | P-075 | A2A endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/a2a/route.ts` | Dynamic route: GET capability card + POST task execution. Per-agent handlers (seer/edge/shield/lens). Rate limiting, circuit breaker, TTL cache. Edge requires signed payload. |
 | P-076 | MCP endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/mcp/route.ts` | Dynamic route: GET tool schema + POST tool execution. MCP tool schemas per agent. Shared cache/breaker infra with A2A. |
 
-> Agents: Add new items here. Use IDs P-077+.
+| P-077 | GPUProviderRegistry: paginated getActiveProviders() | blocked | — | `contracts/0g/GPUProviderRegistry.sol` | Redeploy with `getActiveProviders(offset, limit)` overload. Blocked by P-049 (0G testnet SSL timeout). |
+| P-078 | ResourcePrediction: fix payout rounding with mulDiv | blocked | — | `contracts/0g/ResourcePrediction.sol` | Replace `(userBet * totalPool) / winningPool` with scale-then-divide. Add MIN_BET constant. Blocked by P-049. |
+| P-079 | CredentialGate: bind signal to msg.sender | blocked | — | `contracts/world/CredentialGate.sol` | Add `require(signal == msg.sender)`. Blocked by testnet redeployment. |
+| P-080 | Security assessment: error response sanitization | unclaimed | — | All `src/app/api/*/route.ts` catch blocks | Replace `err.message` with generic strings. Log real error server-side. |
+| P-081 | Payment ledger persistence | unclaimed | — | `src/app/api/payments/route.ts` | Replace in-memory array with file-based JSON at `data/payments.json`. |
+
+> Agents: Add new items here. Use IDs P-082+.

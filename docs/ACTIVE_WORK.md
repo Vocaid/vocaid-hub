@@ -55,6 +55,10 @@
 | 4 | P-069 + P-070: 2nd wallet for reputation + GPU-Beta | `scripts/seed-demo-data.ts`, `.env.local`, `docs/PENDING_WORK.md` | done | 2026-04-04T17:00Z | 2026-04-04T17:30Z |
 | 3 | Agent accessibility demo script + README Agent Access section + A2A gaps | `scripts/demo-agent-curl.sh`, `README.md`, `docs/PENDING_WORK.md` | done | 2026-04-04T18:00Z | 2026-04-04T18:30Z |
 | 4 | P-075 + P-076: A2A + MCP dynamic routes for all 4 agents | `src/lib/cache.ts`, `src/lib/agent-router.ts`, `src/lib/agents/*.ts`, `src/app/api/agents/[name]/a2a/route.ts`, `src/app/api/agents/[name]/mcp/route.ts`, `middleware.ts` | done | 2026-04-04T19:00Z | 2026-04-04T19:30Z |
+| — | Visual Agent Decision page (Seer GPU selection flow) | `src/app/api/agent-decision/route.ts`, `src/app/(protected)/agent-decision/*.tsx`, `src/components/Navigation/index.tsx`, `README.md`, `docs/ARCHITECTURE.md` | done | 2026-04-04T20:00Z | 2026-04-04T20:30Z |
+| 5 | Security audit: Tier A (auth gates, signal validation, rate limiting) | `src/app/api/edge/trade/route.ts`, `src/app/api/seer/inference/route.ts`, `src/app/api/verify-proof/route.ts`, `src/app/api/world-id/check/route.ts`, `src/lib/rate-limit.ts` | done | 2026-04-04T21:00Z | 2026-04-04T21:30Z |
+| 5 | Security audit: Tier B (pagination, min bet, cache TTL) | `src/lib/og-chain.ts`, `src/app/api/predictions/[id]/bet/route.ts`, `src/lib/world-id.ts` | done | 2026-04-04T21:30Z | 2026-04-04T22:00Z |
+| 5 | Security audit: Tier C (SECURITY_ASSESSMENT.md + doc updates) | `docs/SECURITY_ASSESSMENT.md`, `README.md`, `docs/PENDING_WORK.md` | done | 2026-04-04T22:00Z | 2026-04-04T22:30Z |
 
 ---
 
