@@ -36,11 +36,11 @@ Three chains, each doing what it does best: World (Trust) → 0G (Verify) → He
 
 **How it's made (min 280 chars):**
 ```
-Built as a unified Next.js 15 application with API routes running on Node.js server-side with TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision.
+Built with Next.js 15 (frontend/SSR) and a standalone Fastify 5 backend (:5001) with Zod validation, managed by PM2. TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision. Fastify runs as a persistent process with World ID WASM initialized once at startup (fixes serverless cold-start crashes). Next.js rewrites proxy /api/* transparently to Fastify.
 
 0G Chain (Galileo, chainId 16602): We deployed ERC-8004 registries (IdentityRegistry, ReputationRegistry, ValidationRegistry) via Hardhat Ignition with evmVersion cancun. GPUProviderRegistry bridges 0G's listService() SDK with ERC-8004 identity. MockTEEValidator provides ECDSA-based TEE verification. ResourcePrediction.sol implements USDC-denominated prediction markets with oracle resolution.
 
-World Chain (Sepolia, chainId 4801): CredentialGate.sol verifies World ID ZK proofs on-chain. All API routes are gated by requireWorldId() — the product genuinely breaks without World ID. Four agents registered via AgentKit with operator_world_id_hash in ERC-8004 metadata.
+World Chain (Sepolia, chainId 4801): CredentialGate.sol verifies World ID ZK proofs on-chain. All Fastify routes are gated by a World ID preHandler plugin — the product genuinely breaks without World ID. Four agents registered via AgentKit with operator_world_id_hash in ERC-8004 metadata.
 
 Hedera Testnet: Zero Solidity. All operations via @hashgraph/sdk — HTS non-transferable credential tokens (VCRED, 0.0.8499633) with KYC gating, HCS audit trail (topic 0.0.8499635), and x402 USDC payments via the Blocky402 facilitator (https://api.testnet.blocky402.com, verified live, no API key). We confirmed Blocky402 supports hedera-testnet by curling the /supported endpoint.
 
@@ -74,7 +74,8 @@ Notable hack: We discovered Blocky402's Hedera testnet support isn't documented 
 - Solidity
 
 **Web frameworks:**
-- Next.js
+- Next.js (frontend/SSR)
+- Fastify (backend API)
 
 **Databases:**
 - None (all on-chain or decentralized storage)

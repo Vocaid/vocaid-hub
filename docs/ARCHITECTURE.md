@@ -175,7 +175,7 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 
 | Layer | Runs On | Has Access To | Examples |
 |-------|---------|--------------|---------|
-| **Server Components** | Vercel Edge / Node | Everything (env vars, SDKs, chain RPCs) | Page data fetching, resource listing |
+| **Server Components** | Node.js (SSR) | Everything (env vars, SDKs, chain RPCs) | Page data fetching, resource listing |
 | **Client Components** | Browser | Only `NEXT_PUBLIC_*` vars, MiniKit, wallet | Wallet connect, MiniKit.verify(), bet forms |
 | **Fastify Backend** | PM2-managed process | Everything (private keys, SDKs, WASM) | Chain writes, Hedera transactions, x402 payments |
 
@@ -421,7 +421,7 @@ Vocaid provides **backward-compatible reputation** for the entire 0G provider ec
 | TEE attestation bundle | IPFS or 0G Storage | Too large (~2-4KB), hash on-chain |
 | Agent session state | 0G Storage KV | Decentralized but not on-chain |
 | User session | In-memory (API route) | Ephemeral after World ID verify |
-| ISR cache | Vercel Edge | Marketplace data cached 30s |
+| ISR cache | Next.js (in-memory) | Marketplace data cached 30s |
 | Demo seed data | JSON files in repo | Pre-populated for demo |
 
 No traditional database. No Redis. No Postgres.

@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-04
 **Auditor:** Agent 5 (GPU Portal) — automated security research
-**Scope:** 7 deployed contracts (0G Galileo + World Sepolia) + 24 API routes
+**Scope:** 7 deployed contracts (0G Galileo + World Sepolia) + 25 Fastify routes
 **Context:** ETHGlobal Cannes 2026 hackathon — testnet deployment, zero real funds
 
 ---
@@ -16,7 +16,7 @@
 | Medium | 4 | 3 mitigated (1 fixed in contract), 1 documented |
 | Low | 3 | 2 fixed in contract, 1 documented |
 
-**Total: 15 findings across 7 contracts and 24 API routes.**
+**Total: 15 findings across 7 contracts and 25 Fastify routes.**
 
 All contracts run on testnets with zero real funds. API-layer mitigations applied in Tiers A-C. Solidity fixes deployed in Tier D (2026-04-05): GPUProviderRegistry, ResourcePrediction, CredentialGate redeployed with security hardening.
 
@@ -113,7 +113,7 @@ In-memory sliding window rate limiter at `src/lib/rate-limit.ts`. Not distribute
 
 ### Error Disclosure (Documented)
 
-API routes return `err.message` to clients in catch blocks. This can leak contract revert reasons and internal state. Production should return generic error messages and log details server-side only.
+Fastify route handlers return `err.message` to clients in catch blocks. This can leak contract revert reasons and internal state. The error-handler plugin now returns generic messages and logs details server-side only.
 
 ---
 

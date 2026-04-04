@@ -22,7 +22,7 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - ERC-8004 identity NFT on 0G Chain per agent
 - A2A Agent Cards at `/public/agent-cards/*.json`
 - Agent-to-agent messaging demo: Seer→Edge→Shield→Lens decision cycle (`scripts/demo-agent-fleet.ts`)
-- **Files:** `src/lib/agentkit.ts`, `src/app/api/agents/register/route.ts`, `scripts/register-agents.ts`, `scripts/demo-agent-fleet.ts`
+- **Files:** `src/lib/agentkit.ts`, `server/routes/agents.ts`, `scripts/register-agents.ts`, `scripts/demo-agent-fleet.ts`
 
 ### World — Best use of World ID 4.0 ($8k, 3 winners)
 **Evidence:**
@@ -30,7 +30,7 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - CredentialGate.sol deployed on World Chain Sepolia
 - `MiniKit.verify()` triggers ZK proof flow in World App
 - Verified humans stored on-chain via `verifyAndRegister()`
-- **Files:** `contracts/world/CredentialGate.sol`, `src/app/api/verify-proof/route.ts`, `src/lib/world-id.ts`
+- **Files:** `contracts/world/CredentialGate.sol`, `server/routes/world-id.ts`, `src/lib/world-id.ts`
 
 ### World — Best use of MiniKit 2.0 ($4k, 3 winners)
 **Evidence:**
@@ -48,7 +48,7 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - Agent state persistence via 0G Storage
 - Edge agent trade execution with Shield clearance + HCS audit (`/api/edge/trade`)
 - Seer agent 0G Compute inference with mock fallback (`/api/seer/inference`)
-- **Files:** `agents/openclaw.json`, `agents/.agents/*/soul.md`, `src/lib/og-broker.ts`, `src/lib/og-compute.ts`, `src/lib/og-storage.ts`, `src/app/api/edge/trade/route.ts`, `src/app/api/seer/inference/route.ts`, `scripts/demo-agent-fleet.ts`
+- **Files:** `agents/openclaw.json`, `agents/.agents/*/soul.md`, `src/lib/og-broker.ts`, `src/lib/og-compute.ts`, `src/lib/og-storage.ts`, `server/routes/edge.ts`, `server/routes/seer.ts`, `scripts/demo-agent-fleet.ts`
 
 ### 0G — Wildcard on 0G ($3k, 2 winners)
 **Evidence:**
@@ -65,7 +65,7 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - x402 middleware returns 402 Payment Required for unpaid queries
 - USDC token: `0.0.429274` (Circle native on Hedera)
 - $0.0001 gas per transaction
-- **Files:** `src/lib/blocky402.ts`, `src/app/api/payments/route.ts`, `src/components/PaymentConfirmation.tsx`
+- **Files:** `src/lib/blocky402.ts`, `server/routes/payments.ts`, `src/components/PaymentConfirmation.tsx`
 
 ### Hedera — No Solidity Allowed ($3k, 3 winners)
 **Evidence:**
