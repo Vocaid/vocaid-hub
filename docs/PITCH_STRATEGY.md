@@ -46,7 +46,7 @@ From multiple winners:
 ### Slide 1: Hook (5 seconds — displayed during intro)
 
 **Title:** Vocaid Hub
-**Subtitle:** Hybrid Resource Allocation for the Agentic Economy
+**Subtitle:** Reliable Resources for the Agentic Economy
 **Visual:** Three chain logos (World + 0G + Hedera) connected by lines
 **No talking** — this is on screen while you say the opening line
 
@@ -162,7 +162,7 @@ Separate from live demo. Pre-recorded, clean, no mistakes.
 
 | Time | Visual | Voiceover |
 |------|--------|-----------|
-| 0:00-0:10 | App logo + tagline | "Vocaid Hub — Hybrid Resource Allocation for the Agentic Economy." |
+| 0:00-0:10 | App logo + tagline | "Vocaid Hub — Reliable Resources for the Agentic Economy." |
 | 0:10-0:25 | Problem slide | "AI agents need compute, skills, and hardware. But there's no protocol for discovery, verification, or pricing." |
 | 0:25-0:40 | Architecture diagram | "We built a three-chain protocol: World for identity, 0G for verification, Hedera for payments and credentials." |
 | 0:40-1:10 | World ID verify flow (screen recording) | "World ID gates everything. Four agents registered via AgentKit." |

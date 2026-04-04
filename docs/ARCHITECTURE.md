@@ -1,4 +1,4 @@
-# Architecture — Vocaid Hub Hybrid Resource Allocation
+# Architecture — Vocaid Hub — Reliable Resources for the Agentic Economy
 
 **Partners:** World ($20k) + 0G ($15k) + Hedera ($15k)
 **Runtime:** Next.js 15 (unified — frontend + API routes + chain interactions)

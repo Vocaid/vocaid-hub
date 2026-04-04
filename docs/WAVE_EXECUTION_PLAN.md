@@ -1,4 +1,4 @@
-# fin.vocaid.ai — Wave Execution Plan (v4 — Hybrid Resource Allocation)
+# fin.vocaid.ai — Wave Execution Plan (v4 — Reliable Resources for the Agentic Economy)
 
 **Purpose:** Parallel agent execution plan for Claude Code agents building simultaneously
 **Architecture:** World (Trust) + 0G (Verify) + Hedera (Settle)

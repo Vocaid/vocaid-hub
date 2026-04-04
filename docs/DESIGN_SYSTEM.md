@@ -1,4 +1,4 @@
-# Design System — Vocaid Hybrid Resource Allocation
+# Design System — Vocaid Hub — Reliable Resources for the Agentic Economy
 
 **Purpose:** Visual and component specifications for the Mini App UI
 **Used by:** Wave 2 Agent 7 (Marketplace UI), Wave 4 Agent 13 (Polish)

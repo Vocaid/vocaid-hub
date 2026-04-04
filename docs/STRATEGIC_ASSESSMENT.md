@@ -7,7 +7,7 @@
 
 ---
 
-## Hybrid Resource Allocation Protocol
+## Reliable Resources for the Agentic Economy
 
 Based on conversations with 0G and World developers at pre-hackathon meetings:
 
