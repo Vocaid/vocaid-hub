@@ -140,7 +140,7 @@ export interface OnChainGPUProvider {
   active: boolean;
 }
 
-export async function getRegisteredProviders(): Promise<OnChainGPUProvider[]> {
+export async function getRegisteredProviders(limit = 50): Promise<OnChainGPUProvider[]> {
   const client = getPublicClient();
   const registryAddr = addresses.gpuProviderRegistry();
 
@@ -150,8 +150,10 @@ export async function getRegisteredProviders(): Promise<OnChainGPUProvider[]> {
     functionName: "getActiveProviders",
   })) as readonly Address[];
 
+  const addrs = activeAddrs.slice(0, limit);
+
   const providers = await Promise.all(
-    activeAddrs.map(async (addr) => {
+    addrs.map(async (addr) => {
       const data = (await client.readContract({
         address: registryAddr,
         abi: GPU_PROVIDER_REGISTRY_ABI,

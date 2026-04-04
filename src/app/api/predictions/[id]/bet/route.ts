@@ -47,6 +47,14 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
+    const MIN_BET = 0.001; // 0.001 A0GI minimum
+    if (amount < MIN_BET) {
+      return NextResponse.json(
+        { error: `Minimum bet is ${MIN_BET} A0GI` },
+        { status: 400 },
+      );
+    }
+
     const contract = getSigner();
     const value = ethers.parseEther(String(amount));
 

@@ -76,9 +76,14 @@ export async function registerOnChain(
   return { txHash: hash, blockNumber: receipt.blockNumber };
 }
 
-// --- In-memory verification cache (60s TTL) ---
+// --- In-memory verification cache (15s TTL) ---
 const verificationCache = new Map<string, { verified: boolean; expires: number }>();
-const CACHE_TTL = 60_000;
+const CACHE_TTL = 15_000;
+
+/** Clear a specific address from the verification cache */
+export function clearVerificationCache(address: string) {
+  verificationCache.delete(address.toLowerCase());
+}
 
 /** Check if an address is verified on-chain (cached) */
 export async function isVerifiedOnChain(address: Address): Promise<boolean> {
