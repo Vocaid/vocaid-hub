@@ -1,8 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireWorldId } from "@/lib/world-id";
 import type { ResourceCardProps } from "@/components/ResourceCard";
+import type { ResourceSignals } from "@/components/ReputationSignals";
 import type { OGServiceInfo } from "@/lib/og-compute";
 import type { OnChainGPUProvider } from "@/lib/og-chain";
+
+type SortField = "quality" | "cost" | "latency" | "uptime";
+type FilterType = "gpu" | "agent" | "human";
+
+const VALID_SORTS = new Set<SortField>(["quality", "cost", "latency", "uptime"]);
+const VALID_TYPES = new Set<FilterType>(["gpu", "agent", "human"]);
+/** Lower-is-better metrics sort ascending; everything else sorts descending. */
+const ASC_SORTS = new Set<SortField>(["latency", "cost"]);
 
 /**
  * GET /api/resources
@@ -10,10 +19,21 @@ import type { OnChainGPUProvider } from "@/lib/og-chain";
  * Unified resource listing — aggregates agents + GPU providers.
  * Calls library functions directly (no HTTP self-fetch to other routes).
  * Gated behind World ID verification.
+ *
+ * Query params:
+ *   ?sort=quality|cost|latency|uptime  (default: quality desc)
+ *   ?type=gpu|agent|human              (filter by resource type)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const gate = await requireWorldId();
   if (gate instanceof NextResponse) return gate;
+
+  const { searchParams } = request.nextUrl;
+  const sortParam = searchParams.get("sort") as SortField | null;
+  const typeParam = searchParams.get("type") as FilterType | null;
+
+  const sortField: SortField = sortParam && VALID_SORTS.has(sortParam) ? sortParam : "quality";
+  const filterType: FilterType | null = typeParam && VALID_TYPES.has(typeParam) ? typeParam : null;
 
   try {
     // Dynamic imports to avoid SSG initialization failures
@@ -33,16 +53,94 @@ export async function GET() {
     const onChain = onChainResult.status === "fulfilled" ? onChainResult.value : [];
 
     const gpuResources = await mapGpuToResources(broker, onChain, getValidationSummary);
-    const resources: ResourceCardProps[] = [
+    const rawResources: ResourceWithAgent[] = [
       ...mapAgentsToResources(agents),
       ...gpuResources,
     ];
+
+    // Enrich with reputation signals (best-effort, never fails the whole request)
+    let resources = await enrichWithSignals(rawResources);
+
+    // Filter by type
+    if (filterType) {
+      resources = resources.filter((r) => r.type === filterType);
+    }
+
+    // Sort by selected signal
+    resources.sort((a, b) => {
+      const aVal = a.signals?.[sortField]?.value ?? -Infinity;
+      const bVal = b.signals?.[sortField]?.value ?? -Infinity;
+      return ASC_SORTS.has(sortField) ? aVal - bVal : bVal - aVal;
+    });
 
     return NextResponse.json(resources);
   } catch (err) {
     console.error("[api/resources]", err);
     return NextResponse.json({ error: "Failed to fetch resources" }, { status: 500 });
   }
+}
+
+// --- Reputation signal enrichment ---
+
+/** Tracked alongside each resource so we can look up on-chain reputation. */
+type ResourceWithAgent = ResourceCardProps & { _agentId?: string };
+
+async function enrichWithSignals(
+  resources: ResourceCardProps[],
+): Promise<ResourceCardProps[]> {
+  let getAllReputationScores: typeof import("@/lib/reputation").getAllReputationScores;
+  try {
+    ({ getAllReputationScores } = await import("@/lib/reputation"));
+  } catch {
+    // reputation module unavailable — return resources as-is
+    return resources;
+  }
+
+  const enriched = await Promise.all(
+    resources.map(async (r) => {
+      const agentIdStr = (r as ResourceWithAgent)._agentId;
+      if (!agentIdStr) return r;
+
+      try {
+        const scores = await getAllReputationScores(BigInt(agentIdStr));
+        if (scores.length === 0) return r;
+
+        const signals: ResourceSignals = {};
+        for (const s of scores) {
+          switch (s.tag) {
+            case "starred":
+              signals.quality = { value: Math.round(s.averageValue), unit: "score" };
+              break;
+            case "uptime":
+              signals.uptime = { value: Number(s.averageValue.toFixed(1)), unit: "%", tag2: "30d" };
+              break;
+            case "responseTime":
+              signals.latency = { value: Math.round(s.averageValue), unit: "ms", tag2: "p50" };
+              break;
+            case "successRate":
+              // Map to quality if starred wasn't present
+              if (!signals.quality) {
+                signals.quality = { value: Math.round(s.averageValue), unit: "score" };
+              }
+              break;
+          }
+        }
+
+        // Strip internal _agentId before returning
+        const { _agentId: _, ...clean } = r as ResourceWithAgent;
+        return { ...clean, signals } as ResourceCardProps;
+      } catch {
+        // Single resource failure — return without signals
+        return r;
+      }
+    }),
+  );
+
+  // Strip _agentId from any resources that didn't get signals
+  return enriched.map((r) => {
+    const { _agentId: _, ...clean } = r as ResourceWithAgent;
+    return clean as ResourceCardProps;
+  });
 }
 
 // --- Mappers ---
@@ -57,7 +155,7 @@ interface AgentData {
   type: string;
 }
 
-function mapAgentsToResources(agents: AgentData[]): ResourceCardProps[] {
+function mapAgentsToResources(agents: AgentData[]): ResourceWithAgent[] {
   return agents.map((a) => ({
     type: "agent" as const,
     name: a.role
@@ -69,6 +167,7 @@ function mapAgentsToResources(agents: AgentData[]): ResourceCardProps[] {
     chain: "world" as const,
     price: "$0.02/call",
     verificationType: "world-id" as const,
+    _agentId: a.agentId.toString(),
   }));
 }
 
@@ -78,13 +177,13 @@ async function mapGpuToResources(
   broker: OGServiceInfo[],
   onChain: OnChainGPUProvider[],
   validateFn: ValidateFn,
-): Promise<ResourceCardProps[]> {
+): Promise<ResourceWithAgent[]> {
   // Merge: on-chain providers first, enriched with broker data where available
   const brokerByAddr = new Map(
     broker.map((b) => [b.provider.toLowerCase(), b]),
   );
   const seen = new Set<string>();
-  const resources: ResourceCardProps[] = [];
+  const resources: ResourceWithAgent[] = [];
 
   // On-chain registered providers (from GPUProviderRegistry)
   for (const p of onChain) {
@@ -111,6 +210,7 @@ async function mapGpuToResources(
       chain: "0g" as const,
       price: "$0.05/call",
       verificationType: "tee" as const,
+      _agentId: p.agentId,
     });
   }
 

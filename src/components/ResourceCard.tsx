@@ -4,6 +4,7 @@ import { Bot, Cpu, Loader2, User } from 'lucide-react';
 import { ChainBadge, type Chain } from './ChainBadge';
 import { ReputationBar } from './ReputationBar';
 import { VerificationStatus, type VerificationType } from './VerificationStatus';
+import type { ResourceSignals } from './ReputationSignals';
 
 export type ResourceType = 'human' | 'gpu' | 'agent';
 
@@ -16,6 +17,7 @@ export interface ResourceCardProps {
   price: string;
   verificationType?: VerificationType;
   subtitle?: string;
+  signals?: ResourceSignals;
   onHire?: (resource: { name: string; price: string; type: ResourceType }) => void;
   hiring?: boolean;
 }
