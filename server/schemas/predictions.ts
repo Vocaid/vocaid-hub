@@ -3,7 +3,10 @@ import { z } from 'zod';
 /** POST /api/predictions — create a new prediction market */
 export const CreateMarketSchema = z.object({
   question: z.string().min(5).max(500),
-  resolutionTime: z.number().int().positive(),
+  resolutionTime: z.number().int().positive().refine(
+    (t) => t <= Math.floor(Date.now() / 1000) + 365 * 86400,
+    { message: 'Resolution time must be within 1 year' }
+  ),
   initialSide: z.enum(['yes', 'no']).optional(),
   initialAmount: z.number().positive().optional(),
 });

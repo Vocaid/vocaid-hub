@@ -15,9 +15,11 @@ export function PostHireRating({ resourceName, resourceAgentId, onClose }: PostH
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [creatingMarket, setCreatingMarket] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmitRating() {
-    if (rating === 0 || !resourceAgentId) return;
+    if (rating === 0 || resourceAgentId == null) return;
+    setError(null);
     setSubmitting(true);
     try {
       await fetch('/api/reputation', {
@@ -31,8 +33,9 @@ export function PostHireRating({ resourceName, resourceAgentId, onClose }: PostH
         }),
       });
       setSubmitted(true);
-    } catch {
-      // silent
+    } catch (err) {
+      console.error('Rating submission failed:', err);
+      setError('Failed to submit rating. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -51,8 +54,9 @@ export function PostHireRating({ resourceName, resourceAgentId, onClose }: PostH
         }),
       });
       onClose();
-    } catch {
-      // silent
+    } catch (err) {
+      console.error('Market creation failed:', err);
+      setError('Failed to create market. Please try again.');
     } finally {
       setCreatingMarket(false);
     }
@@ -104,6 +108,10 @@ export function PostHireRating({ resourceName, resourceAgentId, onClose }: PostH
                 <p className="text-sm font-medium text-primary">
                   {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][rating]} ({rating * 20}/100)
                 </p>
+              )}
+
+              {error && (
+                <p className="text-xs text-red-500 text-center">{error}</p>
               )}
 
               <button

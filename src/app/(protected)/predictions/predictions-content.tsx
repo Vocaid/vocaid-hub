@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { PredictionCard, type PredictionMarket } from '@/components/PredictionCard';
 import { CreateMarketModal } from '@/components/CreateMarketModal';
-import { SignalTicker, type TickerItem } from '@/components/SignalTicker';
+import { SignalTicker } from '@/components/SignalTicker';
 import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
 
 interface PredictionsContentProps {
@@ -50,15 +50,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   }, [toast]);
 
   // Ticker gets top 8 items
-  const tickerItems: TickerItem[] = activityItems.slice(0, 8).map((a) => ({
-    id: a.id,
-    type: a.type,
-    agent: a.agent,
-    action: a.action,
-    detail: a.detail,
-    value: a.value,
-    txHash: a.txHash,
-  }));
+  const tickerItems = activityItems.slice(0, 8);
 
   async function handleBet(marketId: number, side: 'yes' | 'no', amount: number) {
     const res = await fetch(`/api/predictions/${marketId}/bet`, {

@@ -25,6 +25,7 @@ export const addresses = {
   resourcePrediction: () => getAddress("RESOURCE_PREDICTION"),
   humanSkillRegistry: () => getAddress("HUMAN_SKILL_REGISTRY"),
   depinRegistry: () => getAddress("DEPIN_REGISTRY"),
+  agentProposalRegistry: () => getAddress("AGENT_PROPOSAL_REGISTRY"),
 } as const;
 
 // --- External 0G contracts (read-only) ---

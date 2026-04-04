@@ -5,16 +5,7 @@ import {
   ArrowRightLeft, Cpu, Wrench, ChevronDown, Radio,
 } from 'lucide-react';
 import { useState } from 'react';
-
-export interface TickerItem {
-  id: string;
-  type: string;
-  agent: string;
-  action: string;
-  detail: string;
-  value?: string;
-  txHash?: string;
-}
+import type { ActivityItem } from './ActivityFeed';
 
 const typeStyle: Record<string, { icon: typeof Eye; color: string }> = {
   reputation:   { icon: Eye, color: 'text-green-500' },
@@ -39,7 +30,7 @@ const FILTER_OPTIONS = [
   { value: 'skill', label: 'Skill' },
 ];
 
-export function SignalTicker({ items }: { items: TickerItem[] }) {
+export function SignalTicker({ items }: { items: ActivityItem[] }) {
   const [open, setOpen] = useState(false);
   const [filterType, setFilterType] = useState('all');
   const [showFilter, setShowFilter] = useState(false);

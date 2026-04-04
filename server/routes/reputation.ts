@@ -13,10 +13,12 @@ const ReputationQuerySchema = z.object({
   tag: z.string().optional(),
 });
 
+const VALID_TAGS = ['starred', 'uptime', 'successRate', 'responseTime'] as const;
+
 const ReputationFeedbackSchema = z.object({
   agentId: z.coerce.number().int().min(0),
-  value: z.number(),
-  tag1: z.string().min(1),
+  value: z.number().int().min(0).max(100),
+  tag1: z.enum(VALID_TAGS),
   tag2: z.string().optional(),
   endpoint: z.string().optional(),
   feedbackURI: z.string().optional(),
