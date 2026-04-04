@@ -1,4 +1,4 @@
-# Cursor IDE Setup — Hybrid Resource Allocation Coding Machine
+# Cursor IDE Setup — Reliable Resources for the Agentic Economy Coding Machine
 
 **Purpose:** Step-by-step guide for configuring a fresh machine with Cursor IDE to execute the fin.vocaid.ai hackathon build.
 **Target:** macOS (Apple Silicon preferred) or Linux
@@ -124,11 +124,11 @@ mkdir -p .cursor/rules
 
 ```markdown
 ---
-description: Project conventions for fin.vocaid.ai Hybrid Resource Allocation Protocol
+description: Project conventions for fin.vocaid.ai Reliable Resources for the Agentic Economy Protocol
 globs: ["**/*.ts", "**/*.tsx", "**/*.sol"]
 ---
 
-# Project: fin.vocaid.ai — Hybrid Resource Allocation Protocol
+# Project: fin.vocaid.ai — Reliable Resources for the Agentic Economy Protocol
 
 ## Architecture
 - Three chains: World Chain (Trust), 0G Chain (Verify), Hedera (Settle)

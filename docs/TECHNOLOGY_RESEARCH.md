@@ -1,7 +1,7 @@
 # fin.vocaid.ai — Technology Deep Research
 
 **Date:** 2026-04-02
-**Purpose:** Technical feasibility evaluation for Hybrid Resource Allocation Protocol
+**Purpose:** Technical feasibility evaluation for Reliable Resources for the Agentic Economy
 **Context:** ETHGlobal Cannes 2026 (April 3-5)
 
 ---
@@ -12,7 +12,7 @@
 - **Status:** Live on Ethereum mainnet since Jan 29, 2026
 - **Authors:** Marco De Rossi (MetaMask), Davide Crapis (EF), Jordan Ellis (Google), Erik Reppel (Coinbase)
 - **Contracts:** github.com/erc-8004/erc-8004-contracts (Hardhat + Hardhat Ignition)
-- **Deployed on 30+ chains** including Hedera Testnet, Arc Testnet, Base, Arbitrum, Polygon, Mantle, Optimism
+- **Deployed on 30+ chains** including Hedera Testnet, Base, Arbitrum, Polygon, Mantle, Optimism
 
 ### Three Registries
 

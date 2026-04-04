@@ -1,8 +1,8 @@
-# Hybrid Resource Allocation Protocol — Market Risk Assessment
+# Reliable Resources for the Agentic Economy — Market Risk Assessment
 
 **Date:** 2026-04-03
 **Author:** Ale Fonseca + Claude Opus 4.6
-**Purpose:** Validate feasibility, market need, risks, and gaps for a Hybrid Resource Allocation Protocol targeting the agentic economy
+**Purpose:** Validate feasibility, market need, risks, and gaps for a Reliable Resources for the Agentic Economy targeting the agentic economy
 **Context:** ETHGlobal Cannes 2026 pre-hackathon due diligence
 
 ---
@@ -11,7 +11,7 @@
 
 The agentic economy is real and growing fast — $7.6B in 2025, projected $47-52B by 2030 (46% CAGR). Gartner projects $15T in B2B purchases will flow through agent exchanges by 2028. But the infrastructure is fragmented: four competing payment protocols launched in six months, no unified resource allocation standard exists, and 88% of AI agents fail to reach production.
 
-**The Hybrid Resource Allocation Protocol addresses a confirmed gap:** no tool exists for agents to discover, verify, and trade resources (GPU compute, human skills, agent capabilities) through a unified on-chain registry. 0G's own developers confirmed they lack GPU provider verification. No project in the ERC-8004 ecosystem (40+ projects) has built compute provider verification.
+**The Reliable Resources for the Agentic Economy addresses a confirmed gap:** no tool exists for agents to discover, verify, and trade resources (GPU compute, human skills, agent capabilities) through a unified on-chain registry. 0G's own developers confirmed they lack GPU provider verification. No project in the ERC-8004 ecosystem (40+ projects) has built compute provider verification.
 
 **However, the risks are substantial.** TEE attestation has been broken in peer-reviewed research (TEE.Fail). Oracle manipulation is proven in production (Polymarket/UMA, March 2025). Enterprise trust in autonomous AI is declining (43% → 27% in 12 months). GPU marketplace reliability failures are documented. The regulatory landscape for autonomous agent financial transactions is uncharted.
 

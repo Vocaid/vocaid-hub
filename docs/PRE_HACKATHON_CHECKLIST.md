@@ -1,4 +1,4 @@
-# fin.vocaid.ai — Pre-Hackathon Checklist (Hybrid Resource Allocation)
+# fin.vocaid.ai — Pre-Hackathon Checklist (Reliable Resources for the Agentic Economy)
 
 **Hackathon:** ETHGlobal Cannes, April 3-5, 2026 (in-person)
 **Architecture:** World Chain (Trust) + 0G Chain (Verify) + Hedera (Settle)
