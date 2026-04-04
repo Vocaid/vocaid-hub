@@ -37,9 +37,9 @@
       },
       "env": [
         "OG_RPC_URL",
-        "OG_COMPUTE_BROKER_URL",
-        "WALLET_PRIVATE_KEY"
-      ]
+        "OG_COMPUTE_BROKER_URL"
+      ],
+      "_security_note": "READ-ONLY: No wallet key. Seer reads chain data + runs 0G inference. Cannot sign transactions."
     },
     {
       "name": "edge",
@@ -57,7 +57,8 @@
         "HEDERA_USDC_TOKEN",
         "BLOCKY402_URL",
         "WALLET_PRIVATE_KEY"
-      ]
+      ],
+      "_security_note": "PAYMENT AGENT: Only agent with wallet + Hedera keys. Signs x402 payments and prediction market trades."
     },
     {
       "name": "shield",
@@ -68,9 +69,9 @@
         "fallback": "anthropic"
       },
       "env": [
-        "OG_RPC_URL",
-        "WALLET_PRIVATE_KEY"
-      ]
+        "OG_RPC_URL"
+      ],
+      "_security_note": "READ-ONLY: No wallet key. Shield reads ValidationRegistry + ReputationRegistry. Cannot sign any transaction."
     },
     {
       "name": "lens",
@@ -83,7 +84,8 @@
       "env": [
         "OG_RPC_URL",
         "WALLET_PRIVATE_KEY"
-      ]
+      ],
+      "_security_note": "WRITE-LIMITED: Has wallet key ONLY for writing reputation to ERC-8004 on 0G Chain. No Hedera keys, no payment authority."
     }
   ],
   "security": {

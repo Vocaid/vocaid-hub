@@ -315,6 +315,74 @@ Step 3: Agents operate autonomously
 
 ---
 
+## Reputation Signal System
+
+### 7 Signal Types (ERC-8004 ReputationRegistry)
+
+| Signal | tag1 | tag2 | Unit | Applies To |
+|--------|------|------|------|-----------|
+| **Cost Efficiency** | `cost` | `per-token` / `per-hour` | $ | GPU, Human, Agent |
+| **Latency** | `latency` | `p50` / `p99` | ms | GPU, Agent |
+| **Uptime** | `uptime` | `30d` | % | GPU, DePIN |
+| **Processing Power** | `compute` | `flops` / `context-window` | TFLOPS / tokens | GPU |
+| **Region** | `region` | `eu` / `us` / `asia` | 0-100 score | GPU, DePIN |
+| **Quality** | `quality` | `overall` | 0-100 | Human, Agent, GPU |
+| **Availability** | `schedule` | `timezone` / `hours` | UTC offset | Human, DePIN |
+
+### Signal Producers (Who Writes)
+
+| Producer | Signals | Method |
+|----------|---------|--------|
+| **Lens Agent** | latency, uptime, quality | Periodic heartbeat inference → measure → `giveFeedback()` |
+| **Edge Agent** | cost | Reads `getServiceMetadata()` → writes cost/per-token |
+| **Shield Agent** | uptime (outage) | Monitors health → flags outages |
+| **Users** (post-hire) | quality | After hire completes → rate quality |
+| **0G SDK** | compute specs | `verifyService()` → hardware capabilities |
+
+### Signal Consumers (Who Reads)
+
+| Consumer | Query | Use |
+|----------|-------|-----|
+| **Agents** (A2A/MCP) | `getSummary(agentId, [], "latency", "p50")` | Pick lowest latency provider |
+| **Humans** (UI) | `GET /api/resources?sort=cost` | Browse resources sorted by signals |
+| **Seer Agent** | All reputation data | Generate fair pricing for prediction markets |
+
+### Agent-to-Agent Signal Flow
+
+```
+Seer                    Shield                  Edge                    Lens
+  │                       │                       │                       │
+  │ 1. Detect signal      │                       │                       │
+  │ (0G inference +       │                       │                       │
+  │  reputation reads)    │                       │                       │
+  ├──agentToAgent─────────│                       │                       │
+  │  {signal, confidence} │                       │                       │
+  │                       │ 2. Risk check         │                       │
+  │                       │ (ValidationRegistry)  │                       │
+  │                       │ (ReputationRegistry)  │                       │
+  │                       ├──agentToAgent─────────│                       │
+  │                       │  {approved/denied}    │                       │
+  │                       │                       │ 3. Execute            │
+  │                       │                       │ (predict/pay/hire)    │
+  │                       │                       │                       │
+  │                       │                       │                       │ 4. Observe + record
+  │                       │                       │                       │ (measure quality)
+  │                       │                       │                       │ (giveFeedback())
+```
+
+### Agent Security Model (Wallet Key Isolation)
+
+| Agent | Role | Has Wallet Key? | Has Hedera Key? | Can Sign? |
+|-------|------|----------------|-----------------|-----------|
+| **Seer** | Signal analysis (read-only) | ❌ | ❌ | No — reads only |
+| **Edge** | Payments + trades | ✅ | ✅ | Yes — only agent with payment authority |
+| **Shield** | Risk validation (read-only) | ❌ | ❌ | No — reads only |
+| **Lens** | Reputation writer | ✅ (0G only) | ❌ | Limited — writes reputation to 0G Chain only |
+
+If Seer or Shield is compromised, the attacker gets read access to chain data but **cannot sign transactions or move funds**. Only Edge compromise enables financial loss. Lens compromise enables fake reputation writes (mitigated by reputation filtering by reviewer address).
+
+---
+
 ## On-Chain vs Off-Chain Data
 
 ### On-Chain (Permanent, Verifiable)
