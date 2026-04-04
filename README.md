@@ -116,7 +116,7 @@ Fill in the private keys for each layer:
 | Group | Variables | Notes |
 |-------|----------|-------|
 | **World (Trust)** | `WORLD_ID_PRIVATE_KEY`, `BETTER_AUTH_SECRET`, `RP_SIGNING_KEY` | World App ID and RP ID pre-filled |
-| **0G (Verify)** | `PRIVATE_KEY`, `OG_BROKER_PRIVATE_KEY` | RPC + contract addresses pre-filled |
+| **0G (Verify)** | `PRIVATE_KEY`, `OG_BROKER_PRIVATE_KEY` | RPC fallback: dRPC (primary) + official 0G + ThirdWeb. Contract addresses pre-filled |
 | **Hedera (Settle)** | `HEDERA_OPERATOR_KEY` | Operator ID, USDC token, Blocky402 pre-filled |
 | **AgentKit** | `OPERATOR_WORLD_ID` | Your World ID nullifier hash |
 | **Demo** | `DEMO_WALLET_KEY` | 2nd wallet for reputation feedback + multi-provider registration (avoids self-feedback restriction). |
@@ -329,7 +329,6 @@ vocaid-hub/
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
 │   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
 │   │   ├── PostHireRating.tsx   # Post-hire rating + prediction suggestion
-│   │   ├── RegisterAgentModal.tsx # Agent registration (legacy, orphaned)
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card
 │   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization
