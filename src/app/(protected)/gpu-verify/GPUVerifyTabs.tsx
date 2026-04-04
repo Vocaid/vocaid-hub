@@ -46,12 +46,10 @@ export default function GPUVerifyTabs() {
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => {
         const all: ManagedResource[] = Array.isArray(data) ? data : data.resources || [];
-        // In demo mode or when user is deployer, show all resources as owned
-        const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
-        const isDeployer = userAddress === '0x58c45613290313c3aee76c4c4e70e6e6c54a7eee';
-        const mine = (isDemo || isDeployer || !userAddress)
-          ? all
-          : all.filter((r) => r.owner?.toLowerCase() === userAddress);
+        // Always filter to user's own resources — no exceptions
+        const mine = userAddress
+          ? all.filter((r) => r.owner?.toLowerCase() === userAddress)
+          : [];
         setResources(mine);
       })
       .catch(() => setResources([]))
@@ -84,7 +82,7 @@ export default function GPUVerifyTabs() {
           }`}
         >
           <BarChart3 className="h-4 w-4" />
-          My Resources
+          Manage
         </button>
         <button
           onClick={() => setActiveTab('register')}
