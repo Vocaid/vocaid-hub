@@ -1,62 +1,93 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { BarChart3, ChevronDown, Cpu, Plus, Check } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { BarChart3, Cpu, Plus, Pause, Play, ShieldCheck } from 'lucide-react';
 import ResourceStepper from '@/components/ResourceStepper';
-import { ResourceCard, type ResourceCardProps } from '@/components/ResourceCard';
+import { ChainBadge } from '@/components/ChainBadge';
+import { ReputationBar } from '@/components/ReputationBar';
+import type { ResourceCardProps } from '@/components/ResourceCard';
+import type { Chain } from '@/components/ChainBadge';
 import {
   ReputationSignals,
   type ResourceSignals,
 } from '@/components/ReputationSignals';
 
-type Tab = 'dashboard' | 'register';
+type Tab = 'my-resources' | 'register';
 
-interface ResourceWithSignals extends ResourceCardProps {
+interface ManagedResource extends ResourceCardProps {
   agentId?: number;
   signals?: ResourceSignals;
-  region?: string;
+  owner?: string;
+  active?: boolean;
 }
 
 export default function GPUVerifyTabs() {
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [resources, setResources] = useState<ResourceWithSignals[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>('my-resources');
+  const [resources, setResources] = useState<ManagedResource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set());
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [selectedResource, setSelectedResource] =
-    useState<ResourceWithSignals | null>(null);
+  const [userAddress, setUserAddress] = useState<string | null>(null);
+  const [paused, setPaused] = useState<Set<string>>(new Set());
 
+  // Fetch session address
   useEffect(() => {
-    if (activeTab !== 'dashboard') return;
+    fetch('/api/auth/session')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        const addr = data?.user?.walletAddress || data?.user?.address;
+        if (addr) setUserAddress(addr.toLowerCase());
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch resources and filter to user's own
+  const fetchMyResources = useCallback(() => {
     setLoading(true);
     fetch('/api/resources')
       .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setResources(Array.isArray(data) ? data : data.resources || []))
+      .then((data) => {
+        const all: ManagedResource[] = Array.isArray(data) ? data : data.resources || [];
+        // In demo mode or when user is deployer, show all resources as owned
+        const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+        const isDeployer = userAddress === '0x58c45613290313c3aee76c4c4e70e6e6c54a7eee';
+        const mine = (isDemo || isDeployer || !userAddress)
+          ? all
+          : all.filter((r) => r.owner?.toLowerCase() === userAddress);
+        setResources(mine);
+      })
       .catch(() => setResources([]))
       .finally(() => setLoading(false));
-  }, [activeTab]);
+  }, [userAddress]);
 
-  const filtered = filterTypes.size === 0
-    ? resources
-    : resources.filter((r) => filterTypes.has(r.type));
+  useEffect(() => {
+    if (activeTab !== 'my-resources') return;
+    fetchMyResources();
+  }, [activeTab, fetchMyResources]);
+
+  function togglePause(name: string) {
+    setPaused((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-4">
       {/* Tab Switcher */}
       <div className="flex rounded-lg border border-border-card bg-surface p-1">
         <button
-          onClick={() => { setActiveTab('dashboard'); setSelectedResource(null); }}
+          onClick={() => setActiveTab('my-resources')}
           className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
-            activeTab === 'dashboard'
+            activeTab === 'my-resources'
               ? 'bg-white text-primary shadow-sm'
               : 'text-secondary hover:text-primary'
           }`}
         >
           <BarChart3 className="h-4 w-4" />
-          Dashboard
+          My Resources
         </button>
         <button
-          onClick={() => { setActiveTab('register'); setSelectedResource(null); }}
+          onClick={() => setActiveTab('register')}
           className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
             activeTab === 'register'
               ? 'bg-white text-primary shadow-sm'
@@ -68,152 +99,96 @@ export default function GPUVerifyTabs() {
         </button>
       </div>
 
-      {/* Register Tab → Unified ResourceStepper */}
+      {/* Register Tab */}
       {activeTab === 'register' && <ResourceStepper />}
 
-      {/* Dashboard Tab */}
-      {activeTab === 'dashboard' && selectedResource && (
-        <ResourceDetailView resource={selectedResource} onBack={() => setSelectedResource(null)} />
-      )}
-
-      {activeTab === 'dashboard' && !selectedResource && (
+      {/* My Resources Tab */}
+      {activeTab === 'my-resources' && (
         <>
-          {/* Resource Type Filter */}
-          <div className="relative">
-            <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="w-full min-h-[40px] px-3 rounded-lg border border-border-card bg-white text-sm text-primary flex items-center justify-between cursor-pointer"
-            >
-              <span className="truncate">
-                {filterTypes.size === 0
-                  ? 'All Resource Types'
-                  : [...filterTypes].map((t) => t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}
-              </span>
-              <ChevronDown className="w-4 h-4 text-secondary shrink-0 ml-2" />
-            </button>
-            {showFilterDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-lg border border-border-card bg-white shadow-lg py-1 animate-fade-in">
-                {(['gpu', 'agent', 'human', 'depin'] as const).map((t) => {
-                  const active = filterTypes.has(t);
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setFilterTypes((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(t)) next.delete(t); else next.add(t);
-                          return next;
-                        });
-                      }}
-                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 cursor-pointer ${
-                        active ? 'text-primary-accent font-medium' : 'text-primary hover:bg-surface'
-                      }`}
-                    >
-                      <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                        active ? 'bg-primary-accent border-primary-accent' : 'border-border-card'
-                      }`}>
-                        {active && <Check className="w-3 h-3 text-white" />}
-                      </span>
-                      {t === 'depin' ? 'DePIN' : t.charAt(0).toUpperCase() + t.slice(1)}
-                    </button>
-                  );
-                })}
-                {filterTypes.size > 0 && (
-                  <button
-                    onClick={() => { setFilterTypes(new Set()); setShowFilterDropdown(false); }}
-                    className="w-full px-3 py-2 text-left text-xs text-secondary hover:text-primary border-t border-border-card mt-1 pt-2 cursor-pointer"
-                  >
-                    Clear filters
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Resource List */}
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 animate-pulse rounded-xl bg-surface" />
+                <div key={i} className="h-24 animate-pulse rounded-xl bg-surface" />
               ))}
             </div>
-          ) : filtered.length === 0 ? (
+          ) : resources.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border-card p-8 text-center">
               <Cpu className="mx-auto mb-2 h-8 w-8 text-secondary" />
               <p className="text-sm text-secondary">No resources registered yet</p>
+              <p className="text-xs text-secondary mt-1">Register a resource to list it on the marketplace</p>
               <button
                 onClick={() => setActiveTab('register')}
                 className="mt-3 rounded-lg bg-primary-accent px-4 py-2 text-sm font-medium text-white cursor-pointer"
               >
-                Register a Provider
+                Register Resource
               </button>
             </div>
           ) : (
             <div className="space-y-3">
-              {filtered.map((resource, idx) => (
-                <div key={idx} className="space-y-2">
-                  <ResourceCard
-                    {...resource}
-                    onHire={() => setSelectedResource(resource)}
-                  />
-                  {resource.signals && (
-                    <div className="ml-2 rounded-lg bg-surface p-3">
-                      <ReputationSignals signals={resource.signals} />
+              <p className="text-xs text-secondary">{resources.length} resource{resources.length !== 1 ? 's' : ''} registered</p>
+              {resources.map((r, idx) => {
+                const isPaused = paused.has(r.name);
+                return (
+                  <div key={idx} className={`rounded-xl border bg-white p-4 shadow-sm transition-opacity ${isPaused ? 'opacity-60 border-border-card' : 'border-border-card'}`}>
+                    {/* Header row */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-primary truncate">{r.name}</p>
+                          <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                            isPaused
+                              ? 'bg-status-pending/10 text-status-pending'
+                              : 'bg-status-verified/10 text-status-verified'
+                          }`}>
+                            {isPaused ? 'Paused' : 'Active'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-secondary truncate">{r.subtitle}</p>
+                      </div>
+                      <ChainBadge chain={r.chain as Chain} />
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {/* Info row */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xs font-mono text-primary-accent">{r.price}</span>
+                      <span className="text-[10px] text-secondary">·</span>
+                      <span className="text-xs text-secondary capitalize">{r.type}</span>
+                      <span className="text-[10px] text-secondary">·</span>
+                      <span className={`flex items-center gap-1 text-xs ${r.verified ? 'text-status-verified' : 'text-secondary'}`}>
+                        {r.verified ? <><ShieldCheck className="w-3 h-3" /> Verified</> : 'Unverified'}
+                      </span>
+                    </div>
+
+                    {/* Reputation */}
+                    <ReputationBar score={r.reputation} />
+
+                    {/* Signals */}
+                    {r.signals && (
+                      <div className="mt-2 rounded-lg bg-surface p-2">
+                        <ReputationSignals signals={r.signals} compact />
+                      </div>
+                    )}
+
+                    {/* Management controls */}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => togglePause(r.name)}
+                        className={`flex-1 min-h-[36px] rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                          isPaused
+                            ? 'bg-status-verified/10 text-status-verified hover:bg-status-verified/20'
+                            : 'bg-status-pending/10 text-status-pending hover:bg-status-pending/20'
+                        }`}
+                      >
+                        {isPaused ? <><Play className="w-3.5 h-3.5" /> Activate</> : <><Pause className="w-3.5 h-3.5" /> Pause</>}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
       )}
-    </div>
-  );
-}
-
-/* ─── Resource Detail View ─────────────────────────── */
-
-function ResourceDetailView({
-  resource,
-  onBack,
-}: {
-  resource: ResourceWithSignals;
-  onBack: () => void;
-}) {
-  return (
-    <div className="space-y-4">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-sm text-primary-accent cursor-pointer"
-      >
-        ← Back to Dashboard
-      </button>
-
-      <div className="rounded-xl border border-border-card bg-white p-4 shadow-sm">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-accent/10">
-            <Cpu className="h-6 w-6 text-primary-accent" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-primary">{resource.name}</h3>
-            <p className="text-sm text-secondary">
-              {resource.subtitle || resource.type.toUpperCase()}
-              {resource.region && ` · ${resource.region}`}
-            </p>
-          </div>
-        </div>
-
-        {resource.agentId && (
-          <p className="mb-4 text-xs text-secondary">ERC-8004 ID: #{resource.agentId}</p>
-        )}
-
-        <h4 className="mb-3 text-sm font-semibold text-primary">Reputation Signals</h4>
-        {resource.signals ? (
-          <ReputationSignals signals={resource.signals} />
-        ) : (
-          <p className="text-sm text-secondary">No signals recorded yet</p>
-        )}
-      </div>
     </div>
   );
 }

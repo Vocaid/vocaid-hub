@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 // --- Reputation signal enrichment ---
 
 /** Tracked alongside each resource so we can look up on-chain reputation. */
-type ResourceWithAgent = ResourceCardProps & { _agentId?: string };
+type ResourceWithAgent = ResourceCardProps & { _agentId?: string; owner?: string; active?: boolean };
 
 async function enrichWithSignals(
   resources: ResourceCardProps[],
@@ -194,6 +194,8 @@ async function mapAgentsToResources(agents: AgentData[]): Promise<ResourceWithAg
       price: "0.002 USDC/call",
       verificationType: "world-id" as const,
       _agentId: a.agentId.toString(),
+      owner: a.owner,
+      active: true,
     };
   }));
 }
@@ -209,6 +211,8 @@ function mapHumanToResources(humans: OnChainHumanProvider[]): ResourceWithAgent[
     price: h.hourlyRate,
     verificationType: "world-id" as const,
     _agentId: h.agentId,
+    owner: h.address,
+    active: h.active,
   }));
 }
 
@@ -223,23 +227,27 @@ function mapDePINToResources(devices: OnChainDePINDevice[]): ResourceWithAgent[]
     price: d.pricePerUnit,
     verificationType: "tee" as const,
     _agentId: d.agentId,
+    owner: d.address,
+    active: d.active,
   }));
 }
 
 // --- Demo seed data (shown when on-chain registries are empty) ---
 
+const DEMO_OWNER = "0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE";
+
 function getDemoAgents(): ResourceWithAgent[] {
   return [
-    { type: "agent", name: "Orion", subtitle: "Signal Analysis · World ID Verified", reputation: 95, verified: true, chain: "0g", price: "0.001 USDC/query", verificationType: "world-id", _agentId: "27" },
-    { type: "agent", name: "Vega", subtitle: "Market Maker · World ID Verified", reputation: 90, verified: true, chain: "0g", price: "0.002 USDC/trade", verificationType: "world-id", _agentId: "28" },
-    { type: "agent", name: "Lyra", subtitle: "Compliance Auditor · World ID Verified", reputation: 93, verified: true, chain: "0g", price: "0.001 USDC/check", verificationType: "world-id", _agentId: "29" },
+    { type: "agent", name: "Orion", subtitle: "Signal Analysis · World ID Verified", reputation: 95, verified: true, chain: "0g", price: "0.001 USDC/query", verificationType: "world-id", _agentId: "27", owner: DEMO_OWNER, active: true },
+    { type: "agent", name: "Vega", subtitle: "Market Maker · World ID Verified", reputation: 90, verified: true, chain: "0g", price: "0.002 USDC/trade", verificationType: "world-id", _agentId: "28", owner: DEMO_OWNER, active: true },
+    { type: "agent", name: "Lyra", subtitle: "Compliance Auditor · World ID Verified", reputation: 93, verified: true, chain: "0g", price: "0.001 USDC/check", verificationType: "world-id", _agentId: "29", owner: DEMO_OWNER, active: true },
   ];
 }
 
 function getDemoDePIN(): ResourceWithAgent[] {
   return [
-    { type: "depin", name: "Tesla Model Y Fleet", subtitle: "Autonomous · 12 vehicles · Los Angeles", reputation: 88, verified: true, chain: "hedera", price: "0.005 USDC/mi", verificationType: "tee", _agentId: "31" },
-    { type: "depin", name: "SkyLens Satellite", subtitle: "30cm resolution · Global coverage", reputation: 84, verified: true, chain: "hedera", price: "0.003 USDC/photo", verificationType: "tee", _agentId: "32" },
+    { type: "depin", name: "Tesla Model Y Fleet", subtitle: "Autonomous · 12 vehicles · Los Angeles", reputation: 88, verified: true, chain: "hedera", price: "0.005 USDC/mi", verificationType: "tee", _agentId: "31", owner: DEMO_OWNER, active: true },
+    { type: "depin", name: "SkyLens Satellite", subtitle: "30cm resolution · Global coverage", reputation: 84, verified: true, chain: "hedera", price: "0.003 USDC/photo", verificationType: "tee", _agentId: "32", owner: DEMO_OWNER, active: true },
   ];
 }
 
@@ -292,6 +300,8 @@ async function mapGpuToResources(
       price: "0.005 USDC/call",
       verificationType: "tee" as const,
       _agentId: p.agentId,
+      owner: p.address,
+      active: p.active,
     });
   }
 
