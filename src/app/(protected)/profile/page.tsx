@@ -16,26 +16,19 @@ interface AgentData {
   type: string;
 }
 
-async function getAgents(): Promise<AgentData[]> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/agents`, {
-      next: { revalidate: 30 },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data.agents ?? [];
-    }
-  } catch {
-    // API not available — fall back to mock data
-  }
+// Only show the user's own 4-agent fleet (Seer, Edge, Shield, Lens)
+// The on-chain IdentityRegistry has 30+ identities from all users — we filter to our fleet
+const FLEET_AGENTS: AgentData[] = [
+  { agentId: '27', owner: '0x58c4...7eeE', agentURI: '/agent-cards/seer.json', wallet: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE', operatorWorldId: 'verified', role: 'signal-analyst', type: 'ai-agent' },
+  { agentId: '28', owner: '0x58c4...7eeE', agentURI: '/agent-cards/edge.json', wallet: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE', operatorWorldId: 'verified', role: 'market-maker', type: 'ai-agent' },
+  { agentId: '29', owner: '0x58c4...7eeE', agentURI: '/agent-cards/shield.json', wallet: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE', operatorWorldId: 'verified', role: 'risk-manager', type: 'ai-agent' },
+  { agentId: '30', owner: '0x58c4...7eeE', agentURI: '/agent-cards/lens.json', wallet: '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE', operatorWorldId: 'verified', role: 'discovery', type: 'ai-agent' },
+];
 
-  return [
-    { agentId: '3', owner: '0x58c4...7eeE', agentURI: '/agent-cards/seer.json', wallet: '0x1111...1111', operatorWorldId: 'verified', role: 'signal-analyst', type: 'ai-agent' },
-    { agentId: '4', owner: '0x58c4...7eeE', agentURI: '/agent-cards/edge.json', wallet: '0x2222...2222', operatorWorldId: 'verified', role: 'market-maker', type: 'ai-agent' },
-    { agentId: '5', owner: '0x58c4...7eeE', agentURI: '/agent-cards/shield.json', wallet: '0x3333...3333', operatorWorldId: 'verified', role: 'risk-manager', type: 'ai-agent' },
-    { agentId: '6', owner: '0x58c4...7eeE', agentURI: '/agent-cards/lens.json', wallet: '0x4444...4444', operatorWorldId: 'verified', role: 'discovery', type: 'ai-agent' },
-  ];
+async function getAgents(): Promise<AgentData[]> {
+  // Return the user's known fleet agents with their on-chain IDs
+  // In production, this would filter by owner from the IdentityRegistry
+  return FLEET_AGENTS;
 }
 
 export default async function ProfilePage() {
