@@ -64,19 +64,15 @@ export const Verify = () => {
       // Step 3: Poll for completion
       console.log('[verify] Step 3: Polling for World App completion...');
       const completion = await request.pollUntilCompletion();
-      console.log('[verify] Step 3 result:', JSON.stringify({
-        success: completion.success,
-        hasResult: !!completion.result,
-        resultKeys: completion.result ? Object.keys(completion.result) : [],
-      }));
-
       if (!completion.success) {
-        console.error('[verify] Step 3 FAILED: World App returned success=false');
-        setDebugInfo('World App verification rejected — check World App for details');
+        console.error('[verify] Step 3 FAILED:', completion.error);
+        setDebugInfo(`World App rejected: ${completion.error}`);
         setButtonState('failed');
         setTimeout(() => setButtonState(undefined), 5000);
         return;
       }
+
+      console.log('[verify] Step 3 OK: proof received, keys:', Object.keys(completion.result));
 
       // Step 4: Server-side proof verification
       console.log('[verify] Step 4: Sending proof to /api/verify-proof...');
