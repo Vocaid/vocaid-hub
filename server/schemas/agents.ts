@@ -19,9 +19,12 @@ export const AgentRegisterSchema = z.object({
 export const A2ATaskSchema = z.object({
   method: z.string().min(1),
   params: z.record(z.string(), z.unknown()).optional(),
-});
+}).passthrough();
 
 export const McpToolCallSchema = z.object({
   tool: z.string().min(1),
+  /** Our internal field name */
+  input: z.record(z.string(), z.unknown()).optional(),
+  /** Standard MCP field name (alias for input) */
   arguments: z.record(z.string(), z.unknown()).optional(),
-});
+}).passthrough();

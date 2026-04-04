@@ -6,8 +6,9 @@
 
 import type { A2ARequest, A2AResponse, MCPToolSchema, MCPRequest, MCPResponse } from "../agent-router";
 import { cachedFetch } from "../cache";
-import { listProviders } from "../og-compute";
-import { callInference } from "../og-broker";
+// Dynamic imports — @0glabs/0g-serving-broker ESM broken on Node 24
+const loadOgCompute = () => import("../og-compute");
+const loadOgBroker = () => import("../og-broker");
 import { logAuditMessage } from "../hedera";
 
 const AUDIT_TOPIC = process.env.HEDERA_AUDIT_TOPIC ?? "";
@@ -22,7 +23,7 @@ const a2aMethods: Record<string, (params: Record<string, unknown>) => Promise<A2
       "seer:providers",
       "og-broker",
       30_000,
-      () => listProviders(),
+      async () => { const m = await loadOgCompute(); return m.listProviders(); },
       [],
     );
     return {
@@ -45,11 +46,12 @@ const a2aMethods: Record<string, (params: Record<string, unknown>) => Promise<A2
         "seer:providers",
         "og-broker",
         30_000,
-        () => listProviders(),
+        async () => { const m = await loadOgCompute(); return m.listProviders(); },
         [],
       );
 
       if (providers.length > 0) {
+        const { callInference } = await loadOgBroker();
         const result = await callInference(providers[0].provider, prompt);
 
         if (AUDIT_TOPIC) {

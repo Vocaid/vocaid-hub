@@ -18,7 +18,8 @@ declare module 'fastify' {
  * Decorates request.session with { user } or { user: null }.
  */
 async function authPlugin(app: FastifyInstance) {
-  app.decorateRequest('session', { user: null });
+  // Fastify 5 requires getter/setter for reference-type decorators
+  app.decorateRequest('session', null);
 
   app.addHook('onRequest', async (request: FastifyRequest) => {
     const token =

@@ -142,9 +142,10 @@ export default async function gpuRoutes(app: FastifyInstance) {
         }
 
         // 1. Verify TEE attestation via broker
-        let verification: Awaited<ReturnType<typeof verifyProvider>>;
+        const ogCompute = await loadOgCompute();
+        let verification: Awaited<ReturnType<typeof ogCompute.verifyProvider>>;
         try {
-          verification = await verifyProvider(providerAddress);
+          verification = await ogCompute.verifyProvider(providerAddress);
         } catch {
           verification = {
             success: true,

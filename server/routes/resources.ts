@@ -1,8 +1,11 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ResourceQuerySchema } from '../schemas/resources.js';
 import type { ResourceCardProps, ResourceSignals } from '@/types/resource';
-import type { OGServiceInfo } from '@/lib/og-compute';
+import { listRegisteredAgents } from '@/lib/agentkit';
+// Dynamic import — @0glabs/0g-serving-broker ESM is broken on Node 24
+const loadOgCompute = () => import('@/lib/og-compute');
+type OGServiceInfo = Awaited<ReturnType<Awaited<ReturnType<typeof loadOgCompute>>['listProviders']>>[number];
 import {
   type OnChainGPUProvider,
   type OnChainHumanProvider,
@@ -10,7 +13,10 @@ import {
   getReputationSummary,
   getRegisteredHumans,
   getRegisteredDePIN,
+  getRegisteredProviders,
+  getValidationSummary,
 } from '@/lib/og-chain';
+import { getAllReputationScores } from '@/lib/reputation';
 
 type SortField = 'quality' | 'cost' | 'latency' | 'uptime';
 type FilterType = 'gpu' | 'agent' | 'human' | 'depin';
@@ -25,13 +31,9 @@ type ResourceWithAgent = ResourceCardProps & { _agentId?: string; owner?: string
 // ---------------------------------------------------------------------------
 
 export async function fetchAllResources(sortField: SortField, filterType: FilterType | undefined) {
-  const { listRegisteredAgents } = await import('@/lib/agentkit');
-  const { listProviders } = await import('@/lib/og-compute');
-  const { getRegisteredProviders, getValidationSummary } = await import('@/lib/og-chain');
-
   const [agentsResult, brokerResult, onChainResult, humanResult, depinResult] = await Promise.allSettled([
     listRegisteredAgents(),
-    listProviders(),
+    loadOgCompute().then(m => m.listProviders()),
     getRegisteredProviders(),
     getRegisteredHumans(),
     getRegisteredDePIN(),
@@ -75,7 +77,7 @@ export async function fetchAllResources(sortField: SortField, filterType: Filter
 // Route plugin
 // ---------------------------------------------------------------------------
 
-const resourceRoutes: FastifyPluginAsync = async (app) => {
+export default async function resourceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/resources — Unified resource listing
@@ -88,25 +90,16 @@ const resourceRoutes: FastifyPluginAsync = async (app) => {
       return resources;
     } catch (err) {
       request.log.error(err, '[api/resources]');
-      return reply.status(500).send({ error: 'Failed to fetch resources' });
+      return reply.code(500).send({ error: 'Failed to fetch resources' });
     }
   });
-};
-
-export default resourceRoutes;
+}
 
 // ---------------------------------------------------------------------------
 // Reputation signal enrichment
 // ---------------------------------------------------------------------------
 
 async function enrichWithSignals(resources: ResourceCardProps[]): Promise<ResourceCardProps[]> {
-  let getAllReputationScores: typeof import('@/lib/reputation').getAllReputationScores;
-  try {
-    ({ getAllReputationScores } = await import('@/lib/reputation'));
-  } catch {
-    return resources;
-  }
-
   const enriched = await Promise.all(
     resources.map(async (r) => {
       const agentIdStr = (r as ResourceWithAgent)._agentId;

@@ -1,4 +1,4 @@
-import { type FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { AgentListQuerySchema, AgentNameParamsSchema, AgentRegisterSchema, A2ATaskSchema, McpToolCallSchema } from '../schemas/agents.js';
 import { listRegisteredAgents, getAgent, registerAgent } from '@/lib/agentkit';
@@ -54,7 +54,7 @@ function getMethodList(name: AgentName): string[] {
   return methods[name];
 }
 
-const agentRoutes: FastifyPluginAsync = async (app) => {
+export default async function agentRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/agents — List all registered agents
@@ -96,7 +96,7 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
       };
     } catch (err) {
       request.log.error(err, 'Failed to list agents');
-      return reply.status(500).send({ error: 'Failed to list agents' });
+      return reply.code(500).send({ error: 'Failed to list agents' });
     }
   });
 
@@ -108,12 +108,12 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
       const { agentURI, operatorWorldId, operatorAddress, role, agentkitId } = request.body;
 
       if (!isAddress(operatorAddress)) {
-        return reply.status(400).send({ error: 'Invalid operatorAddress — must be a valid Ethereum address' });
+        return reply.code(400).send({ error: 'Invalid operatorAddress — must be a valid Ethereum address' });
       }
 
       const isVerified = await isVerifiedOnChain(operatorAddress as Address);
       if (!isVerified) {
-        return reply.status(403).send({
+        return reply.code(403).send({
           error: 'Operator address is not World ID verified. Complete World ID verification first.',
         });
       }
@@ -129,7 +129,7 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
       };
     } catch (err) {
       request.log.error(err, 'Agent registration failed');
-      return reply.status(500).send({ error: 'Registration failed' });
+      return reply.code(500).send({ error: 'Registration failed' });
     }
   });
 
@@ -149,7 +149,7 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
     const { name } = request.params;
     const ip = request.headers['x-forwarded-for'] as string ?? request.headers['x-real-ip'] as string ?? 'unknown';
     if (!checkRateLimit(name, ip)) {
-      return reply.status(429).send({ error: 'Rate limit exceeded' });
+      return reply.code(429).send({ error: 'Rate limit exceeded' });
     }
 
     const handler = a2aHandlers[name];
@@ -160,7 +160,7 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
         : result.error.includes('Unknown method') ? 400
         : result.error.includes('requires signed') ? 401
         : 500;
-      return reply.status(status).send(result);
+      return reply.code(status).send(result);
     }
 
     return result;
@@ -182,22 +182,26 @@ const agentRoutes: FastifyPluginAsync = async (app) => {
     const { name } = request.params;
     const ip = request.headers['x-forwarded-for'] as string ?? request.headers['x-real-ip'] as string ?? 'unknown';
     if (!checkRateLimit(name, ip)) {
-      return reply.status(429).send({ error: 'Rate limit exceeded' });
+      return reply.code(429).send({ error: 'Rate limit exceeded' });
+    }
+
+    // Support both 'input' (our schema) and 'arguments' (standard MCP) field names
+    const body = request.body as MCPRequest & { arguments?: Record<string, unknown> };
+    if (body.arguments && !body.input) {
+      body.input = body.arguments;
     }
 
     const handler = mcpHandlers[name];
-    const result = await handler(request.body as MCPRequest);
+    const result = await handler(body);
 
     if (result.error) {
       const status = result.error.includes('Signature rejected') ? 401
         : result.error.includes('Unknown tool') ? 400
         : result.error.includes('requires signed') ? 401
         : 500;
-      return reply.status(status).send(result);
+      return reply.code(status).send(result);
     }
 
     return result;
   });
-};
-
-export default agentRoutes;
+}
