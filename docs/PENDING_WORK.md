@@ -65,39 +65,62 @@
 
 ---
 
-## 🆕 Newly Discovered Gaps
+## 🔴 Critical (Blocks Bounty Eligibility)
+
+| ID | Item | Status | Agent | Bounty at Risk | Target Files | Fix |
+|----|------|--------|-------|---------------|-------------|-----|
+| P-057 | Shield doesn't block unverified providers | unclaimed | — | 0G OpenClaw $6k | `src/app/api/resources/route.ts` | Add ValidationRegistry check before returning resources. ~30 min. |
+| P-058 | Lens never writes `giveFeedback()` | unclaimed | — | 0G OpenClaw $6k | `src/lib/reputation.ts`, `scripts/seed-demo-data.ts` | Add write function to reputation.ts + trigger from seed. ~20 min. |
+| P-059 | MiniKit.pay() never called | unclaimed | — | World MiniKit $4k | `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Wire MiniKit pay command into hire flow. ~30 min. |
+| P-060 | Seer never runs 0G Compute inference | unclaimed | — | 0G OpenClaw $6k | `src/lib/og-compute.ts`, `agents/.agents/seer/soul.md` | Needs live 0G provider + funded broker. Hard without testnet. |
+| P-061 | Edge never executes trades | unclaimed | — | 0G OpenClaw $6k | `agents/.agents/edge/soul.md` | Needs OpenClaw Gateway running with live agent process. |
+| P-062 | No agent-to-agent messaging | unclaimed | — | World AgentKit $8k | `agents/openclaw.json` | Add demo script exercising Seer→Edge signal relay. ~45 min. |
+| P-063 | Demo video not recorded | unclaimed | — | All tracks | — | Manual recording after app running. |
+
+---
+
+## 🆕 Discovered Gaps
 
 | ID | Item | Status | Agent | Target Files | Reference |
 |----|------|--------|-------|-------------|-----------|
-| P-040 | Edge agent card references "Arc network" | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed to reference Hedera |
-| P-041 | AgentCard.tsx used hardcoded dark theme colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Replaced gray-800/900, blue-400 etc with design system tokens |
-| P-042 | AuthButton error text used hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Changed to text-status-failed |
-| P-043 | predictions/claim and predictions/resolve have no World ID gating | ✅ done | Agent 1 | `src/app/api/predictions/[id]/claim/route.ts`, `src/app/api/predictions/[id]/resolve/route.ts` | Added requireWorldId() to both endpoints |
-| P-044 | /api/agents/register has no UI caller | ✅ done | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Added "Register New Agent" button on profile page |
-| P-045 | RP_SIGNING_KEY not configured — rp-signature returns 500 | ✅ done | Agent 1 | `.env.local` | Set RP_SIGNING_KEY from WORLD_ID_PRIVATE_KEY |
-| P-046 | Edge soul.md references "Arc Testnet" + "Circle x402" | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed: Arc→Hedera, Circle→Blocky402 (3 lines) |
-| P-047 | 5 unused scaffold SVGs in public/ | ✅ done | Agent 9 | `public/*.svg` | Deleted next.svg, vercel.svg, file.svg, globe.svg, window.svg |
-| P-048 | TECHNOLOGY_RESEARCH.md references "Arc Testnet" | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Removed Arc Testnet from ERC-8004 deployment list |
-| P-046b | 0G Galileo testnet unreachable (SSL timeout on evmrpc-testnet.0g.ai) | mitigated | 5 | `src/app/api/gpu/*` routes have demo fallback | Demo-flow.md fallback section |
-| P-047b | GPU stepper e2e verified with demo fallback | ✅ done | 5 | `src/components/GPUStepper.tsx`, `src/app/api/gpu/*` | Plan: `docs/plans/2026-04-04-gpu-stepper-e2e-verification.md` |
-| P-048b | Shield agent doesn't block unverified providers | unclaimed | — | `src/app/api/resources/route.ts`, `src/lib/reputation.ts` | Wave 3 deliverable: Shield reads ValidationRegistry to block unverified providers from allocation. No code checks validation status before serving resources. |
-| P-049 | Lens agent never writes `giveFeedback()` | unclaimed | — | `src/lib/reputation.ts`, `scripts/seed-demo-data.ts` | `reputation.ts` has read queries only. No code path ever calls `giveFeedback()`. Wave 3 deliverable for 0G OpenClaw track ($6k). Fix: add write function to reputation.ts + trigger from seed script. |
-| P-050 | MiniKit.pay() never called anywhere | unclaimed | — | `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Payment uses x402 HTTP headers, never invokes MiniKit pay command. Wave 4 deliverable for World MiniKit track ($4k). Fix: wire MiniKit.pay() into hire flow. |
-| P-051 | Seer agent never connects to 0G Compute inference | unclaimed | — | `agents/.agents/seer/soul.md`, `src/lib/og-compute.ts` | soul.md describes Seer using streaming-chat + provider-discovery skills. No TypeScript code actually executes inference. 0G OpenClaw track ($6k). Fix: add API route or script that runs Seer inference via og-compute.ts. |
-| P-052 | Edge agent never executes trades | unclaimed | — | `agents/.agents/edge/soul.md` | soul.md describes market making + trade execution. No code implements this. 0G OpenClaw track ($6k). Would need OpenClaw Gateway running. |
-| P-053 | No agent-to-agent messaging implemented | unclaimed | — | `agents/openclaw.json` | OpenClaw config has 4 agents with mentionPatterns but agentToAgent messaging never exercised. World AgentKit track ($8k). Fix: add demo script showing Seer→Edge signal relay. |
-| P-054 | Demo video not recorded | unclaimed | — | — | Wave 4 deliverable: <3 min for 0G, <5 min for World/Hedera. No video file exists. Requires running demo + screen capture. |
-| P-055 | `/api/resources` self-fetch hits World ID gate | unclaimed | — | `src/app/api/resources/route.ts` | Route fetches `/api/gpu/list` internally but that route requires World ID. Internal server-side fetch lacks session cookies. Falls back to mock data via home page, not blocking for demo. Fix: call `listProviders()` directly instead of self-fetching. |
-| P-056 | GPUProviderRegistry ≠ Broker listing data source | unclaimed | — | `src/app/api/gpu/list/route.ts`, `src/lib/og-compute.ts` | Registration writes to GPUProviderRegistry contract, listing reads from 0G Broker InferenceServing (different contract). Providers registered via stepper won't appear in marketplace unless also running 0G inference software. Works for demo via mock fallbacks. Fix: add `getRegisteredProviders()` that reads GPUProviderRegistry and merges with broker data. |
+| P-040 | Edge agent card Arc references | ✅ done | Agent 14 | `public/agent-cards/edge.json` | Fixed |
+| P-041 | AgentCard.tsx hardcoded colors | ✅ done | Agent 2 | `src/components/AgentCard.tsx` | Fixed |
+| P-042 | AuthButton hardcoded red-400 | ✅ done | Agent 2 | `src/components/AuthButton/index.tsx` | Fixed |
+| P-043 | predictions resolve/claim no World ID gate | ✅ done | Agent 1 | `src/app/api/predictions/[id]/claim/route.ts`, `resolve/route.ts` | Added requireWorldId() |
+| P-044 | /api/agents/register no UI caller | ✅ done | Agent 1 | `src/app/(protected)/profile/profile-content.tsx` | Added Register button |
+| P-045 | RP_SIGNING_KEY not configured | ✅ done | Agent 1 | `.env.local` | Set from WORLD_ID_PRIVATE_KEY |
+| P-046 | Edge soul.md Arc references | ✅ done | Agent 9 | `agents/.agents/edge/soul.md` | Fixed |
+| P-047 | Unused scaffold SVGs | ✅ done | Agent 9 | `public/*.svg` | Deleted |
+| P-048 | TECHNOLOGY_RESEARCH Arc references | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Fixed |
+| P-049 | 0G Galileo testnet SSL timeout | mitigated | Agent 5 | `src/app/api/gpu/*` | Demo fallbacks in place |
+| P-050 | GPU stepper e2e fallback | ✅ done | Agent 5 | `src/components/GPUStepper.tsx` | Verified |
+| P-051 | `/api/resources` self-fetch hits World ID gate | unclaimed | — | `src/app/api/resources/route.ts` | Internal fetch lacks session cookies. Falls back to mock. Fix: call `listProviders()` directly. |
+| P-052 | GPUProviderRegistry != Broker listing source | unclaimed | — | `src/app/api/gpu/list/route.ts` | Registration and listing use different contracts. Works via mocks. |
+| P-054 | Demo video not recorded | unclaimed | — | — | Wave 4 deliverable. Manual recording needed. |
 
 ---
 
 ## 🏗️ Agent Autonomy Gap (Cross-Cutting)
 
-> **Context:** The codebase has complete infrastructure (contracts, APIs, UI) but the OpenClaw agent fleet (Seer, Edge, Shield, Lens) exists only as configuration (soul.md + skill definitions). No agent TypeScript code runs autonomously. All "agent actions" are frontend-triggered API calls. This affects 0G OpenClaw ($6k), World AgentKit ($8k), and demo credibility.
+> **Context:** Infrastructure is 95% complete (contracts, APIs, UI, deployments) but the OpenClaw agent fleet (Seer, Edge, Shield, Lens) exists only as configuration (soul.md + skill definitions). No agent TypeScript code runs autonomously. All "agent actions" are frontend-triggered API calls.
 >
-> **Affected items:** P-048, P-049, P-051, P-052, P-053
+> **Bounty impact:** 0G OpenClaw ($6k), World AgentKit ($8k), demo credibility.
 >
-> **Minimum viable fix:** Wire `src/lib/reputation.ts` writes (P-049) + Shield validation check in `/api/resources` (P-048) + a demo script that exercises agent-to-agent flow (P-053). This makes the agent fleet appear functional without needing full OpenClaw Gateway runtime.
+> **Affected items:** P-057, P-058, P-060, P-061, P-062
+>
+> **Minimum viable fix (~1.5h):** Wire reputation writes (P-058) + Shield validation check (P-057) + agent-to-agent demo script (P-062). Makes agent fleet appear functional without full OpenClaw Gateway runtime.
 
-> Agents: Add new items here as you discover them during implementation. Use IDs P-055+.
+> Agents: Add new items here. Use IDs P-064+.
+
+---
+
+## Session 2026-04-04 Discoveries (Agent 2)
+
+| ID | Item | Status | Agent | Target Files | Reference |
+|----|------|--------|-------|-------------|-----------|
+| P-064 | MiniKit v2 broke MiniKit.commands (haptic crash) | done | Agent 2 | `src/providers/index.tsx` | UI kit v1.6.0 calls removed commands.sendHapticFeedback. Fixed with runtime shim. |
+| P-065 | AuthButton auto-auth crashed on mount (digest 3142902775) | done | Agent 2 | `src/components/AuthButton/index.tsx` | Removed useEffect auto-auth. Root cause: walletAuth redirect before SIWE completion. |
+| P-066 | Brand logo assets untracked in git (broke production) | done | Agent 2 | `public/app-logo.png`, `public/compact-logo.png`, `public/white-favicon.png` | Files existed locally but never git added. |
+| P-067 | Landing page used 3 chain colors (spec requires purple-only) | done | Agent 2 | `src/app/page.tsx` | All 3 chain icon circles changed to chain-hedera (brand purple). |
+
+> Agents: Add new items here. Use IDs P-068+.

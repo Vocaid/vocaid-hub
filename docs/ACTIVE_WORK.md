@@ -35,7 +35,11 @@
 | 4 | Add OG + Twitter metadata + metadataBase to layout.tsx | `src/app/layout.tsx` | done | 2026-04-04T02:30Z | 2026-04-04T02:45Z |
 | 9 | Audit cleanup: Arc refs + unused SVGs + PENDING_WORK accuracy | `agents/.agents/edge/soul.md`, `docs/TECHNOLOGY_RESEARCH.md`, `public/*.svg`, `docs/PENDING_WORK.md` | done | 2026-04-04T03:00Z | 2026-04-04T03:15Z |
 | 4 | Title/slogan consistency: "Reliable Resources for the Agentic Economy" across 20 files | all docs + layout.tsx + package.json + README + SUBMISSION | done | 2026-04-04T03:30Z | 2026-04-04T03:45Z |
+| 2 | Landing page: purple-only icons, fix auth crash (remove auto-auth useEffect) | `src/app/page.tsx`, `src/components/AuthButton/index.tsx` | done | 2026-04-04T04:00Z | 2026-04-04T04:30Z |
+| 2 | Add brand logo assets to git (untracked — broke production image) | `public/app-logo.png`, `public/compact-logo.png`, `public/white-favicon.png` | done | 2026-04-04T04:30Z | 2026-04-04T04:45Z |
+| 2 | MiniKit v2 fix: haptic shim (commands.sendHapticFeedback) + verify wallet auth | `src/providers/index.tsx`, `src/auth/wallet/index.ts` | done | 2026-04-04T05:00Z | 2026-04-04T05:30Z |
 | 3 | P-049: Wire giveFeedback + HCS audit for AI/Agentic track | `src/app/api/payments/route.ts`, `scripts/seed-demo-data.ts` | in-progress | 2026-04-04T10:00Z | — |
+| 6 | Full gap audit vs SESSION_CONTEXT + doc updates (PENDING_WORK dedup, WAVE_EXECUTION_PLAN status, ARCHITECTURE structure) | `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
 
 ---
 
@@ -57,6 +61,11 @@
 | 7 | Doc fixes: USDC token consistency, Blocky402 status, Arc cleanup, ACTIVE_WORK file ownership | `docs/ARCHITECTURE.md`, `docs/TECHNOLOGY_RESEARCH.md`, `docs/ACTIVE_WORK.md` | 2026-04-03 |
 | 9 | x402 middleware + payment initiation + hire flow | `src/lib/x402-middleware.ts`, `src/app/api/initiate-payment/route.ts`, `src/app/api/payments/route.ts`, `src/app/(protected)/home/marketplace-content.tsx` | 2026-04-03 |
 | 14 | Comprehensive README.md + PENDING_WORK.md gap tracker + package.json rename + Edge agent card fix | `README.md`, `docs/PENDING_WORK.md`, `package.json`, `public/agent-cards/edge.json`, `docs/ACTIVE_WORK.md` | 2026-04-04 |
+| 2 | World ID hard gate on all 8 resource API routes + auth redirect | `src/app/api/gpu/*`, `src/app/api/predictions/*`, `src/app/api/payments/*`, `src/app/api/reputation/*`, `src/app/(protected)/layout.tsx` | 2026-04-04 |
+| 2 | UI brand standards: favicon, logo, AgentCard/AuthButton design tokens | `src/app/layout.tsx`, `src/app/page.tsx`, `src/components/AgentCard.tsx`, `src/components/AuthButton/index.tsx`, `docs/DESIGN_SYSTEM.md` | 2026-04-04 |
+| 2 | Landing page: purple-only icons + remove auto-auth crash | `src/app/page.tsx`, `src/components/AuthButton/index.tsx` | 2026-04-04 |
+| 2 | Brand logo assets committed to git (were untracked, broke prod) | `public/app-logo.png`, `public/compact-logo.png`, `public/white-favicon.png` | 2026-04-04 |
+| 2 | MiniKit v2 haptic shim (commands.sendHapticFeedback) | `src/providers/index.tsx` | 2026-04-04 |
 | 9 | Audit cleanup: Arc refs + unused SVGs + PENDING_WORK accuracy | `agents/.agents/edge/soul.md`, `docs/TECHNOLOGY_RESEARCH.md`, `public/*.svg`, `docs/PENDING_WORK.md` | 2026-04-04 |
 
 ---
