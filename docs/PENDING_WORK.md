@@ -149,4 +149,14 @@
 | P-087 | Agent Prediction Gateway — on-chain proposal registry | ✅ done | Agent 5 | `contracts/0g/AgentProposalRegistry.sol`, `src/app/api/proposals/route.ts`, `src/components/ProposalQueue.tsx`, `src/app/(protected)/profile/profile-content.tsx` | AgentProposalRegistry deployed at `0x4093025085ea8a3ef36cff0a28e6e7acdf356392`. Agents submit proposals, owners approve/reject via Profile page. |
 | P-088 | Post-hire rating + prediction suggestion loop | ✅ done | Agent 5 | `src/components/PostHireRating.tsx`, `src/app/(protected)/home/marketplace-content.tsx` | Star rating writes ERC-8004 reputation. Suggests creating prediction market after rating. Closes feedback loop. |
 
-> Agents: Add new items here. Use IDs P-089+.
+| P-089 | Seer panel removed from Market — agents trade via A2A only | ✅ done | — | `marketplace-content.tsx`, `home/page.tsx` | Market = human browsing. Seer responds to agent queries via `/api/agents/seer/a2a`. |
+| P-090 | Trading Desk removed from Resources page | ✅ done | — | `GPUVerifyTabs.tsx` | Resources = register + verify only. Trading via A2A from Profile fleet. |
+| P-091 | Fleet deployment moved to Profile page | ✅ done | — | `profile-content.tsx` | OpenClaw Seer/Edge/Shield/Lens deploy from Profile, not Resources. |
+| P-092 | Demo seed: 3 agents + 2 DePIN when registries empty | ✅ done | — | `src/app/api/resources/route.ts` | Orion, Vega, Lyra (agents) + Tesla Model Y Fleet, SkyLens Satellite (DePIN). Auto-hides when real data exists. |
+| P-093 | Resources page: dropdown multiselect filter | ✅ done | — | `GPUVerifyTabs.tsx` | Replaced quality sort + pill buttons with multiselect dropdown. |
+| P-094 | Favicon replaced with white brand icon | ✅ done | — | `src/app/icon.png` | Next.js serves icon.png automatically. Old favicon.ico deleted. |
+| P-095 | Vercel build fix: 6 untracked files | ✅ done | — | Multiple | PostHireRating, ProposalQueue, AgentProposalRegistry, /api/proposals, deploy script were never committed. |
+| P-096 | HumanSkillRegistry + DePINRegistry deployed | ✅ done | Agent 5 | `deployments/0g-galileo.json` | HumanSkillRegistry: `0xcAc906DB5F68c45a059131A45BeA476897b6D2bb`, DePINRegistry: `0x1C7FB282c65071d0d5d55704E3CC3FE3C634fB35` |
+| P-097 | Doc gap analysis: 8 discrepancies fixed | ✅ done | — | README, ARCHITECTURE, SUBMISSION, SUBMISSION_CONTENT | Missing contracts, wrong counts, path errors, structure errors. |
+
+> Agents: Add new items here. Use IDs P-098+.

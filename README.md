@@ -267,7 +267,7 @@ vocaid-hub/
 │   │   │   ├── home/           # Marketplace (ISR 30s) — Seer panel + resource cards
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
-│   │   │   ├── gpu-verify/     # Resources hub: Dashboard + Register + Trading Desk (SSR)
+│   │   │   ├── gpu-verify/     # Resources: Dashboard + Register (GPU/Agent/Human/DePIN) (SSR)
 │   │   │   └── profile/        # User profile + fleet deployment + proposals (SSR)
 │   │   └── api/                # 24 server-side API routes
 │   ├── lib/                    # Shared server utilities (20 files)

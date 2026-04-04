@@ -42,7 +42,7 @@ vocaid-hub/
 │   │   └── profile/
 │   │       └── page.tsx       # User profile + agent fleet (SSR)
 │   ├── gpu-verify/
-│   │   └── page.tsx           # Resources hub: Dashboard + Register + Trading Desk (SSR)
+│   │   └── page.tsx           # Resources: Dashboard + Register (GPU/Agent/Human/DePIN) (SSR)
 │   ├── .well-known/
 │   │   └── agent-card.json/   # A2A agent card endpoint (ERC-8004)
 │   └── api/                   # Server-side API routes (holds keys)
@@ -234,7 +234,7 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 | Route | Method | Revalidation | Data Source | Why |
 |-------|--------|-------------|-------------|-----|
 | `/` | **ISR** | 30 seconds | API route → 0G Chain (IdentityRegistry) | Resource list changes slowly |
-| `/gpu-verify` | **SSR** | Every request | API route → 0G SDK + ERC-8004 | Resource registration (GPU, Agent, Human, DePIN) with reputation dashboard |
+| `/gpu-verify` | **SSR** | Every request | API route → 0G SDK + ERC-8004 | Resource registration + verification (GPU, Agent, Human, DePIN) |
 | `/predictions` | **ISR** | 10 seconds | API route → 0G Chain (ResourcePrediction) | Near-real-time pool updates |
 | `/profile` | **SSR** | Every request | API route → World Chain + 0G Chain | User-specific verified status |
 | `/agent-decision` | **ISR** | 30 seconds | API route → 0G Chain (ReputationRegistry) | Seer agent resource ranking |

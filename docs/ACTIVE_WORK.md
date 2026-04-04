@@ -68,6 +68,15 @@
 | 5 | Contract address updates across 10 docs | `SUBMISSION.md`, `docs/SUBMISSION_CONTENT.md`, `scripts/demo-flow.md`, 4 plan files, `agents/skills/prediction.md`, test file | done | 2026-04-05T01:30Z | 2026-04-05T02:00Z |
 | — | Resources page refactor: Trading Desk tab + agent pipeline + multi-type decision | `src/app/(protected)/gpu-verify/GPUVerifyTabs.tsx`, `src/components/TradingDesk.tsx` (new), `src/app/(protected)/agent-decision/agent-decision-content.tsx` | done | 2026-04-05T03:00Z | 2026-04-05T03:30Z |
 | 5 | P-087/088: Agent Prediction Gateway + Post-Hire Rating loop | `contracts/0g/AgentProposalRegistry.sol` (new), `src/app/api/proposals/route.ts` (new), `src/components/ProposalQueue.tsx` (new), `src/components/PostHireRating.tsx` (new), `profile-content.tsx`, `marketplace-content.tsx`, `.env.local`, `.env.example`, `README.md` | done | 2026-04-05T04:00Z | 2026-04-05T05:00Z |
+| — | UX separation: fleet deployment → Profile, resource agent reg → Resources | `GPUVerifyTabs.tsx`, `profile-content.tsx` | done | 2026-04-05T05:00Z | 2026-04-05T05:30Z |
+| — | Remove Trading Desk from Resources page (scope clarity) | `GPUVerifyTabs.tsx` | done | 2026-04-05T05:30Z | 2026-04-05T05:35Z |
+| — | Remove Seer panel from Market page (agents trade via A2A only) | `marketplace-content.tsx`, `home/page.tsx` | done | 2026-04-05T05:35Z | 2026-04-05T06:00Z |
+| 5 | Deploy HumanSkillRegistry + DePINRegistry on 0G Galileo | `contracts/0g/`, `scripts/`, `deployments/0g-galileo.json`, `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | done | 2026-04-05T06:00Z | 2026-04-05T06:30Z |
+| — | Seed demo resources: 3 verified agents + 2 DePIN in /api/resources | `src/app/api/resources/route.ts` | done | 2026-04-05T06:30Z | 2026-04-05T06:45Z |
+| — | Replace quality sort with dropdown multiselect type filter on Resources | `GPUVerifyTabs.tsx` | done | 2026-04-05T06:45Z | 2026-04-05T07:00Z |
+| — | Replace favicon with white brand icon | `src/app/icon.png` (new), `src/app/favicon.ico` (deleted) | done | 2026-04-05T07:00Z | 2026-04-05T07:05Z |
+| — | Fix Vercel build: commit 6 missing untracked files | `PostHireRating.tsx`, `ProposalQueue.tsx`, `AgentProposalRegistry.sol`, `/api/proposals/route.ts`, deploy script | done | 2026-04-05T07:05Z | 2026-04-05T07:10Z |
+| — | Doc gap analysis: fix 8 discrepancies across 4 files | `README.md`, `ARCHITECTURE.md`, `SUBMISSION.md`, `SUBMISSION_CONTENT.md` | done | 2026-04-05T07:10Z | 2026-04-05T07:30Z |
 
 ---
 
