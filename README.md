@@ -160,6 +160,7 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/payments` | GET/POST | x402 USDC payments via Blocky402 | Hedera |
 | `/api/initiate-payment` | POST | MiniKit payment initiation | Hedera |
 | `/api/hedera/audit` | GET | Query HCS audit trail via Mirror Node | Hedera |
+| `/api/seer/inference` | POST | Seer agent 0G Compute inference | 0G |
 | `/api/reputation` | GET | Query ERC-8004 reputation scores | 0G |
 | `/api/resources` | GET | Unified resource listing (all types) | 0G + Hedera |
 
@@ -218,18 +219,27 @@ vocaid-hub/
 │   │   │   ├── predictions/    # Prediction markets (ISR 10s)
 │   │   │   └── profile/        # User profile + agent fleet (SSR)
 │   │   ├── gpu-verify/         # GPU provider registration portal (SSR)
-│   │   └── api/                # 17 server-side API routes
-│   ├── lib/                    # Shared server utilities
+│   │   └── api/                # 18 server-side API routes
+│   ├── lib/                    # Shared server utilities (14 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
+│   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
 │   │   ├── blocky402.ts        # x402 facilitator client
 │   │   ├── og-chain.ts         # 0G Chain + ERC-8004
 │   │   ├── og-compute.ts       # 0G inference broker
+│   │   ├── og-broker.ts        # 0G broker types + helpers
+│   │   ├── og-storage.ts       # 0G Storage KV persistence
 │   │   ├── agentkit.ts         # World AgentKit registration
-│   │   └── world-id.ts         # World ID verification
+│   │   ├── world-id.ts         # World ID verification
+│   │   ├── x402-middleware.ts   # x402 payment middleware
+│   │   ├── reputation.ts       # ERC-8004 reputation queries
+│   │   ├── prediction-math.ts  # Prediction market math
+│   │   ├── contracts.ts        # ABIs + addresses
+│   │   └── types.ts            # Shared TypeScript types
 │   ├── components/             # React components
 │   │   ├── ResourceCard.tsx    # Resource listing card
 │   │   ├── PredictionCard.tsx  # Prediction market card
 │   │   ├── GPUStepper.tsx      # GPU registration stepper
+│   │   ├── CreateMarketModal.tsx # Prediction market creation
 │   │   ├── PaymentConfirmation.tsx
 │   │   ├── AgentCard.tsx       # OpenClaw agent card
 │   │   └── Navigation/         # Bottom tab navigation
