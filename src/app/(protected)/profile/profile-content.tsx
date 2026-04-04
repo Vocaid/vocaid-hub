@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Globe, ShieldCheck, Zap, Eye, TrendingUp, Search, Bot, Plus } from 'lucide-react';
-import { ChainBadge } from '@/components/ChainBadge';
+import { Globe, ShieldCheck, Plus } from 'lucide-react';
+import { AgentCard, type AgentRole } from '@/components/AgentCard';
 import { RegisterAgentModal } from '@/components/RegisterAgentModal';
 
 interface AgentData {
@@ -18,11 +18,11 @@ interface ProfileContentProps {
   agents: AgentData[];
 }
 
-const ROLE_CONFIG: Record<string, { label: string; icon: typeof Eye; description: string }> = {
-  'signal-analyst': { label: 'Seer', icon: Eye, description: 'Signal Analysis' },
-  'market-maker': { label: 'Edge', icon: TrendingUp, description: 'Market Pricing' },
-  'risk-manager': { label: 'Shield', icon: ShieldCheck, description: 'Risk Management' },
-  'discovery': { label: 'Lens', icon: Search, description: 'Monitoring' },
+const ROLE_NAMES: Record<string, string> = {
+  'signal-analyst': 'Seer',
+  'market-maker': 'Edge',
+  'risk-manager': 'Shield',
+  'discovery': 'Lens',
 };
 
 function truncateAddress(addr?: string): string {
@@ -65,50 +65,26 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
 
       {/* Agent cards */}
       <div className="flex flex-col gap-3">
-        {agents.map((agent) => {
-          const config = ROLE_CONFIG[agent.role] ?? {
-            label: agent.role,
-            icon: Bot,
-            description: agent.type,
-          };
-          const RoleIcon = config.icon;
-
-          return (
-            <div
+        {agents.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border-card bg-surface p-6 text-center">
+            <p className="text-sm text-secondary">No agents registered yet.</p>
+            <p className="mt-1 text-xs text-secondary">
+              Register your first agent to start building your fleet.
+            </p>
+          </div>
+        ) : (
+          agents.map((agent) => (
+            <AgentCard
               key={agent.agentId}
-              className="rounded-xl border border-border-card bg-surface p-4 flex flex-col gap-2.5"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-chain-og/10 shrink-0">
-                    <RoleIcon className="w-5 h-5 text-chain-og" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-primary">{config.label}</h3>
-                    <p className="text-xs text-secondary">{config.description}</p>
-                  </div>
-                </div>
-                <ChainBadge chain="0g" />
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-secondary">
-                  ERC-8004 #{agent.agentId}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-og/10 text-chain-og">
-                  <Zap className="w-3 h-3" />
-                  0G Verified
-                </span>
-                {agent.operatorWorldId && (
-                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-world/10 text-chain-world">
-                    <Globe className="w-3 h-3" />
-                    World ID
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+              name={ROLE_NAMES[agent.role] ?? agent.role}
+              role={(agent.role as AgentRole) ?? 'discovery'}
+              agentId={agent.agentId}
+              operatorWorldId={agent.operatorWorldId}
+              reputation={75}
+              verified={agent.operatorWorldId === 'verified' || agent.operatorWorldId === 'pending-verification'}
+            />
+          ))
+        )}
       </div>
 
       {/* Register Agent CTA */}

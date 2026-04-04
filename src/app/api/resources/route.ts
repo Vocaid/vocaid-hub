@@ -127,7 +127,8 @@ async function enrichWithSignals(
         }
 
         // Strip internal _agentId before returning
-        const { _agentId: _, ...clean } = r as ResourceWithAgent;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _agentId, ...clean } = r as ResourceWithAgent;
         return { ...clean, signals } as ResourceCardProps;
       } catch {
         // Single resource failure — return without signals
@@ -138,7 +139,8 @@ async function enrichWithSignals(
 
   // Strip _agentId from any resources that didn't get signals
   return enriched.map((r) => {
-    const { _agentId: _, ...clean } = r as ResourceWithAgent;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _agentId, ...clean } = r as ResourceWithAgent;
     return clean as ResourceCardProps;
   });
 }

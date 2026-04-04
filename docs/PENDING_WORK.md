@@ -129,7 +129,7 @@
 | P-072 | agents/register 500s on malformed address (no input validation) | ✅ already fixed | Agent 1 | `src/app/api/agents/register/route.ts` | Route already has `isAddress()` check at line 38 — returns 400 for invalid addresses. Gap was stale. |
 | P-073 | README.md missing `/api/edge/trade` route | ✅ done | Agent 9 | `README.md` | Added Edge trade route to API Routes table |
 | P-074 | ARCHITECTURE.md missing `/api/edge/trade` + `prediction-math.ts` | ✅ done | Agent 9 | `docs/ARCHITECTURE.md` | Added edge/trade route tree + prediction-math.ts to lib listing |
-| P-075 | A2A endpoints declared in agent cards but not implemented | unclaimed | — | `src/app/api/agents/[name]/a2a/route.ts` | Agent cards declare `/api/agents/{name}/a2a` but routes return 404. Needed for full A2A interop. |
-| P-076 | MCP endpoints declared in agent cards but not implemented | unclaimed | — | `src/app/api/agents/[name]/mcp/route.ts` | Agent cards declare `/api/agents/{name}/mcp` but routes return 404. Needed for LLM tool integration. |
+| P-075 | A2A endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/a2a/route.ts` | Dynamic route: GET capability card + POST task execution. Per-agent handlers (seer/edge/shield/lens). Rate limiting, circuit breaker, TTL cache. Edge requires signed payload. |
+| P-076 | MCP endpoints declared in agent cards but not implemented | ✅ done | Agent 4 | `src/app/api/agents/[name]/mcp/route.ts` | Dynamic route: GET tool schema + POST tool execution. MCP tool schemas per agent. Shared cache/breaker infra with A2A. |
 
 > Agents: Add new items here. Use IDs P-077+.

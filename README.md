@@ -36,8 +36,8 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 ┌──────────────────────────────────────────────────────────────────┐
 │                        MINI APP (Next.js 15)                      │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐            │
-│  │    /     │ │/gpu-verify│ │/predictions│ │ /profile │            │
-│  │Marketplace│ │GPU Portal│ │Pred Market│ │  My Hub  │            │
+│  │    /     │ │/gpu-verify│ │/predictions│ │  /seer   │ │ /profile │ │
+│  │Marketplace│ │GPU Portal│ │Pred Market│ │Agent Dec.│ │  My Hub  │ │
 │  └────┬─────┘ └────┬─────┘ └────┬──────┘ └────┬─────┘            │
 │       │             │            │              │                  │
 │  ┌────┴─────────────┴────────────┴──────────────┴─────┐           │
@@ -171,6 +171,9 @@ Open [http://localhost:3000](http://localhost:3000) in World App or browser.
 | `/api/edge/trade` | POST | Edge agent trade execution + Shield clearance | 0G |
 | `/api/reputation` | GET | Query ERC-8004 reputation scores | 0G |
 | `/api/resources` | GET | Unified resource listing (all types) | 0G + Hedera |
+| `/api/agent-decision` | GET | Seer agent GPU ranking + selection decision | 0G |
+| `/api/agents/[name]/a2a` | GET/POST | A2A capability card + task execution per agent | 0G + Hedera |
+| `/api/agents/[name]/mcp` | GET/POST | MCP tool schema + tool execution per agent | 0G + Hedera |
 
 ---
 

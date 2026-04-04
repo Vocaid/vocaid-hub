@@ -21,7 +21,8 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - Each agent linked to operator's World ID via `operator_world_id` metadata
 - ERC-8004 identity NFT on 0G Chain per agent
 - A2A Agent Cards at `/public/agent-cards/*.json`
-- **Files:** `src/lib/agentkit.ts`, `src/app/api/agents/register/route.ts`, `scripts/register-agents.ts`
+- Agent-to-agent messaging demo: Seer→Edge→Shield→Lens decision cycle (`scripts/demo-agent-fleet.ts`)
+- **Files:** `src/lib/agentkit.ts`, `src/app/api/agents/register/route.ts`, `scripts/register-agents.ts`, `scripts/demo-agent-fleet.ts`
 
 ### World — Best use of World ID 4.0 ($8k, 3 winners)
 **Evidence:**
@@ -34,9 +35,10 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 ### World — Best use of MiniKit 2.0 ($4k, 3 winners)
 **Evidence:**
 - Full Mini App built with `@worldcoin/minikit-js` and MiniKit React provider
-- MiniKit commands: `verify`, `signTypedData`
+- MiniKit commands: `verify`, `pay`, `signTypedData`
+- `MiniKit.pay()` wired into marketplace hire flow with x402 fallback
 - Mobile-optimized UI (375-428px viewport)
-- **Files:** `src/app/layout.tsx` (MiniKit provider), all `src/app/(protected)/*` pages
+- **Files:** `src/app/layout.tsx` (MiniKit provider), `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, all `src/app/(protected)/*` pages
 
 ### 0G — Best OpenClaw Agent on 0G ($6k, 3 winners)
 **Evidence:**
@@ -44,7 +46,9 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - GPU provider verification — first ERC-8004 Validation Registry use for compute verification
 - Seer agent connected to 0G Compute for AI inference
 - Agent state persistence via 0G Storage
-- **Files:** `agents/openclaw.json`, `agents/.agents/*/soul.md`, `src/lib/og-broker.ts`, `src/lib/og-compute.ts`, `src/lib/og-storage.ts`
+- Edge agent trade execution with Shield clearance + HCS audit (`/api/edge/trade`)
+- Seer agent 0G Compute inference with mock fallback (`/api/seer/inference`)
+- **Files:** `agents/openclaw.json`, `agents/.agents/*/soul.md`, `src/lib/og-broker.ts`, `src/lib/og-compute.ts`, `src/lib/og-storage.ts`, `src/app/api/edge/trade/route.ts`, `src/app/api/seer/inference/route.ts`, `scripts/demo-agent-fleet.ts`
 
 ### 0G — Wildcard on 0G ($3k, 2 winners)
 **Evidence:**

@@ -54,6 +54,7 @@
 | 5 | P-071: Pass signal in verify flow + v4/v2 fallback | `src/components/Verify/index.tsx`, `src/app/api/verify-proof/route.ts` | done | 2026-04-04T16:15Z | 2026-04-04T16:30Z |
 | 4 | P-069 + P-070: 2nd wallet for reputation + GPU-Beta | `scripts/seed-demo-data.ts`, `.env.local`, `docs/PENDING_WORK.md` | done | 2026-04-04T17:00Z | 2026-04-04T17:30Z |
 | 3 | Agent accessibility demo script + README Agent Access section + A2A gaps | `scripts/demo-agent-curl.sh`, `README.md`, `docs/PENDING_WORK.md` | done | 2026-04-04T18:00Z | 2026-04-04T18:30Z |
+| 4 | P-075 + P-076: A2A + MCP dynamic routes for all 4 agents | `src/lib/cache.ts`, `src/lib/agent-router.ts`, `src/lib/agents/*.ts`, `src/app/api/agents/[name]/a2a/route.ts`, `src/app/api/agents/[name]/mcp/route.ts`, `middleware.ts` | done | 2026-04-04T19:00Z | 2026-04-04T19:30Z |
 
 ---
 

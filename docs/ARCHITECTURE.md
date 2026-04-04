@@ -37,6 +37,8 @@ vocaid-hub/
 │   │   │   └── page.tsx       # Marketplace (ISR 30s)
 │   │   ├── predictions/
 │   │   │   └── page.tsx       # Prediction markets (ISR 10s)
+│   │   ├── agent-decision/
+│   │   │   └── page.tsx       # Seer agent GPU selection flow (ISR 30s)
 │   │   └── profile/
 │   │       └── page.tsx       # User profile + agent fleet (SSR)
 │   ├── gpu-verify/
@@ -87,8 +89,16 @@ vocaid-hub/
 │       │   └── route.ts       # List agents
 │       ├── reputation/
 │       │   └── route.ts       # Query reputation scores
-│       └── resources/
-│           └── route.ts       # Unified resource listing
+│       ├── agent-decision/
+│       │   └── route.ts       # Seer agent GPU ranking + selection
+│       ├── resources/
+│       │   └── route.ts       # Unified resource listing
+│       └── agents/
+��           └── [name]/
+│               ├── a2a/
+│               │   └── route.ts   # A2A capability card + task execution
+│               └── mcp/
+│                   └── route.ts   # MCP tool schema + tool execution
 │
 ├── lib/                       # Shared server utilities
 │   ├── hedera.ts              # @hashgraph/sdk wrapper (HTS, HCS, scheduled tx)
@@ -104,6 +114,13 @@ vocaid-hub/
 │   ├── prediction-math.ts    # Prediction market odds/payout calculations
 │   ├── x402-middleware.ts     # x402 payment-gating wrapper for API routes
 │   ├── contracts.ts           # Contract ABIs + addresses from deployments/
+│   ├── cache.ts               # TTL cache + per-backend circuit breaker
+│   ├── agent-router.ts        # Agent name validation, dispatch, rate limiter
+│   ├── agents/                # Per-agent A2A + MCP handlers
+│   │   ├── seer.ts            # Signal analysis (0G Compute inference)
+│   │   ├── edge.ts            # Trade execution (signed payloads)
+│   │   ├── shield.ts          # Risk management (validation + reputation)
+│   │   └─��� lens.ts            # Discovery + reputation feedback
 │   └── types.ts               # Shared TypeScript types
 │
 ├── components/                # React components (see DESIGN_SYSTEM.md)
