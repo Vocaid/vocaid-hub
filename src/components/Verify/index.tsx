@@ -1,6 +1,7 @@
 'use client';
 import { IDKit, orbLegacy, type RpContext } from '@worldcoin/idkit';
 import { Button, LiveFeedback } from '@worldcoin/mini-apps-ui-kit-react';
+import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
 /**
@@ -10,6 +11,8 @@ import { useState } from 'react';
  * Read More: https://docs.world.org/mini-apps/commands/verify#verifying-the-proof
  */
 export const Verify = () => {
+  const { data: session } = useSession();
+  const walletAddress = (session?.user as { walletAddress?: string } | undefined)?.walletAddress ?? '';
   const [buttonState, setButtonState] = useState<
     'pending' | 'success' | 'failed' | undefined
   >(undefined);
@@ -43,7 +46,7 @@ export const Verify = () => {
         action: 'verify-human',
         rp_context: rpContext,
         allow_legacy_proofs: true,
-      }).preset(orbLegacy({ signal: '' }));
+      }).preset(orbLegacy({ signal: walletAddress }));
 
       const completion = await request.pollUntilCompletion();
 
@@ -59,6 +62,7 @@ export const Verify = () => {
         body: JSON.stringify({
           payload: completion.result,
           action: 'verify-human',
+          signal: walletAddress,
         }),
       });
 

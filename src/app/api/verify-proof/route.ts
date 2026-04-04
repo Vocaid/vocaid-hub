@@ -57,7 +57,20 @@ export async function POST(req: NextRequest) {
     body: verifyBody,
   });
 
-  const verifyRes = (await response.json()) as IVerifyResponse;
+  let verifyRes = (await response.json()) as IVerifyResponse;
+
+  // v4→v2 fallback: if v4 fails (invalid_action, etc.), retry with v2
+  if (!verifyRes.success && rp_id) {
+    console.warn('[verify-proof] v4 failed, retrying with v2:', verifyRes);
+    const v2Url = `https://developer.worldcoin.org/api/v2/verify/${app_id}`;
+    const v2Body = JSON.stringify({ ...payload, action, signal });
+    const v2Response = await fetch(v2Url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: v2Body,
+    });
+    verifyRes = (await v2Response.json()) as IVerifyResponse;
+  }
 
   if (verifyRes.success) {
     // Register on-chain via CredentialGate (only with v2 legacy proof fields)
