@@ -159,4 +159,6 @@
 | P-096 | HumanSkillRegistry + DePINRegistry deployed | ✅ done | Agent 5 | `deployments/0g-galileo.json` | HumanSkillRegistry: `0xcAc906DB5F68c45a059131A45BeA476897b6D2bb`, DePINRegistry: `0x1C7FB282c65071d0d5d55704E3CC3FE3C634fB35` |
 | P-097 | Doc gap analysis: 8 discrepancies fixed | ✅ done | — | README, ARCHITECTURE, SUBMISSION, SUBMISSION_CONTENT | Missing contracts, wrong counts, path errors, structure errors. |
 
-> Agents: Add new items here. Use IDs P-098+.
+| P-098 | Backend migration: Fastify + Zod + PM2 (Wave 4 cleanup) | ✅ done | — | `src/app/api/` (deleted), `server/`, `middleware.ts`, `src/types/resource.ts`, docs | Deleted all Next.js API routes. Extracted ResourceCardProps to shared types. Updated middleware, ARCHITECTURE.md, README.md. All routes now on Fastify :5001. |
+
+> Agents: Add new items here. Use IDs P-099+.

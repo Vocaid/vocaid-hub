@@ -1,15 +1,35 @@
 # Architecture — Vocaid Hub — Reliable Resources for the Agentic Economy
 
 **Partners:** World ($20k) + 0G ($15k) + Hedera ($15k)
-**Runtime:** Next.js 15 (unified — frontend + API routes + chain interactions)
+**Runtime:** Next.js 15 (frontend/SSR) + Fastify 5 (backend API :5001) — managed by PM2
 **Language:** TypeScript throughout (no Python)
 **Chains:** World Chain (Trust) + 0G Chain (Verify) + Hedera (Settle)
 
 ---
 
-## Why One Runtime (No Python Backend)
+## Two-Process Architecture (Next.js + Fastify)
 
-3 of 5 core SDKs are TypeScript-only:
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Next.js    │     │  Fastify     │     │  OpenClaw    │
+│  :3000      │────▶│  :5001       │     │  :18789      │
+│  (frontend) │     │  (backend)   │     │  (agents)    │
+│  SSR + UI   │     │  All /api/*  │     │  Soul + Skills│
+└─────────────┘     └──────────────┘     └──────────────┘
+      │                    │                     │
+      └────────────────────┼─────────────────────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+         World Chain    0G Chain    Hedera
+         (Trust)        (Verify)    (Settle)
+```
+
+**Why split?** World ID WASM (`@worldcoin/idkit`) crashes in serverless cold starts. Fastify runs as a persistent process with WASM initialized once at startup. PM2 manages all three processes with autorestart, merged logs, and health monitoring.
+
+**Proxy:** `next.config.ts` rewrites `/api/*` and `/.well-known/*` to Fastify :5001 transparently — the browser never talks to :5001 directly.
+
+3 of 5 core SDKs are TypeScript-only, so both processes share the same language:
 
 | SDK | TypeScript | Python |
 |-----|-----------|--------|
@@ -19,206 +39,105 @@
 | `@hashgraph/sdk` | ✅ JS/TS | ✅ Python exists |
 | `x402` | ✅ `@x402/fetch` | ✅ `pip install x402` |
 
-A Python backend would need to shell out to Node.js for MiniKit, 0G broker, and 0G SDK. Next.js API routes run server-side with the same security model — private keys never reach the browser.
-
 ---
 
 ## Project Structure
 
 ```
 vocaid-hub/
+├── server/                    # Fastify backend (:5001) — all API routes
+│   ├── index.ts               # Fastify app + Zod provider + WASM init
+│   ├── tsconfig.json          # Backend TS config (extends root)
+│   ├── plugins/               # Fastify plugins (auth, world-id-gate, rate-limit, error, x402)
+│   ├── schemas/               # Zod request/response schemas
+│   └── routes/                # Route handlers (25 endpoints)
+│       ��── world-id.ts        # /api/rp-signature, /api/verify-proof, /api/world-id/check
+│       ├── auth.ts            # /api/auth/* (session from JWT)
+│       ├─�� predictions.ts     # /api/predictions CRUD + bet/claim/resolve
+│       ├── gpu.ts             # /api/gpu/list, /api/gpu/register
+│       ├── edge.ts            # /api/edge/trade
+│       ├── seer.ts            # /api/seer/inference
+│       ├── reputation.ts      # /api/reputation GET/POST
+│       ├── agents.ts          # /api/agents, register, A2A, MCP
+│       ├── payments.ts        # /api/payments, /api/initiate-payment
+│       ├── resources.ts       # /api/resources (unified listing)
+│       ├── activity.ts        # /api/activity (on-chain feed)
+│       ├── hedera.ts          # /api/hedera/audit
+│       ├── proposals.ts       # /api/proposals
+│       ├── agent-decision.ts  # /api/agent-decision
+│       └── well-known.ts      # /.well-known/agent-card.json
+├── ecosystem.config.cjs       # PM2 process config (api + next + claw)
 ├── src/
-│   ├── app/                   # Next.js 15 App Router
-│   ├── layout.tsx             # Root layout with MiniKit provider
-│   ├── page.tsx               # Landing / entry point
-│   ├── (protected)/           # Auth-gated route group
-│   │   ├── layout.tsx         # World ID session check
-│   │   ├── home/
-│   │   │   └── page.tsx       # Marketplace (ISR 30s)
-│   │   ├── predictions/
-│   │   │   └── page.tsx       # Prediction markets (ISR 10s)
-│   │   ├── agent-decision/
-│   │   │   └── page.tsx       # Seer agent GPU selection flow (ISR 30s)
-│   │   └── profile/
-│   │       └── page.tsx       # User profile + agent fleet (SSR)
-│   ├── gpu-verify/
-│   │   └── page.tsx           # Resources: Dashboard + Register (GPU/Agent/Human/DePIN) (SSR)
-│   ├── .well-known/
-│   │   └── agent-card.json/   # A2A agent card endpoint (ERC-8004)
-│   └── api/                   # Server-side API routes (holds keys)
-│       ├── auth/
-│       │   └── [...nextauth]/
-│       │       └── route.ts   # NextAuth session provider
-│       ├── verify-proof/
-│       │   └── route.ts       # World ID v4 proof validation + CredentialGate + VCRED mint
-│       ├── world-id/
-│       │   └── check/
-│       │       └── route.ts   # World ID status check
-│       ├── rp-signature/
-│       │   └── route.ts       # RP signature for World ID
-│       ├── gpu/
-│       │   ├── register/
-│       │   │   └── route.ts   # GPU provider ERC-8004 registration
-│       │   └── list/
-│       │       └── route.ts   # List verified providers
-│       ├── payments/
-│       │   └── route.ts       # Hedera x402 via Blocky402 + auto-feedback + HCS audit
-│       ├── initiate-payment/
-│       │   └── route.ts       # MiniKit payment initiation
-│       ├── hedera/
-│       │   └── audit/
-│       │       └── route.ts   # HCS audit trail via Mirror Node
-│       ├── seer/
-│       │   └── inference/
-│       │       └── route.ts   # Seer 0G Compute inference via broker SDK
-│       ├── edge/
-│       │   └── trade/
-│       │       └── route.ts   # Edge agent trade execution + Shield clearance
-│       ├── predictions/
-│       │   ├── route.ts       # List/create markets
-│       │   └── [id]/
-│       │       ├── bet/
-│       │       │   └── route.ts # Place bet
-│       │       ├── claim/
-│       │       │   └── route.ts # Claim winnings
-│       │       └── resolve/
-│       │           └── route.ts # Resolve market outcome
-│       ├── agents/
-│       │   ├── register/
-│       │   │   └── route.ts   # AgentKit registration
-│       │   └── route.ts       # List agents
-│       ├── reputation/
-│       │   └── route.ts       # Query reputation scores
-│       ├── agent-decision/
-│       │   └── route.ts       # Seer agent GPU ranking + selection
-│       ├── proposals/
-│       │   └── route.ts       # Agent prediction proposals (submit/approve/reject)
-│       ├── resources/
-│       │   └── route.ts       # Unified resource listing
-│       └── agents/
-��           └── [name]/
-│               ├── a2a/
-│               │   └── route.ts   # A2A capability card + task execution
-│               └── mcp/
-│                   └── route.ts   # MCP tool schema + tool execution
-│
-├── lib/                       # Shared server utilities
-│   ├── hedera.ts              # @hashgraph/sdk wrapper (HTS, HCS, scheduled tx)
-│   ├── hedera-agent.ts        # Hedera Agent Kit (HederaAIToolkit wrapper)
-│   ├── blocky402.ts           # x402 facilitator client
-│   ├── og-chain.ts            # 0G Chain interactions (ethers + ERC-8004)
-│   ├── og-compute.ts          # 0G inference broker SDK
-│   ├── og-broker.ts           # 0G broker types + helpers
-│   ├── og-storage.ts          # 0G Storage KV for agent state
-│   ├── agentkit.ts            # World AgentKit registration (ERC-8004)
-│   ├── world-id.ts            # World ID verification + auth gate
-│   ├── reputation.ts          # ERC-8004 ReputationRegistry queries
-│   ├── prediction-math.ts    # Prediction market odds/payout calculations
-│   ├── x402-middleware.ts     # x402 payment-gating wrapper for API routes
-│   ├── contracts.ts           # Contract ABIs + addresses from deployments/
-│   ├── cache.ts               # TTL cache + per-backend circuit breaker
-│   ├── agent-router.ts        # Agent name validation, dispatch, rate limiter
-│   ├── agents/                # Per-agent A2A + MCP handlers
-│   │   ├── seer.ts            # Signal analysis (0G Compute inference)
-│   │   ├── edge.ts            # Trade execution (signed payloads)
-│   │   ├── shield.ts          # Risk management (validation + reputation)
-│   │   └─��� lens.ts            # Discovery + reputation feedback
-│   └── types.ts               # Shared TypeScript types
-│
-├── components/                # React components (see DESIGN_SYSTEM.md)
-│   ├── AgentCard.tsx          # OpenClaw agent identity card
-│   ├── AuthButton/            # World ID auth trigger
-│   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
-│   ├── CreateMarketModal.tsx  # Prediction market creation modal
-│   ├── RegisterAgentModal.tsx # Agent registration with role selector
-│   ├── ResourceStepper.tsx    # Unified 3-step registration (GPU/Agent/Human/DePIN)
-│   ├── Navigation/            # Bottom tab navigation (World App)
-│   ├── PageLayout/            # Page wrapper with header
-│   ├── PaymentConfirmation.tsx # x402 payment receipt
-│   ├── PredictionCard.tsx     # Prediction market card with bet UI
-│   ├── ReputationBar.tsx      # ERC-8004 reputation score bar
-│   ├── ResourceCard.tsx       # Resource listing card with chain badge
-│   ├── ResourceCardSkeleton.tsx # Loading skeleton for ResourceCard
-│   ├── SignalTicker.tsx       # 2-row auto-scrolling market signal ticker
-│   ├── ActivityFeed.tsx       # Live activity feed with filter chips
-│   ├── TradingDesk.tsx        # 5-step agent pipeline visualization (Register→Shield→Lens→Seer→Edge)
-│   ├── ProposalQueue.tsx      # Agent prediction proposal approval queue
-│   ├── PostHireRating.tsx     # Post-hire rating + prediction market suggestion
-│   ├── VerificationStatus.tsx # TEE/World ID verification badge
-│   └── Verify/               # MiniKit verify command wrapper
-│
-├── auth/                      # NextAuth configuration
-│   ├── index.ts               # NextAuth + World App Wallet provider
-│   └── wallet/                # SIWE helpers (client + server)
-│
-├── providers/                 # React context providers
-│   └── index.tsx              # MiniKit + NextAuth + Eruda
-│
-├── public/                    # Static assets
-│   └── agent-cards/           # ERC-8004 agent card JSONs
-│       ├── seer.json
-│       ├── edge.json
-│       ├── shield.json
-│       └── lens.json
-│
+│   ├── app/                   # Next.js 15 App Router (UI only — no API routes)
+│   │   ├── layout.tsx         # Root layout with MiniKit provider
+│   │   ├── page.tsx           # Landing / entry point
+│   │   └── (protected)/       # Auth-gated route group
+│   │       ├── layout.tsx     # World ID session check
+│   │       ├── home/          # Marketplace (ISR 30s)
+│   │       ├── predictions/   # Prediction markets (ISR 10s)
+│   │       ├── agent-decision/# Seer agent GPU selection flow (ISR 30s)
+│   │       ├── gpu-verify/    # Resources: Register (GPU/Agent/Human/DePIN) (SSR)
+│   │       └── profile/       # User profile + agent fleet (SSR)
+│   ├── types/                 # Shared TypeScript types
+│   │   └── resource.ts        # ResourceCardProps, ResourceType, Chain, signals
+│   ├── lib/                   # Shared server utilities (used by both Next.js + Fastify)
+│   │   ├── hedera.ts          # @hashgraph/sdk wrapper (HTS, HCS, scheduled tx)
+│   │   ├── hedera-agent.ts    # Hedera Agent Kit wrapper
+│   │   ├── blocky402.ts       # x402 facilitator client
+│   │   ├── og-chain.ts        # 0G Chain interactions (ethers + ERC-8004)
+│   │   ├── og-compute.ts      # 0G inference broker SDK
+│   │   ├��─ og-broker.ts       # 0G broker types + helpers
+│   │   ├── og-storage.ts      # 0G Storage KV for agent state
+│   │   ├── agentkit.ts        # World AgentKit registration (ERC-8004)
+│   │   ├── world-id.ts        # World ID verification (chain logic only)
+│   │   ├── reputation.ts      # ERC-8004 ReputationRegistry queries
+│   │   ├── prediction-math.ts # Prediction market odds/payout calculations
+│   │   ├── contracts.ts       # Contract ABIs + addresses from deployments/
+│   │   ├── cache.ts           # TTL cache + per-backend circuit breaker
+│   │   ├── agent-router.ts    # Agent name validation, dispatch, rate limiter
+│   │   ├── agents/            # Per-agent A2A + MCP handlers
+│   │   │   ├── seer.ts        # Signal analysis (0G Compute inference)
+│   │   │   ├── edge.ts        # Trade execution (signed payloads)
+│   ���   │   ├── shield.ts      # Risk management (validation + reputation)
+│   │   │   └── lens.ts        # Discovery + reputation feedback
+│   │   └── types.ts           # Shared TypeScript types
+│   ├── components/            # React components (see DESIGN_SYSTEM.md)
+│   │   ├── ResourceCard.tsx   # Resource listing card with chain badge
+│   ���   ├── PredictionCard.tsx # Prediction market card with bet UI
+│   ��   ├── SignalTicker.tsx   # 2-row auto-scrolling market signal ticker
+│   │   ├── ActivityFeed.tsx   # Live activity feed with filter chips
+���   │   ├── ResourceStepper.tsx# Unified 3-step registration
+│   │   ├── ProposalQueue.tsx  # Agent prediction proposal approval queue
+│   │   ├── PostHireRating.tsx # Post-hire rating + prediction suggestion
+│   │   ��── AgentCard.tsx      # OpenClaw agent identity card
+│   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization
+│   │   └── Navigation/       # Bottom tab navigation (World App)
+│   ├── auth/                  # NextAuth configuration
+│   └── providers/             # React context providers
 ├── contracts/                 # Solidity (0G Chain + World Chain ONLY)
-│   ├── 0g/
-│   │   ├── IdentityRegistryUpgradeable.sol
-│   │   ├── ReputationRegistryUpgradeable.sol
-│   │   ├── ValidationRegistryUpgradeable.sol
-│   │   ├── GPUProviderRegistry.sol
-│   │   ├── ResourcePrediction.sol
-│   │   ├── AgentProposalRegistry.sol
-│   │   ├── MockTEEValidator.sol
-│   │   ├── ERC1967Proxy.sol
-│   │   └── interfaces/
-│   │       ├── IIdentityRegistry.sol
-│   │       ├── IReputationRegistry.sol
-│   │       └── IValidationRegistry.sol
-│   └── world/
-│       ├── CredentialGate.sol
-│       ├── IWorldID.sol
-│       └── ByteHasher.sol
-│
+│   ├── 0g/                    # ERC-8004 registries, GPUProviderRegistry
+│   └── world/                 # CredentialGate.sol
 ├── agents/                    # OpenClaw agent configs
 │   ├── openclaw.json          # Gateway config
-│   ├── .agents/
-│   │   ├── seer/
-│   │   │   ├── soul.md
-│   │   │   └── skills/
-│   │   ├── edge/
-│   │   ├── shield/
-│   │   └── lens/
-│   └── skills/                # Custom skills (shared)
-│       ├── nanopayments.md
-│       ├── reputation.md
-│       ├── prediction.md
-│       ├── shield-check.md
-│       └── og-storage.md
-│
+│   ├── .agents/               # Agent soul files (seer, edge, shield, lens)
+│   └── skills/                # Custom skills (5)
 ├── scripts/                   # Deployment + demo
-│   ├── deploy-0g.ts           # Deploy contracts to 0G Galileo
+│   ├── dev.sh                 # Local dev startup (PM2 + ngrok)
+│   ���── deploy-0g.ts           # Deploy contracts to 0G Galileo
 │   ├── deploy-world.ts        # Deploy CredentialGate to World Sepolia
-│   ├── register-agents.ts     # Register 4 agents via AgentKit + ERC-8004
 │   ├── setup-hedera.ts        # Create HTS tokens + HCS topic
-│   ├── seed-demo-data.ts      # Pre-populate demo state (GPU providers, markets, reputation)
-│   ├── demo-flow.md           # 7-step demo walkthrough for presenters
-│   ├── demo-agent-fleet.ts    # 4-agent autonomy demo (Seer→Edge→Shield→Lens)
-│   └── dev.sh                 # Local dev startup (contracts + ngrok + Next.js)
-│
-├── deployments/               # Contract addresses (filled during Wave 1)
-│   ├── 0g-galileo.json
-│   ├── world-sepolia.json
-│   └── hedera-testnet.json
-│
+│   ├── seed-demo-data.ts      # Pre-populate demo state
+│   └── demo-agent-fleet.ts    # 4-agent autonomy demo
+├── deployments/               # Contract addresses (JSON)
+├── public/agent-cards/        # ERC-8004 A2A agent cards
 ├── hardhat.config.ts          # Multi-chain Hardhat config
-├── .env.example               # Environment variables template
-├── next.config.ts             # Next.js config with MiniKit
+├── next.config.ts             # Next.js config + /api/* rewrite to Fastify
+├── ecosystem.config.cjs       # PM2 process management
 ├── vitest.config.ts           # Test runner configuration
-├── middleware.ts               # NextAuth session middleware
+├── middleware.ts              # NextAuth session middleware
 ├── package.json
 ├── tsconfig.json
-└── docs/                      # Planning documentation (this folder)
+└── docs/                      # Planning documentation
 ```
 
 ### No Solidity on Hedera
@@ -233,12 +152,12 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 
 | Route | Method | Revalidation | Data Source | Why |
 |-------|--------|-------------|-------------|-----|
-| `/` | **ISR** | 30 seconds | API route → 0G Chain (IdentityRegistry) | Resource list changes slowly |
-| `/gpu-verify` | **SSR** | Every request | API route → 0G SDK + ERC-8004 | Resource registration + verification (GPU, Agent, Human, DePIN) |
-| `/predictions` | **ISR** | 10 seconds | API route → 0G Chain (ResourcePrediction) | Near-real-time pool updates |
-| `/profile` | **SSR** | Every request | API route → World Chain + 0G Chain | User-specific verified status |
-| `/agent-decision` | **ISR** | 30 seconds | API route → 0G Chain (ReputationRegistry) | Seer agent resource ranking |
-| `/api/*` | **API Route** | N/A | Server-side, direct SDK calls | Holds keys, calls chains |
+| `/` | **ISR** | 30 seconds | Fastify → 0G Chain (IdentityRegistry) | Resource list changes slowly |
+| `/gpu-verify` | **SSR** | Every request | Fastify → 0G SDK + ERC-8004 | Resource registration + verification (GPU, Agent, Human, DePIN) |
+| `/predictions` | **ISR** | 10 seconds | Fastify → 0G Chain (ResourcePrediction) | Near-real-time pool updates |
+| `/profile` | **SSR** | Every request | Fastify → World Chain + 0G Chain | User-specific verified status |
+| `/agent-decision` | **ISR** | 30 seconds | Fastify → 0G Chain (ReputationRegistry) | Seer agent resource ranking |
+| `/api/*` | **Fastify** | N/A | Persistent process, direct SDK calls | Holds keys, WASM singleton, calls chains |
 
 ### Next.js Best Practices
 
@@ -249,8 +168,8 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 | **Image optimization** | `next/image` for all images |
 | **Error boundaries** | `error.tsx` per route with chain-specific error messages |
 | **Server Actions** | For form submissions (GPU registration, bet placement) |
-| **Route Handlers** | `/api/*` for chain interactions — server-side only |
-| **Environment variables** | `NEXT_PUBLIC_*` for client, plain for server (API routes) |
+| **API via Fastify** | All `/api/*` routes on Fastify :5001, proxied by Next.js rewrites |
+| **Environment variables** | `NEXT_PUBLIC_*` for client, plain for server (Fastify + SSR) |
 
 ### Client vs Server Split
 
@@ -258,46 +177,56 @@ Solidity contracts deploy to **0G Chain** and **World Chain** only.
 |-------|---------|--------------|---------|
 | **Server Components** | Vercel Edge / Node | Everything (env vars, SDKs, chain RPCs) | Page data fetching, resource listing |
 | **Client Components** | Browser | Only `NEXT_PUBLIC_*` vars, MiniKit, wallet | Wallet connect, MiniKit.verify(), bet forms |
-| **API Routes** | Vercel Serverless | Everything (private keys, SDKs) | Chain writes, Hedera transactions, x402 payments |
+| **Fastify Backend** | PM2-managed process | Everything (private keys, SDKs, WASM) | Chain writes, Hedera transactions, x402 payments |
 
-**Private keys live in API routes (server-side).** Browser never sees them. Same security as a separate backend.
+**Private keys live in Fastify (server-side).** Browser never sees them. Next.js rewrites proxy `/api/*` transparently to Fastify :5001.
 
 ---
 
 ## Communication Flow
 
 ```
-Browser (Client Components)         Vercel (Server)
-┌─────────────────┐                ┌──────────────────────────┐
-│                 │                │  Server Components       │
-│  MiniKit        │                │  (fetch chain data)      │
-│  .verify()      │                │                          │
-│  .pay()         │                │  API Routes              │
-│                 │   fetch()      │  ┌──────────────────────┐│
-│  Wallet         │───────────────→│  │ /api/verify          ││
-│  Connect        │←──────────────│  │  → World ID validate  ││
-│                 │                │  │  → CredentialGate tx  ││
-│  Form           │                │  │                      ││
-│  Submissions    │                │  │ /api/gpu/register    ││
-│                 │                │  │  → 0G SDK listService││
-│                 │                │  │  → GPUProviderReg tx ││
-│                 │                │  │  → IdentityReg tx    ││
-│                 │                │  │                      ││
-│                 │                │  │ /api/payments        ││
-│                 │                │  │  → Blocky402 verify  ││
-│                 │                │  │  → Hedera x402 settle││
-│                 │                │  │  → HCS audit log     ││
-│                 │                │  │                      ││
-│                 │                │  │ /api/predictions     ││
-│                 │                │  │  → ResourcePred tx   ││
-│                 │                │  └──────────────────────┘│
-│                 │                │                          │
-│                 │                │  OpenClaw Gateway :18789 │
-│                 │                │   Seer → 0G Compute     │
-│                 │                │   Edge → predictions     │
-│                 │                │   Shield → validation    │
-│                 │                │   Lens → reputation      │
-└─────────────────┘                └──────────────────────────┘
+Browser                 Next.js :3000              Fastify :5001          OpenClaw :18789
+┌──────────┐           ┌──────────────┐           ┌──��───────────┐      ┌─────────────┐
+│ MiniKit  │  fetch()  │ SSR pages    │  rewrite  │ /api/verify  │      │ Seer        │
+│ .verify()│─────────→ │ Server Comps │─────────→ │  → World ID  │      │ Edge        │
+│ .pay()   │           │              │           │  → CredGate  │      │ Shield      │
+│          │           │ Middleware   │           │              │      │ Lens        │
+│ Wallet   │           │ (auth only)  │           │ /api/gpu/*   │      │             │
+│ Connect  │           │              │           │  → 0G SDK    │      │ Agent A2A/  │
+│          │           │ Static files │           │  → ERC-8004  │      │ MCP calls   │
+│ Forms    │           │              │           │              │      │ via Fastify │
+│          │           │              │           │ /api/payments│      │ routes      │
+│          │           │              │           │  → Blocky402 │      │             │
+│          │           │              │           │  → Hedera    │      │             │
+│          │           │              │           │              │      │             │
+│          │           │              │           │ WASM (once)  │      │             │
+└──────────┘           └──────────────┘           └──────────────┘      └─────────────┘
+                                                         │
+                              ┌───────────────────────────┤
+                              │              │            │
+                         World Chain    0G Chain      Hedera
+```
+
+### PM2 Process Management
+
+```
+┌──────────────────────────────────────────────────────┐
+│  PM2 (ecosystem.config.cjs)                          │
+│                                                      │
+│  ┌─────────┐   ┌──────────┐   ┌───────────────┐    │
+│  │  api    │   │  next    │   │  claw         │    │
+│  │ :5001   │   │  :3000   │   │  :18789       │    │
+│  │ Fastify │   │ Next.js  │   │ OpenClaw      │    │
+│  │ tsx     │   │ turbopack│   │ Gateway       │    │
+│  │ watch   │   │          │   │               │    │
+│  └─────────┘   └──────────┘   └───────────────┘    │
+│                                                      │
+│  Commands:                                           │
+│    npm run dev:pm2   → start all                     │
+│    npm run dev:logs  → pm2 logs --lines 50           │
+│    npm run dev:stop  → pm2 delete all                │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -534,9 +463,9 @@ No traditional database. No Redis. No Postgres.
 | Directory | Agents | Language | Never Touch |
 |-----------|--------|----------|------------|
 | `app/` (pages) | 4 (scaffold), 7 (marketplace), 13 (polish) | TSX | `contracts/`, `agents/` |
-| `app/api/` (routes) | 2, 3, 5, 6, 8, 9, 10 | TS | `components/`, `contracts/` |
+| `server/` (Fastify routes) | 2, 3, 5, 6, 8, 9, 10 | TS | `components/`, `contracts/` |
 | `lib/` | 3, 8 (create), 9-10 (extend) | TS | `components/`, `contracts/` |
-| `components/` | 7 (create), 9-10 (add), 13 (polish) | TSX | `app/api/`, `contracts/`, `agents/` |
+| `components/` | 7 (create), 9-10 (add), 13 (polish) | TSX | `server/`, `contracts/`, `agents/` |
 | `contracts/` | 1, 5 | Solidity | Everything else |
 | `agents/` | 4, 8, 11 | OpenClaw | `app/`, `contracts/` |
 | `deployments/` | 1, 2, 3, 5 (write), all (read) | JSON | — |

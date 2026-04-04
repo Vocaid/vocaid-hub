@@ -77,6 +77,7 @@
 | — | Replace favicon with white brand icon | `src/app/icon.png` (new), `src/app/favicon.ico` (deleted) | done | 2026-04-05T07:00Z | 2026-04-05T07:05Z |
 | — | Fix Vercel build: commit 6 missing untracked files | `PostHireRating.tsx`, `ProposalQueue.tsx`, `AgentProposalRegistry.sol`, `/api/proposals/route.ts`, deploy script | done | 2026-04-05T07:05Z | 2026-04-05T07:10Z |
 | — | Doc gap analysis: fix 8 discrepancies across 4 files | `README.md`, `ARCHITECTURE.md`, `SUBMISSION.md`, `SUBMISSION_CONTENT.md` | done | 2026-04-05T07:10Z | 2026-04-05T07:30Z |
+| — | Wave 4: Delete Next.js API routes, extract shared types, update middleware + docs | `src/app/api/` (deleted), `src/types/resource.ts` (new), `middleware.ts`, `server/routes/resources.ts`, `src/components/{ResourceCard,ChainBadge,VerificationStatus,ReputationSignals}.tsx`, `docs/ARCHITECTURE.md`, `README.md`, `docs/PENDING_WORK.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T20:00Z | 2026-04-04T21:00Z |
 
 ---
 

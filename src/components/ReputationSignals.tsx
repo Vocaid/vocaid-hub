@@ -2,23 +2,8 @@
 
 import { BarChart3, Clock, DollarSign, Gauge, Globe, Star, Zap } from 'lucide-react';
 
-export interface SignalData {
-  value: number;
-  unit: string;
-  rank?: number;
-  total?: number;
-  tag2?: string;
-}
-
-export interface ResourceSignals {
-  cost?: SignalData;
-  latency?: SignalData;
-  uptime?: SignalData;
-  compute?: SignalData;
-  region?: SignalData;
-  quality?: SignalData;
-  availability?: SignalData;
-}
+export type { SignalData, ResourceSignals } from '@/types/resource';
+import type { SignalData, ResourceSignals } from '@/types/resource';
 
 const signalConfig = {
   cost: { icon: DollarSign, label: 'Cost', color: 'text-green-600' },

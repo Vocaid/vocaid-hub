@@ -1,8 +1,7 @@
 import { type FastifyPluginAsync } from 'fastify';
 import { type ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ResourceQuerySchema } from '../schemas/resources.js';
-import type { ResourceCardProps } from '@/components/ResourceCard';
-import type { ResourceSignals } from '@/components/ReputationSignals';
+import type { ResourceCardProps, ResourceSignals } from '@/types/resource';
 import type { OGServiceInfo } from '@/lib/og-compute';
 import {
   type OnChainGPUProvider,

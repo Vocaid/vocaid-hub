@@ -1,6 +1,7 @@
 import { ShieldCheck } from 'lucide-react';
 
-export type VerificationType = 'tee' | 'world-id' | 'agentkit';
+export type { VerificationType } from '@/types/resource';
+import type { VerificationType } from '@/types/resource';
 
 const labels: Record<VerificationType, string> = {
   tee: 'TEE Verified',

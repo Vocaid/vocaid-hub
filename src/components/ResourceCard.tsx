@@ -1,26 +1,12 @@
 'use client';
 
 import { Bot, Cpu, Loader2, User, Zap } from 'lucide-react';
-import { ChainBadge, type Chain } from './ChainBadge';
+import { ChainBadge } from './ChainBadge';
 import { ReputationBar } from './ReputationBar';
-import { VerificationStatus, type VerificationType } from './VerificationStatus';
-import type { ResourceSignals } from './ReputationSignals';
+import { VerificationStatus } from './VerificationStatus';
+import type { ResourceCardProps, ResourceType } from '@/types/resource';
 
-export type ResourceType = 'human' | 'gpu' | 'agent' | 'depin';
-
-export interface ResourceCardProps {
-  type: ResourceType;
-  name: string;
-  reputation: number;
-  verified: boolean;
-  chain: Chain;
-  price: string;
-  verificationType?: VerificationType;
-  subtitle?: string;
-  signals?: ResourceSignals;
-  onHire?: (resource: { name: string; price: string; type: ResourceType }) => void;
-  hiring?: boolean;
-}
+export type { ResourceCardProps, ResourceType } from '@/types/resource';
 
 const typeConfig: Record<ResourceType, { icon: typeof Cpu; label: string }> = {
   gpu: { icon: Cpu, label: 'GPU' },

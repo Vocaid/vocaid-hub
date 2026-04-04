@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 
-export type Chain = 'world' | '0g' | 'hedera';
+export type { Chain } from '@/types/resource';
+import type { Chain } from '@/types/resource';
 
 const chainConfig: Record<Chain, { logo: string; alt: string }> = {
   world: { logo: '/world.png', alt: 'World' },

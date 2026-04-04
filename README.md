@@ -33,29 +33,32 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            MINI APP (Next.js 15)                            │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
-│  │    /     │ │/resources │ │/predict  │ │/agent-dec│ │ /profile │         │
-│  │Marketplace│ │Resources │ │Pred Mkt  │ │Seer Flow │ │  My Hub  │         │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘         │
-│       │             │            │             │             │               │
-│  ┌────┴─────────────┴────────────┴─────────────┴─────────────┴──────┐       │
-│  │                    API ROUTES (Next.js /api/)                     │       │
-│  │  /api/verify  /api/gpu  /api/predict  /api/agent-decision  /api/agents   │
-│  └──────┬────────────┬────────────┬─────────────┬───────────────────┘       │
-└─────────┼────────────┼────────────┼─────────────┼───────────────────────────┘
-          │            │            │             │
-    ┌─────┴─────┐ ┌────┴────┐ ┌────┴────┐ ┌─────┴─────┐
-    │  WORLD    │ │   0G    │ │ HEDERA  │ │ OPENCLAW  │
-    │  CHAIN    │ │  CHAIN  │ │         │ │  GATEWAY  │
-    │           │ │         │ │         │ │           │
-    │CredGate  │ │ERC-8004 │ │x402/    │ │ Seer Edge │
-    │.sol      │ │Identity │ │Blocky402│ │Shield Lens│
-    │          │ │Reputation│ │         │ │           │
-    │World ID  │ │Validation│ │HTS Cred │ │0G Compute │
-    │AgentKit  │ │GPUProvReg│ │HCS Audit│ │0G Storage │
-    └──────────┘ └─────────┘ └─────────┘ └───────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                         MINI APP (Next.js 15 :3000)                           │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │    /     │ │/resources │ │/predict  │ │/agent-dec│ │ /profile │           │
+│  │Marketplace│ │Resources │ │Pred Mkt  │ │Seer Flow │ │  My Hub  │           │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
+│       └─────────────┴────────────┴─────────────┴─────────────┘               │
+│                              /api/* rewrite                                   │
+└──────────────────────────────────┬────────────────────────────────────────────┘
+                                   │
+┌──────────────────────────────────┴────────────────────────────────────────────┐
+│                       FASTIFY BACKEND (:5001)                                 │
+│  Zod validation · WASM singleton · Fastify plugins (auth, rate-limit, x402)  │
+│  /api/verify  /api/gpu  /api/predictions  /api/agents  /api/payments  ...    │
+└──────┬────────────┬────────────┬─────────────┬───────────────────────┬────────┘
+       │            │            │             │                       │
+ ┌─────┴─────┐ ┌────┴────┐ ┌────┴────┐ ┌─────┴─────┐          ┌─────┴─────┐
+ │  WORLD    │ │   0G    │ │ HEDERA  │ │ OPENCLAW  │          │   PM2     │
+ │  CHAIN    │ │  CHAIN  │ │         │ │  GATEWAY  │          │  Manager  │
+ │           │ │         │ │         │ │  :18789   │          │           │
+ │CredGate  │ │ERC-8004 │ │x402/    │ │ Seer Edge │          │ api       │
+ │.sol      │ │Identity │ │Blocky402│ │Shield Lens│          │ next      │
+ │          │ │Reputation│ │         │ │           │          │ claw      │
+ │World ID  │ │Validation│ │HTS Cred │ │0G Compute │          │           │
+ │AgentKit  │ │GPUProvReg│ │HCS Audit│ │0G Storage │          │           │
+ └──────────┘ └─────────┘ └─────────┘ └───────────┘          └───────────┘
 ```
 
 ### Chain Roles
@@ -72,7 +75,8 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
-| Framework | Next.js | ^15.2.8 | App Router, SSR/ISR, API routes |
+| Framework | Next.js + Fastify | ^15.2.8 / ^5 | Next.js SSR/ISR frontend, Fastify backend API |
+| Process Manager | PM2 | ^5 | Multi-process management (api + next + claw) |
 | Language | TypeScript | ^5 | Type-safe throughout |
 | UI | Tailwind CSS | ^4 | Mobile-first responsive design |
 | Auth | World ID + NextAuth | ^5.0.0-beta.25 | ZK proof verification, session management |
@@ -141,14 +145,27 @@ npx tsx scripts/demo-agent-fleet.ts
 ### Run Development Server
 
 ```bash
-npm run dev
+# Option 1: PM2 (recommended — manages all 3 processes)
+npm run dev:pm2        # Start api (:5001) + next (:3000) + claw (:18789)
+npm run dev:logs       # Tail all logs (pm2 logs --lines 50)
+npm run dev:stop       # Stop all processes
+
+# Option 2: Individual processes
+npm run dev:backend    # Fastify only (:5001)
+npm run dev            # Next.js only (:3000)
+
+# Option 3: Dev script (includes ngrok + health checks)
+./scripts/dev.sh
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in World App or browser.
+API health: `curl http://localhost:5001/health`
 
 ---
 
-## API Routes
+## API Routes (Fastify :5001)
+
+All routes served by Fastify with Zod validation, proxied through Next.js rewrites (`/api/*` → `:5001`).
 
 | Route | Method | Description | Chain |
 |-------|--------|------------|-------|
@@ -259,17 +276,25 @@ Explorer: [testnet.hashscan.io](https://testnet.hashscan.io)
 
 ```
 vocaid-hub/
+├── server/                     # Fastify backend (:5001) — all 25 API routes
+│   ├── index.ts                # Fastify app + Zod provider + WASM init
+│   ├── tsconfig.json           # Backend TS config
+│   ├── plugins/                # Auth, World ID gate, rate-limit, error, x402
+│   ├── schemas/                # Zod request/response validation
+│   └── routes/                 # 15 route modules (25 endpoints)
+├── ecosystem.config.cjs        # PM2 config (api + next + claw)
 ├── src/
-│   ├── app/                    # Next.js 15 App Router
+│   ├── app/                    # Next.js 15 App Router (UI only — no API routes)
 │   │   ├── layout.tsx          # Root layout + MiniKit provider
 │   │   ├── page.tsx            # Landing page
-│   │   ├── (protected)/        # Auth-gated routes (World ID required)
-│   │   │   ├── home/           # Marketplace (ISR 30s) — Seer panel + resource cards
-│   │   │   ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
-│   │   │   ├── agent-decision/ # Seer agent resource ranking by signal (ISR 30s) — 4-step visual
-│   │   │   ├── gpu-verify/     # Resources: Dashboard + Register (GPU/Agent/Human/DePIN) (SSR)
-│   │   │   └── profile/        # User profile + fleet deployment + proposals (SSR)
-│   │   └── api/                # 24 server-side API routes
+│   │   └── (protected)/        # Auth-gated routes (World ID required)
+│   │       ├── home/           # Marketplace (ISR 30s) — resource cards
+│   │       ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
+│   │       ├── agent-decision/ # Seer agent resource ranking (ISR 30s) — 4-step visual
+│   │       ├── gpu-verify/     # Resources: Register (GPU/Agent/Human/DePIN) (SSR)
+│   │       └── profile/        # User profile + fleet deployment + proposals (SSR)
+│   ├── types/                  # Shared TypeScript types (frontend + backend)
+│   │   └── resource.ts         # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                    # Shared server utilities (20 files)
 │   │   ├── hedera.ts           # @hashgraph/sdk wrapper
 │   │   ├── hedera-agent.ts     # Hedera Agent Kit wrapper
