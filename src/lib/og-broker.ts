@@ -3,6 +3,7 @@ import {
   type ZGComputeNetworkBroker,
 } from '@0glabs/0g-serving-broker';
 import { ethers } from 'ethers';
+import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../../server/utils/fetch-with-timeout';
 
 const OG_RPC_URL =
   process.env.NEXT_PUBLIC_OG_RPC_URL ?? 'https://evmrpc-testnet.0g.ai';
@@ -81,7 +82,7 @@ export async function callInference(
   );
 
   // Call the provider's OpenAI-compatible endpoint
-  const res = await fetch(`${endpoint}/chat/completions`, {
+  const res = await fetchWithTimeout(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -91,6 +92,7 @@ export async function callInference(
       model,
       messages: [{ role: 'user', content: prompt }],
     }),
+    timeout: TIMEOUT_BUDGETS.OG_INFERENCE,
   });
 
   if (!res.ok) {
