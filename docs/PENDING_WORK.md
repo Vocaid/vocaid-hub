@@ -94,8 +94,8 @@
 | P-048 | TECHNOLOGY_RESEARCH Arc references | ✅ done | Agent 9 | `docs/TECHNOLOGY_RESEARCH.md` | Fixed |
 | P-049 | 0G Galileo testnet SSL timeout | mitigated | Agent 5 | `src/app/api/gpu/*` | Demo fallbacks in place |
 | P-050 | GPU stepper e2e fallback | ✅ done | Agent 5 | `src/components/GPUStepper.tsx` | Verified |
-| P-051 | `/api/resources` self-fetch hits World ID gate | unclaimed | — | `src/app/api/resources/route.ts` | Internal fetch lacks session cookies. Falls back to mock. Fix: call `listProviders()` directly. |
-| P-052 | GPUProviderRegistry != Broker listing source | unclaimed | — | `src/app/api/gpu/list/route.ts` | Registration and listing use different contracts. Works via mocks. |
+| P-051 | `/api/resources` self-fetch hits World ID gate | ✅ done | Agent 5 | `src/app/api/resources/route.ts` | Replaced HTTP self-fetch with direct imports (listProviders, listRegisteredAgents, getRegisteredProviders) |
+| P-052 | GPUProviderRegistry != Broker listing source | ✅ done | Agent 5 | `src/lib/og-chain.ts`, `src/app/api/resources/route.ts` | Added getRegisteredProviders() to read on-chain registry; resources route merges broker + on-chain data |
 | P-054 | Demo video not recorded | unclaimed | — | — | Wave 4 deliverable. Manual recording needed. |
 
 ---
