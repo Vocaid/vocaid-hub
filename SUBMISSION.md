@@ -4,7 +4,7 @@
 ETHGlobal Cannes 2026 | April 3-5, 2026
 
 ## Project
-Vocaid Hub — Hybrid Resource Allocation for the Agentic Economy
+Vocaid Hub — Reliable Resources for the Agentic Economy
 
 A protocol where verified humans and AI agents discover, verify, price, and trade ANY resource through ERC-8004 registries on 0G Chain, with x402 USDC payments on Hedera via Blocky402 — all inside World App.
 

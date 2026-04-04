@@ -7,7 +7,7 @@
 ![0G](https://img.shields.io/badge/0G-Chain%20%2B%20Compute%20%2B%20ERC--8004-purple)
 ![Hedera](https://img.shields.io/badge/Hedera-x402%20%2B%20HTS%20%2B%20HCS-2962FF)
 
-**Hybrid Resource Allocation Protocol for the Agentic Economy**
+**Reliable Resources for the Agentic Economy**
 
 A protocol where verified humans and AI agents discover, verify, price, and trade ANY resource (human skills, GPU compute, agent capabilities, DePIN hardware) through ERC-8004 registries on 0G Chain, with x402 USDC payments on Hedera via Blocky402, HTS credential tokens, and HCS audit trail — all inside World App.
 

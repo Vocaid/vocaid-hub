@@ -1,6 +1,6 @@
 # VocAid Hub -- Demo Flow (ETHGlobal Cannes 2026)
 
-**Hybrid Resource Allocation: World (Trust) + 0G (Verify) + Hedera (Settle)**
+**Reliable Resources for the Agentic Economy: World (Trust) + 0G (Verify) + Hedera (Settle)**
 
 ---
 
