@@ -4,6 +4,8 @@ import { useState } from 'react'; // used by DeployFleetSection
 import { ShieldCheck, Bot, Loader2, Check, ArrowRight } from 'lucide-react';
 import { AgentCard, type AgentRole } from '@/components/AgentCard';
 import { ChainBadge } from '@/components/ChainBadge';
+import { WorldIdGateModal } from '@/components/WorldIdGateModal';
+import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import Link from 'next/link';
 
 interface AgentData {
@@ -129,8 +131,16 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
 function DeployFleetSection({ deployedRoles }: { deployedRoles: Set<string> }) {
   const [deploying, setDeploying] = useState<string | null>(null);
   const [deployed, setDeployed] = useState<Set<string>>(new Set());
+  const { isVerified, recheckStatus } = useWorldIdGate();
+  const [showGateModal, setShowGateModal] = useState(false);
+  const [pendingDeploy, setPendingDeploy] = useState<{ roleId: string; label: string } | null>(null);
 
   async function handleDeploy(roleId: string, label: string) {
+    if (!isVerified) {
+      setPendingDeploy({ roleId, label });
+      setShowGateModal(true);
+      return;
+    }
     setDeploying(roleId);
     try {
       const session = await getSessionAddress();
@@ -154,6 +164,19 @@ function DeployFleetSection({ deployedRoles }: { deployedRoles: Set<string> }) {
   }
 
   return (
+    <>
+    {isVerified === false && (
+      <button
+        onClick={() => setShowGateModal(true)}
+        className="flex items-center gap-3 w-full p-3 rounded-xl border border-amber-200 bg-amber-50 text-left animate-fade-in mb-2"
+      >
+        <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-amber-800">Verify your World ID</p>
+          <p className="text-xs text-amber-600">Required to deploy fleet agents. Tap to verify.</p>
+        </div>
+      </button>
+    )}
     <div className="grid grid-cols-2 gap-2">
       {FLEET_AGENTS.map((agent) => {
         const alreadyDeployed = deployedRoles.has(agent.id) || deployed.has(agent.id);
@@ -190,5 +213,19 @@ function DeployFleetSection({ deployedRoles }: { deployedRoles: Set<string> }) {
         );
       })}
     </div>
+    <WorldIdGateModal
+      open={showGateModal}
+      onClose={() => { setShowGateModal(false); recheckStatus(); }}
+      onVerified={async () => {
+        setShowGateModal(false);
+        await recheckStatus();
+        if (pendingDeploy) {
+          const { roleId, label } = pendingDeploy;
+          setPendingDeploy(null);
+          handleDeploy(roleId, label);
+        }
+      }}
+    />
+    </>
   );
 }

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus, ShieldCheck } from 'lucide-react';
 import { PredictionCard, type PredictionMarket } from '@/components/PredictionCard';
 import { CreateMarketModal } from '@/components/CreateMarketModal';
 import { SignalTicker } from '@/components/SignalTicker';
 import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
+import { WorldIdGateModal } from '@/components/WorldIdGateModal';
+import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -16,6 +18,9 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
+  const { isVerified, recheckStatus } = useWorldIdGate();
+  const [showGateModal, setShowGateModal] = useState(false);
+  const pendingActionRef = useRef<(() => void) | null>(null);
 
   const refreshMarkets = useCallback(async () => {
     try {
@@ -60,7 +65,20 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   // Ticker gets top 8 items
   const tickerItems = activityItems.slice(0, 8);
 
+  function requireVerified(action: () => void) {
+    if (!isVerified) {
+      pendingActionRef.current = action;
+      setShowGateModal(true);
+      return;
+    }
+    action();
+  }
+
   async function handleBet(marketId: number, side: 'yes' | 'no', amount: number) {
+    if (!isVerified) {
+      requireVerified(() => handleBet(marketId, side, amount));
+      return;
+    }
     const res = await fetch(`/api/predictions/${marketId}/bet`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -78,6 +96,10 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   }
 
   async function handleResolve(marketId: number, outcome: 'yes' | 'no') {
+    if (!isVerified) {
+      requireVerified(() => handleResolve(marketId, outcome));
+      return;
+    }
     const res = await fetch(`/api/predictions/${marketId}/resolve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -93,6 +115,10 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   }
 
   async function handleClaim(marketId: number) {
+    if (!isVerified) {
+      requireVerified(() => handleClaim(marketId));
+      return;
+    }
     const res = await fetch(`/api/predictions/${marketId}/claim`, {
       method: 'POST',
     });
@@ -149,10 +175,24 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
         </div>
       )}
 
+      {/* World ID verification banner */}
+      {isVerified === false && (
+        <button
+          onClick={() => setShowGateModal(true)}
+          className="flex items-center gap-3 w-full p-3 rounded-xl border border-amber-200 bg-amber-50 text-left animate-fade-in"
+        >
+          <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800">Verify your World ID</p>
+            <p className="text-xs text-amber-600">Required to place bets and create markets. Tap to verify.</p>
+          </div>
+        </button>
+      )}
+
       {/* Create Market CTA */}
       <button
-        onClick={() => setShowCreateModal(true)}
-        className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-chain-hedera text-white text-sm font-semibold active:scale-95 transition-transform"
+        onClick={() => requireVerified(() => setShowCreateModal(true))}
+        className="flex items-center justify-center gap-2 min-h-11 rounded-lg bg-chain-hedera text-white text-sm font-semibold active:scale-95 transition-transform"
       >
         <Plus className="w-4 h-4" />
         Create Market
@@ -168,6 +208,21 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
           }}
         />
       )}
+
+      {/* World ID verification modal */}
+      <WorldIdGateModal
+        open={showGateModal}
+        onClose={() => { setShowGateModal(false); recheckStatus(); }}
+        onVerified={async () => {
+          setShowGateModal(false);
+          await recheckStatus();
+          if (pendingActionRef.current) {
+            const action = pendingActionRef.current;
+            pendingActionRef.current = null;
+            action();
+          }
+        }}
+      />
     </>
   );
 }
