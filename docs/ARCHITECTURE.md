@@ -66,6 +66,9 @@ vocaid-hub/
 │       ├── hedera/
 │       │   └── audit/
 │       │       └── route.ts   # HCS audit trail via Mirror Node
+│       ├── seer/
+│       │   └── inference/
+│       │       └── route.ts   # Seer 0G Compute inference via broker SDK
 │       ├── predictions/
 │       │   ├── route.ts       # List/create markets
 │       │   └── [id]/
@@ -95,27 +98,25 @@ vocaid-hub/
 │   ├── agentkit.ts            # World AgentKit registration (ERC-8004)
 │   ├── world-id.ts            # World ID verification + auth gate
 │   ├── reputation.ts          # ERC-8004 ReputationRegistry queries
+│   ├── x402-middleware.ts     # x402 payment-gating wrapper for API routes
 │   ├── contracts.ts           # Contract ABIs + addresses from deployments/
 │   └── types.ts               # Shared TypeScript types
 │
 ├── components/                # React components (see DESIGN_SYSTEM.md)
-│   ├── ResourceCard.tsx       # Resource listing card with chain badge
-│   ├── ResourceCardSkeleton.tsx # Loading skeleton for ResourceCard
-│   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
-│   ├── ReputationBar.tsx      # ERC-8004 reputation score bar
-│   ├── VerificationStatus.tsx # TEE/World ID verification badge
-│   ├── PredictionCard.tsx     # Prediction market card with bet UI
-│   ├── PaymentConfirmation.tsx # x402 payment receipt
 │   ├── AgentCard.tsx          # OpenClaw agent identity card
+│   ├── AuthButton/            # World ID auth trigger
+│   ├── ChainBadge.tsx         # World/0G/Hedera chain indicator
+│   ├── CreateMarketModal.tsx  # Prediction market creation modal
 │   ├── GPUStepper.tsx         # GPU provider registration stepper
 │   ├── Navigation/            # Bottom tab navigation (World App)
 │   ├── PageLayout/            # Page wrapper with header
-│   ├── AuthButton/            # World ID auth trigger
-│   ├── Pay/                   # MiniKit pay command wrapper
-│   ├── Verify/                # MiniKit verify command wrapper
-│   ├── Transaction/           # Transaction status display
-│   ├── UserInfo/              # User profile header
-│   └── ViewPermissions/       # Permission gate UI
+│   ├── PaymentConfirmation.tsx # x402 payment receipt
+│   ├── PredictionCard.tsx     # Prediction market card with bet UI
+│   ├── ReputationBar.tsx      # ERC-8004 reputation score bar
+│   ├── ResourceCard.tsx       # Resource listing card with chain badge
+│   ├── ResourceCardSkeleton.tsx # Loading skeleton for ResourceCard
+│   ├── VerificationStatus.tsx # TEE/World ID verification badge
+│   └── Verify/               # MiniKit verify command wrapper
 │
 ├── public/                    # Static assets
 │   └── agent-cards/           # ERC-8004 agent card JSONs
@@ -155,12 +156,16 @@ vocaid-hub/
 ├── scripts/                   # Deployment + demo
 │   ├── deploy-0g.ts           # Deploy contracts to 0G Galileo
 │   ├── deploy-world.ts        # Deploy CredentialGate to World Sepolia
-│   ├── seed-demo-data.ts      # Pre-populate demo state
-│   └── setup-hedera.ts        # Create HTS tokens + HCS topic
+│   ├── register-agents.ts     # Register 4 agents via AgentKit + ERC-8004
+│   ├── setup-hedera.ts        # Create HTS tokens + HCS topic
+│   ├── seed-demo-data.ts      # Pre-populate demo state (GPU providers, markets, reputation)
+│   ├── demo-flow.md           # 7-step demo walkthrough for presenters
+│   └── dev.sh                 # Local dev startup (contracts + ngrok + Next.js)
 │
 ├── deployments/               # Contract addresses (filled during Wave 1)
 │   ├── 0g-galileo.json
-│   └── world-sepolia.json
+│   ├── world-sepolia.json
+│   └── hedera-testnet.json
 │
 ├── hardhat.config.ts          # Multi-chain Hardhat config
 ├── .env.example               # Environment variables template
