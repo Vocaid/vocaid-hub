@@ -1,32 +1,113 @@
 [
   {
     "inputs": [
-      { "internalType": "address", "name": "identityRegistry_", "type": "address" },
-      { "internalType": "address", "name": "validationRegistry_", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "identityRegistry_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "validationRegistry_",
+        "type": "address"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
-    "inputs": [
-      { "internalType": "uint256", "name": "agentId", "type": "uint256" },
-      { "internalType": "string", "name": "gpuModel", "type": "string" },
-      { "internalType": "string", "name": "teeType", "type": "string" },
-      { "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" }
-    ],
-    "name": "registerProvider",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "inputs": [],
+    "name": "AlreadyRegistered",
+    "type": "error"
   },
   {
+    "inputs": [],
+    "name": "EmptyGpuModel",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyTeeType",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotAgentOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotRegistered",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
     "inputs": [
-      { "internalType": "bytes32", "name": "newAttestationHash", "type": "bytes32" }
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "attestationHash",
+        "type": "bytes32"
+      }
     ],
-    "name": "updateAttestation",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "name": "AttestationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProviderDeactivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "gpuModel",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "teeType",
+        "type": "string"
+      }
+    ],
+    "name": "ProviderRegistered",
+    "type": "event"
   },
   {
     "inputs": [],
@@ -36,19 +117,84 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getActiveProviders",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
-      { "internalType": "address", "name": "provider", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getActiveProvidersPaginated",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "active",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "provider",
+        "type": "address"
+      }
     ],
     "name": "getProvider",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "agentId", "type": "uint256" },
-          { "internalType": "string", "name": "gpuModel", "type": "string" },
-          { "internalType": "string", "name": "teeType", "type": "string" },
-          { "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" },
-          { "internalType": "uint256", "name": "registeredAt", "type": "uint256" },
-          { "internalType": "bool", "name": "active", "type": "bool" }
+          {
+            "internalType": "uint256",
+            "name": "agentId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "gpuModel",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "teeType",
+            "type": "string"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "attestationHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "registeredAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
         ],
         "internalType": "struct GPUProviderRegistry.GPUProvider",
         "name": "",
@@ -60,52 +206,145 @@
   },
   {
     "inputs": [],
-    "name": "getActiveProviders",
+    "name": "identityRegistry",
     "outputs": [
-      { "internalType": "address[]", "name": "active", "type": "address[]" }
+      {
+        "internalType": "contract IIdentityRegistry",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "providerList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "providers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "gpuModel",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "teeType",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "attestationHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "registeredAt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "agentId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "gpuModel",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "teeType",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "attestationHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "registerProvider",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "totalProviders",
     "outputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "anonymous": false,
     "inputs": [
-      { "indexed": true, "internalType": "address", "name": "provider", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "agentId", "type": "uint256" },
-      { "indexed": false, "internalType": "string", "name": "gpuModel", "type": "string" },
-      { "indexed": false, "internalType": "string", "name": "teeType", "type": "string" }
+      {
+        "internalType": "bytes32",
+        "name": "newAttestationHash",
+        "type": "bytes32"
+      }
     ],
-    "name": "ProviderRegistered",
-    "type": "event"
+    "name": "updateAttestation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true, "internalType": "address", "name": "provider", "type": "address" },
-      { "indexed": true, "internalType": "uint256", "name": "agentId", "type": "uint256" }
+    "inputs": [],
+    "name": "validationRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IValidationRegistry",
+        "name": "",
+        "type": "address"
+      }
     ],
-    "name": "ProviderDeactivated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true, "internalType": "address", "name": "provider", "type": "address" },
-      { "indexed": false, "internalType": "bytes32", "name": "attestationHash", "type": "bytes32" }
-    ],
-    "name": "AttestationUpdated",
-    "type": "event"
-  },
-  { "inputs": [], "name": "NotAgentOwner", "type": "error" },
-  { "inputs": [], "name": "AlreadyRegistered", "type": "error" },
-  { "inputs": [], "name": "NotRegistered", "type": "error" }
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]

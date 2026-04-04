@@ -18,5 +18,8 @@ tsconfig.tsbuildinfo
 .vercel/
 .claude/
 
+# Runtime data (payment ledger, demo state)
+data/
+
 # OpenClaw
 agents/.0g-skills/node_modules/

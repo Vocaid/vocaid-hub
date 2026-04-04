@@ -98,9 +98,9 @@ const a2aMethods: Record<string, (params: Record<string, unknown>) => Promise<A2
       }
 
       return { result: { success: true, txHash: result.txHash } };
-    } catch (err) {
+    } catch {
       return {
-        error: err instanceof Error ? err.message : "Feedback submission failed",
+        error: "Feedback submission failed",
         _demo: true,
         _reason: "0G chain unreachable or wallet not configured",
       };

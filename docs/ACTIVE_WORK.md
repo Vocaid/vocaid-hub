@@ -42,7 +42,7 @@
 | 6 | Full gap audit vs SESSION_CONTEXT + doc updates (PENDING_WORK dedup, WAVE_EXECUTION_PLAN status, ARCHITECTURE structure) | `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md`, `docs/ARCHITECTURE.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T10:00Z | 2026-04-04T10:30Z |
 | 6 | P-057: Shield ValidationRegistry check in /api/resources | `src/app/api/resources/route.ts`, `docs/PENDING_WORK.md`, `docs/WAVE_EXECUTION_PLAN.md` | done | 2026-04-04T11:00Z | 2026-04-04T11:15Z |
 | 7 | P-059 MiniKit.pay() + ResourceCard UX (unverified muted + hire spinner + error toast) | `src/components/ResourceCard.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, `.env.example` | done | 2026-04-04 | 2026-04-04 |
-| 4 | P-020 + P-021: vitest setup + 22 tests + auth type fix | `src/auth/index.ts`, `vitest.config.ts`, `src/lib/__tests__/*.test.ts`, `package.json` | done | 2026-04-04T11:00Z | 2026-04-04T11:30Z |
+| 4 | P-020 + P-021: vitest setup + 91 tests (8 files) + auth type fix | `src/auth/index.ts`, `vitest.config.ts`, `src/lib/__tests__/*.test.ts`, `src/lib/__tests__/agents/*.test.ts`, `package.json` | done | 2026-04-04T11:00Z | 2026-04-04T11:30Z |
 | 6 | P-062: Agent-to-agent fleet demo script | `scripts/demo-agent-fleet.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T11:30Z | 2026-04-04T12:00Z |
 | 3 | P-071: Fix verify-proof to World ID v4 API (was invalid_action) | `src/app/api/verify-proof/route.ts`, `docs/PENDING_WORK.md` | done | 2026-04-04T13:00Z | 2026-04-04T13:15Z |
 | 6 | P-061: Edge trade API route + fleet script wiring | `src/app/api/edge/trade/route.ts` (new), `scripts/demo-agent-fleet.ts` | done | 2026-04-04T13:30Z | 2026-04-04T14:00Z |
@@ -59,6 +59,9 @@
 | 5 | Security audit: Tier A (auth gates, signal validation, rate limiting) | `src/app/api/edge/trade/route.ts`, `src/app/api/seer/inference/route.ts`, `src/app/api/verify-proof/route.ts`, `src/app/api/world-id/check/route.ts`, `src/lib/rate-limit.ts` | done | 2026-04-04T21:00Z | 2026-04-04T21:30Z |
 | 5 | Security audit: Tier B (pagination, min bet, cache TTL) | `src/lib/og-chain.ts`, `src/app/api/predictions/[id]/bet/route.ts`, `src/lib/world-id.ts` | done | 2026-04-04T21:30Z | 2026-04-04T22:00Z |
 | 5 | Security audit: Tier C (SECURITY_ASSESSMENT.md + doc updates) | `docs/SECURITY_ASSESSMENT.md`, `README.md`, `docs/PENDING_WORK.md` | done | 2026-04-04T22:00Z | 2026-04-04T22:30Z |
+| 6 | P-081: Payment ledger persistence + Agent Autonomy Gap cleanup | `src/lib/payment-ledger.ts` (new), `src/app/api/payments/route.ts`, `.gitignore`, `docs/PENDING_WORK.md` | done | 2026-04-04T23:00Z | 2026-04-04T23:15Z |
+| 4 | P-080: Error response sanitization (13 catch blocks) | 9 API routes + 2 agent handlers | done | 2026-04-04T23:30Z | 2026-04-04T23:45Z |
+| 5 | P-077/078/079: Solidity security fixes + full redeploy | `contracts/0g/GPUProviderRegistry.sol`, `contracts/0g/ResourcePrediction.sol`, `contracts/world/CredentialGate.sol`, `scripts/deploy-0g.ts`, `scripts/deploy-world.ts`, `.env.local`, `.env.example` | done | 2026-04-05T00:00Z | 2026-04-05T01:00Z |
 
 ---
 

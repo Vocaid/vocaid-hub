@@ -11,14 +11,14 @@
 
 | Severity | Count | Status |
 |----------|-------|--------|
-| Critical | 4 | 3 mitigated at API layer, 1 queued for contract redeployment |
+| Critical | 4 | All 4 fixed (3 in contract redeployment, 1 API-only) |
 | High | 4 | All mitigated at API layer |
-| Medium | 4 | 3 mitigated, 1 documented as known limitation |
-| Low | 3 | Documented, not blocking |
+| Medium | 4 | 3 mitigated (1 fixed in contract), 1 documented |
+| Low | 3 | 2 fixed in contract, 1 documented |
 
 **Total: 15 findings across 7 contracts and 19 API routes.**
 
-All contracts run on testnets with zero real funds. API-layer mitigations applied immediately; Solidity fixes queued for when 0G testnet recovers from SSL timeout (P-049).
+All contracts run on testnets with zero real funds. API-layer mitigations applied in Tiers A-C. Solidity fixes deployed in Tier D (2026-04-05): GPUProviderRegistry, ResourcePrediction, CredentialGate redeployed with security hardening.
 
 ---
 
@@ -28,8 +28,8 @@ All contracts run on testnets with zero real funds. API-layer mitigations applie
 
 | ID | Severity | Finding | Mitigation |
 |----|----------|---------|------------|
-| SC-01 | Critical | `getActiveProviders()` unbounded loop — O(n) gas, DoS with many providers | API layer: `getRegisteredProviders(limit=50)` caps results |
-| SC-02 | Low | No validation on gpuModel/teeType strings (empty allowed) | API validates input before contract call |
+| SC-01 | Critical | `getActiveProviders()` unbounded loop — O(n) gas, DoS with many providers | **Fixed:** `getActiveProvidersPaginated(offset, limit)` added. Convenience `getActiveProviders()` defaults to limit=100. API layer caps at 50. |
+| SC-02 | Low | No validation on gpuModel/teeType strings (empty allowed) | **Fixed:** `require(bytes(gpuModel).length > 0)` and `require(bytes(teeType).length > 0)` in registerProvider |
 | SC-03 | Low | `providerList` never pruned (deactivated stay in array) | Known limitation — gas inefficiency grows over time |
 
 ### MockTEEValidator.sol (0G Galileo)
@@ -43,8 +43,8 @@ All contracts run on testnets with zero real funds. API-layer mitigations applie
 
 | ID | Severity | Finding | Mitigation |
 |----|----------|---------|------------|
-| SC-06 | Critical | Payout rounding: `(userBet * totalPool) / winningPool` loses precision | API enforces minimum bet of 0.001 A0GI to minimize rounding impact |
-| SC-07 | Medium | Single oracle for market resolution — no timeout/fallback | Known limitation — oracle is deployer wallet |
+| SC-06 | Critical | Payout rounding: `(userBet * totalPool) / winningPool` loses precision | **Fixed:** `Math.mulDiv(userBet, totalPool, winningPool)` + `MIN_BET = 0.001 ether` on-chain |
+| SC-07 | Medium | Single oracle for market resolution — no timeout/fallback | **Mitigated:** `cancelStale(marketId)` allows anyone to cancel markets 7 days past resolutionTime if oracle doesn't act |
 | SC-08 | Low | Empty `question` string allowed on market creation | API validates question is non-empty |
 
 ### IdentityRegistryUpgradeable.sol (0G Galileo — ERC-8004)
@@ -72,7 +72,7 @@ All contracts run on testnets with zero real funds. API-layer mitigations applie
 
 | ID | Severity | Finding | Mitigation |
 |----|----------|---------|------------|
-| SC-15 | Critical | Signal parameter not bound to `msg.sender` — can register arbitrary addresses | API validates signal is valid address; frontend passes session wallet |
+| SC-15 | Critical | Signal parameter not bound to `msg.sender` — can register arbitrary addresses | **Fixed:** `require(signal == msg.sender, "Signal must be caller")` in contract + API `isAddress()` validation |
 
 ---
 
@@ -121,9 +121,11 @@ API routes return `err.message` to clients in catch blocks. This can leak contra
 
 | Finding | Code Fix | Commit |
 |---------|----------|--------|
-| SC-01 (GPU DoS) | `getRegisteredProviders(limit=50)` | Tier B commit |
-| SC-06 (Rounding) | Min bet 0.001 A0GI in `/api/predictions/[id]/bet` | Tier B commit |
-| SC-15 (Signal) | `isAddress()` validation in verify-proof | Tier A commit |
+| SC-01 (GPU DoS) | `getActiveProvidersPaginated(offset, limit)` in contract + API `limit=50` | **Fixed in contract + redeployed** (Tier D) |
+| SC-02 (Empty strings) | `require(bytes(gpuModel).length > 0)` + `require(bytes(teeType).length > 0)` in contract | **Fixed in contract + redeployed** (Tier D) |
+| SC-06 (Rounding) | `Math.mulDiv` payout + `MIN_BET = 0.001 ether` on-chain | **Fixed in contract + redeployed** (Tier D) |
+| SC-07 (Oracle timeout) | `cancelStale()` — anyone can cancel after 7 days past resolutionTime | **Fixed in contract + redeployed** (Tier D) |
+| SC-15 (Signal) | `require(signal == msg.sender)` in contract + `isAddress()` in API | **Fixed in contract + redeployed** (Tier D) |
 | Edge trade unauth | `requireWorldId()` added | Tier A commit |
 | Seer inference unauth | `requireWorldId()` added | Tier A commit |
 | World ID check public | Session auth added | Tier A commit |
@@ -141,10 +143,10 @@ These are accepted risks for a 48-hour hackathon with testnet tokens:
 2. **MockTEEValidator** — Simulates Intel TDX attestation. Production uses Automata DCAP ZK verifier (15-20 contracts).
 3. **No persistent payment ledger** — In-memory array lost on restart. Production needs database.
 4. **Single oracle for predictions** — Deployer resolves markets. Production needs decentralized oracle (Chainlink, UMA).
-5. **Error messages leak internals** — Catch blocks expose `err.message`. Production should sanitize.
+5. ~~**Error messages leak internals**~~ — **Fixed** (P-080): 13 catch blocks sanitized with generic error strings.
 6. **No distributed rate limiting** — In-memory limiter is single-process. Production needs Redis.
 7. **ERC-8004 registries have unbounded iteration** — `getSummary()` and `readAllFeedback()` are O(n). Fine for demo scale, needs pagination for production.
-8. **0G testnet unreachable** — SSL timeout on `evmrpc-testnet.0g.ai`. Demo fallback mode provides mock data.
+8. ~~**0G testnet unreachable**~~ — **Resolved**: 0G Galileo back online. All contracts redeployed and seeded (Tier D).
 
 ---
 
@@ -153,9 +155,9 @@ These are accepted risks for a 48-hour hackathon with testnet tokens:
 If this protocol moves to production, the following changes are required:
 
 ### Contract Layer
-- Redeploy `GPUProviderRegistry` with paginated `getActiveProviders(offset, limit)`
-- Redeploy `ResourcePrediction` with `mulDiv` payout calculation + minimum bet constant + oracle timeout
-- Redeploy `CredentialGate` with `require(signal == msg.sender)`
+- ~~Redeploy `GPUProviderRegistry` with paginated `getActiveProviders(offset, limit)`~~ **DONE** (Tier D)
+- ~~Redeploy `ResourcePrediction` with `mulDiv` payout calculation + minimum bet constant + oracle timeout~~ **DONE** (Tier D)
+- ~~Redeploy `CredentialGate` with `require(signal == msg.sender)`~~ **DONE** (Tier D)
 - Replace `MockTEEValidator` with Automata DCAP ZK verifier
 - Add multi-sig admin for UUPS upgrade authorization
 

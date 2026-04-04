@@ -74,7 +74,7 @@ export async function POST(
   } catch (err) {
     console.error('[predictions/resolve]', err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Failed to resolve market' },
+      { error: "Failed to resolve market" },
       { status: 500 },
     );
   }

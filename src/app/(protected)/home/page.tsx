@@ -89,7 +89,9 @@ export default async function Home() {
     <>
       <Page.Header className="p-0">
         <TopBar
-          title="Vocaid Hub"
+          startAdornment={
+            <img src="/app-logo.png" alt="Vocaid Hub" className="h-6" />
+          }
           endAdornment={
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold capitalize">

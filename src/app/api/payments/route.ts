@@ -4,31 +4,18 @@ import { verifyPayment, settlePayment } from "@/lib/blocky402";
 import { logAuditMessage } from "@/lib/hedera";
 import { executeAgentAction } from "@/lib/hedera-agent";
 import { giveFeedback } from "@/lib/reputation";
+import { readPayments, addPayment } from "@/lib/payment-ledger";
 
 // USDC token on Hedera testnet
 const USDC_TOKEN_ID = process.env.HEDERA_USDC_TOKEN ?? "0.0.429274";
 const AUDIT_TOPIC_ID = process.env.HEDERA_AUDIT_TOPIC ?? "";
 
-// In-memory payment ledger for demo (resets on server restart)
-interface PaymentRecord {
-  id: string;
-  payer: string;
-  amount: string;
-  resource: string;
-  txHash: string;
-  network: string;
-  settledAt: string;
-}
-
-const recentPayments: PaymentRecord[] = [];
-const MAX_PAYMENTS = 50;
-
 // ---------------------------------------------------------------------------
-// GET /api/payments — List recent payments (demo ledger)
+// GET /api/payments — List recent payments (persistent ledger)
 // ---------------------------------------------------------------------------
 
 export async function GET() {
-  return NextResponse.json({ payments: recentPayments });
+  return NextResponse.json({ payments: readPayments() });
 }
 
 // ---------------------------------------------------------------------------
@@ -118,8 +105,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Step 4: Record in demo ledger
-    const record: PaymentRecord = {
+    // Step 4: Record in persistent demo ledger (survives server restart)
+    addPayment({
       id: crypto.randomUUID(),
       payer: verification.payer,
       amount: verification.amount,
@@ -127,9 +114,7 @@ export async function POST(req: NextRequest) {
       txHash: settlement.txHash,
       network: verification.network,
       settledAt: new Date().toISOString(),
-    };
-    recentPayments.unshift(record);
-    if (recentPayments.length > MAX_PAYMENTS) recentPayments.pop();
+    });
 
     // Step 5: Lens agent writes reputation feedback for the resource provider
     // Demonstrates AI agent executing on-chain actions (Hedera AI/Agentic track)

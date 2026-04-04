@@ -62,7 +62,7 @@ export async function POST(
   } catch (err) {
     console.error('[predictions/claim]', err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Failed to claim' },
+      { error: "Failed to claim winnings" },
       { status: 500 },
     );
   }

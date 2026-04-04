@@ -19,6 +19,7 @@ contract CredentialGate {
     event Verified(address indexed user, uint256 nullifierHash);
 
     error DuplicateNullifier(uint256 nullifierHash);
+    error SignalMustBeCaller();
 
     constructor(IWorldID _worldId, string memory _appId, string memory _actionId) {
         worldId = _worldId;
@@ -33,6 +34,7 @@ contract CredentialGate {
         uint256 nullifierHash,
         uint256[8] calldata proof
     ) external {
+        if (signal != msg.sender) revert SignalMustBeCaller();
         if (nullifierHashes[nullifierHash]) revert DuplicateNullifier(nullifierHash);
 
         worldId.verifyProof(

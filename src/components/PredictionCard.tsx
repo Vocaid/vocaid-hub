@@ -37,7 +37,7 @@ interface PredictionCardProps {
   isOracle?: boolean;
 }
 
-const BET_PRESETS = [1, 5, 10];
+const BET_PRESETS = [0.001, 0.005, 0.01];
 
 function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString('en-US', {
@@ -55,6 +55,7 @@ export function PredictionCard({
 }: PredictionCardProps) {
   const [selectedSide, setSelectedSide] = useState<'yes' | 'no' | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [claimLoading, setClaimLoading] = useState(false);
   const [resolveLoading, setResolveLoading] = useState<'yes' | 'no' | null>(null);
@@ -85,6 +86,7 @@ export function PredictionCard({
       await onBet(market.id, selectedSide, selectedAmount);
       setSelectedSide(null);
       setSelectedAmount(null);
+      setCustomAmount('');
     } finally {
       setLoading(false);
     }
@@ -208,9 +210,23 @@ export function PredictionCard({
                       : 'bg-white border border-border-card text-secondary'
                   }`}
                 >
-                  {amt} A0GI
+                  {amt.toFixed(3)} A0GI
                 </button>
               ))}
+              <input
+                type="number"
+                step="0.001"
+                min="0.001"
+                max="1"
+                placeholder="Custom"
+                value={customAmount}
+                onChange={(e) => {
+                  setCustomAmount(e.target.value);
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val) && val > 0) setSelectedAmount(val);
+                }}
+                className="w-full mt-2 rounded-lg border border-border bg-white px-3 py-2 text-sm text-primary placeholder:text-secondary"
+              />
             </div>
           )}
 

@@ -120,7 +120,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("[edge/trade]", error);
-    const message = error instanceof Error ? error.message : "Edge trade failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Edge trade failed" }, { status: 500 });
   }
 }

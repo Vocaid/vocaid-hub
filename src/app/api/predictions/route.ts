@@ -148,7 +148,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[predictions/POST]', err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Failed to create market' },
+      { error: "Failed to create market" },
       { status: 500 },
     );
   }

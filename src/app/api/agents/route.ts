@@ -46,7 +46,7 @@ export async function GET(req: Request) {
   } catch (err) {
     console.error("Failed to list agents:", err);
     return NextResponse.json(
-      { error: "Failed to list agents", details: String(err) },
+      { error: "Failed to list agents" },
       { status: 500 },
     );
   }

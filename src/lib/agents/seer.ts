@@ -83,9 +83,9 @@ const a2aMethods: Record<string, (params: Record<string, unknown>) => Promise<A2
         _demo: true,
         _reason: "No providers on 0G testnet. SDK integration is production-ready.",
       };
-    } catch (err) {
+    } catch {
       return {
-        error: err instanceof Error ? err.message : "Inference failed",
+        error: "Inference failed",
       };
     }
   },

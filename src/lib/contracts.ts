@@ -6,12 +6,12 @@ import { type Address } from "viem";
  */
 
 export const OG_CHAIN_ID = 16602;
-export const OG_RPC_URL = process.env.OG_RPC_URL || "https://evmrpc-testnet.0g.ai";
+export const OG_RPC_URL = (process.env.OG_RPC_URL || "https://evmrpc-testnet.0g.ai").trim();
 
 // --- Contract addresses ---
 
 export function getAddress(envVar: string): Address {
-  const addr = process.env[envVar];
+  const addr = process.env[envVar]?.trim();
   if (!addr) throw new Error(`${envVar} env not set — run deploy-0g.ts and update .env`);
   return addr as Address;
 }
@@ -28,8 +28,8 @@ export const addresses = {
 // --- External 0G contracts (read-only) ---
 
 export const externalContracts = {
-  inferenceServing: (process.env.OG_INFERENCE_SERVING || "0xa79F4c8311FF93C06b8CfB403690cc987c93F91E") as Address,
-  ledger: (process.env.OG_LEDGER || "0xE70830508dAc0A97e6c087c75f402f9Be669E406") as Address,
+  inferenceServing: (process.env.OG_INFERENCE_SERVING?.trim() || "0xa79F4c8311FF93C06b8CfB403690cc987c93F91E") as Address,
+  ledger: (process.env.OG_LEDGER?.trim() || "0xE70830508dAc0A97e6c087c75f402f9Be669E406") as Address,
 } as const;
 
 // --- ABIs (minimal subsets for app-layer reads/writes) ---

@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Agent registration failed:", err);
     return NextResponse.json(
-      { error: "Registration failed", details: String(err) },
+      { error: "Registration failed" },
       { status: 500 },
     );
   }

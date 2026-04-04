@@ -14,7 +14,7 @@ export default function Error({
     <>
       <Page.Header className="p-0">
         <div className="px-4 py-3">
-          <h1 className="text-lg font-semibold text-primary">Vocaid Hub</h1>
+          <img src="/app-logo.png" alt="Vocaid Hub" className="h-6" />
         </div>
       </Page.Header>
       <Page.Main className="flex flex-col items-center justify-center gap-4 px-4">

@@ -1,10 +1,10 @@
 {
   "network": "world-sepolia",
   "chainId": 4801,
-  "CredentialGate": "0x0AD24045c38Df31CE7fdBeba81F8774644ADEEd0",
+  "CredentialGate": "0x6B927bA02FE8E5e15D5d5f742380A49876ad3E02",
   "worldIdRouter": "0x469449f251692E0779667583026b5A1E99512157",
   "appId": "app_74d7b06d88b9e220ad1cc06e387c55f3",
   "actionId": "verify-human",
   "deployer": "0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE",
-  "deployedAt": "2026-04-03T19:28:48.819Z"
+  "deployedAt": "2026-04-04T12:06:51.283Z"
 }

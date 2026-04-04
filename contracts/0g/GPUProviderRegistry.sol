@@ -35,12 +35,17 @@ contract GPUProviderRegistry {
         validationRegistry = IValidationRegistry(validationRegistry_);
     }
 
+    error EmptyGpuModel();
+    error EmptyTeeType();
+
     function registerProvider(
         uint256 agentId,
         string calldata gpuModel,
         string calldata teeType,
         bytes32 attestationHash
     ) external {
+        if (bytes(gpuModel).length == 0) revert EmptyGpuModel();
+        if (bytes(teeType).length == 0) revert EmptyTeeType();
         if (!identityRegistry.isAuthorizedOrOwner(msg.sender, agentId)) revert NotAgentOwner();
         if (providers[msg.sender].registeredAt != 0) revert AlreadyRegistered();
 
@@ -74,14 +79,27 @@ contract GPUProviderRegistry {
         return providers[provider];
     }
 
-    function getActiveProviders() external view returns (address[] memory active) {
+    function getActiveProviders() external view returns (address[] memory) {
+        return this.getActiveProvidersPaginated(0, 100);
+    }
+
+    function getActiveProvidersPaginated(uint256 offset, uint256 limit) external view returns (address[] memory active) {
+        uint256 total = providerList.length;
+        if (offset >= total) return new address[](0);
+
+        uint256 end = offset + limit;
+        if (end > total) end = total;
+
+        // First pass: count active in range
         uint256 count;
-        for (uint256 i; i < providerList.length; i++) {
+        for (uint256 i = offset; i < end; i++) {
             if (providers[providerList[i]].active) count++;
         }
+
+        // Second pass: collect
         active = new address[](count);
         uint256 idx;
-        for (uint256 i; i < providerList.length; i++) {
+        for (uint256 i = offset; i < end; i++) {
             if (providers[providerList[i]].active) {
                 active[idx++] = providerList[i];
             }

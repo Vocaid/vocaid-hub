@@ -26,18 +26,19 @@ export async function GET(req: NextRequest) {
     const scores = await getAllReputationScores(BigInt(agentId));
     return NextResponse.json({ agentId, scores });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[reputation/GET]", err);
+    const message = err instanceof Error ? err.message : "";
 
-    // Graceful fallback with empty scores
+    // Graceful fallback with empty scores when registry not configured
     if (message.includes("env not set") || message.includes("Missing")) {
       return NextResponse.json({
         agentId,
         scores: [],
-        warning: "ReputationRegistry not configured — set REPUTATION_REGISTRY in .env",
+        warning: "ReputationRegistry not configured",
       });
     }
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch reputation" }, { status: 500 });
   }
 }
 
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
       feedbackHash: result.feedbackHash,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[reputation/POST]", err);
+    return NextResponse.json({ error: "Failed to submit reputation" }, { status: 500 });
   }
 }

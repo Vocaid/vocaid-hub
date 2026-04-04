@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title ResourcePrediction — Prediction markets for GPU resource pricing
 /// @notice Native-token denominated prediction markets (0G A0GI) for compute resource pricing
@@ -20,6 +21,8 @@ contract ResourcePrediction is ReentrancyGuard {
     }
 
     address public immutable oracle;
+    uint256 public constant MIN_BET = 0.001 ether;
+    uint256 public constant ORACLE_TIMEOUT = 7 days;
     uint256 public nextMarketId;
 
     mapping(uint256 => Market) public markets;
@@ -41,6 +44,8 @@ contract ResourcePrediction is ReentrancyGuard {
     error NoBet();
     error OnlyOracle();
     error ZeroAmount();
+    error BelowMinBet();
+    error NotTimedOut();
 
     constructor(address oracle_) {
         oracle = oracle_;
@@ -68,7 +73,7 @@ contract ResourcePrediction is ReentrancyGuard {
         if (m.state != MarketState.Active) revert MarketNotActive();
         if (block.timestamp >= m.resolutionTime) revert ResolutionTimePassed();
         if (side != Outcome.Yes && side != Outcome.No) revert InvalidOutcome();
-        if (msg.value == 0) revert ZeroAmount();
+        if (msg.value < MIN_BET) revert BelowMinBet();
 
         bets[marketId][msg.sender][side] += msg.value;
 
@@ -105,7 +110,7 @@ contract ResourcePrediction is ReentrancyGuard {
 
         uint256 totalPool = m.yesPool + m.noPool;
         uint256 winningPool = m.winningOutcome == Outcome.Yes ? m.yesPool : m.noPool;
-        uint256 payout = (userBet * totalPool) / winningPool;
+        uint256 payout = Math.mulDiv(userBet, totalPool, winningPool);
 
         emit WinningsClaimed(marketId, msg.sender, payout);
         (bool ok, ) = msg.sender.call{value: payout}("");
@@ -135,6 +140,15 @@ contract ResourcePrediction is ReentrancyGuard {
 
         (bool ok, ) = msg.sender.call{value: total}("");
         require(ok, "transfer failed");
+    }
+
+    function cancelStale(uint256 marketId) external {
+        Market storage m = markets[marketId];
+        if (m.state != MarketState.Active) revert MarketNotActive();
+        if (block.timestamp <= m.resolutionTime + ORACLE_TIMEOUT) revert NotTimedOut();
+
+        m.state = MarketState.Cancelled;
+        emit MarketCancelled(marketId);
     }
 
     function getMarket(uint256 marketId) external view returns (Market memory) {

@@ -35,7 +35,7 @@ const CREDENTIAL_GATE_ABI = [
 ] as const;
 
 function getGateAddress(): Address {
-  const addr = process.env.CREDENTIAL_GATE;
+  const addr = process.env.CREDENTIAL_GATE?.trim();
   if (!addr) throw new Error("CREDENTIAL_GATE env not set");
   return addr as Address;
 }

@@ -238,9 +238,8 @@ export async function POST(req: NextRequest) {
       ...(chainResult.demo && { _demo: true }),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Registration failed';
-    console.error('[api/gpu/register]', message);
+    console.error('[api/gpu/register]', err);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "GPU registration failed" }, { status: 500 });
   }
 }
