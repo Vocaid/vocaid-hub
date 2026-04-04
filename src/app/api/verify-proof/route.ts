@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { registerOnChain } from '@/lib/world-id';
 import { mintCredential, logAuditMessage } from '@/lib/hedera';
 import { isAddress, type Address } from 'viem';
-import { checkRateLimit } from '@/lib/rate-limit';
+// Rate limiting now handled by Fastify plugin (server/plugins/rate-limit.ts)
 
 interface IRequestPayload {
   payload: {
@@ -37,8 +37,7 @@ interface IVerifyResponse {
  * @see node_modules/@worldcoin/idkit-core/README.md (lines 91-98)
  */
 export async function POST(req: NextRequest) {
-  const rateLimited = checkRateLimit(req, 10, 60_000); // 10 verify attempts/min
-  if (rateLimited) return rateLimited;
+  // Rate limiting handled by Fastify plugin in production
 
   const body = await req.json();
   const { payload, action, signal } = body as IRequestPayload;

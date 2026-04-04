@@ -104,6 +104,9 @@ export async function isVerifiedOnChain(address: Address): Promise<boolean> {
 }
 
 /**
+ * @deprecated Use server/plugins/world-id-gate.ts (Fastify plugin) instead.
+ * Kept for backward compat with Next.js routes until Wave 3 migration.
+ *
  * Gate an API route behind World ID verification.
  * Reads the session, extracts wallet address, checks on-chain verification.
  * Returns { address } on success, or a 401/403 NextResponse on failure.
@@ -127,8 +130,8 @@ export async function requireWorldId(): Promise<{ address: Address } | NextRespo
 }
 
 /**
+ * @deprecated Use server/plugins/world-id-gate.ts (Fastify plugin) instead.
  * Higher-order function to wrap a route handler with World ID gating.
- * Usage: export const POST = withWorldIdGate(async (req, { verifiedAddress }) => { ... });
  */
 export function withWorldIdGate(
   handler: (

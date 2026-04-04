@@ -48,6 +48,26 @@ app.get('/health', async () => ({
   plugins: ['auth', 'world-id-gate', 'rate-limit', 'error-handler', 'x402'],
 }));
 
+// Wave 3A: World ID + Auth routes
+import worldIdRoutes from './routes/world-id.js';
+import authRoutes from './routes/auth.js';
+
+await app.register(worldIdRoutes, { prefix: '/api' });
+await app.register(authRoutes, { prefix: '/api' });
+
+// Wave 3B: Chain Interaction routes
+import predictionRoutes from './routes/predictions.js';
+import gpuRoutes from './routes/gpu.js';
+import edgeRoutes from './routes/edge.js';
+import seerRoutes from './routes/seer.js';
+import reputationRoutes from './routes/reputation.js';
+
+await app.register(predictionRoutes, { prefix: '/api' });
+await app.register(gpuRoutes, { prefix: '/api' });
+await app.register(edgeRoutes, { prefix: '/api' });
+await app.register(seerRoutes, { prefix: '/api' });
+await app.register(reputationRoutes, { prefix: '/api' });
+
 // Wave 3C: Agent + Payment + Discovery routes
 import agentRoutes from './routes/agents.js';
 import paymentRoutes from './routes/payments.js';
