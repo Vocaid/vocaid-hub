@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isVerifiedOnChain } from "@/lib/world-id";
-import type { Address } from "viem";
+import { isAddress, type Address } from "viem";
 
 /**
  * GET /api/world-id/check?address=0x...
@@ -13,6 +13,13 @@ export async function GET(req: NextRequest) {
   if (!address) {
     return NextResponse.json(
       { verified: false, error: "address query param required" },
+      { status: 400 },
+    );
+  }
+
+  if (!isAddress(address)) {
+    return NextResponse.json(
+      { verified: false, error: "Invalid Ethereum address" },
       { status: 400 },
     );
   }

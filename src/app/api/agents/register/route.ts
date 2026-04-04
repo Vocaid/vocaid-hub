@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerAgent } from "@/lib/agentkit";
 import { isVerifiedOnChain } from "@/lib/world-id";
-import type { Address } from "viem";
+import { isAddress, type Address } from "viem";
 
 interface RegisterRequestBody {
   agentURI: string;
@@ -30,6 +30,14 @@ export async function POST(req: NextRequest) {
           error:
             "Missing required fields: agentURI, operatorWorldId, operatorAddress, role",
         },
+        { status: 400 },
+      );
+    }
+
+    // Validate address format before chain call
+    if (!isAddress(operatorAddress)) {
+      return NextResponse.json(
+        { error: "Invalid operatorAddress — must be a valid Ethereum address" },
         { status: 400 },
       );
     }
