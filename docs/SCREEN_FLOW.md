@@ -138,9 +138,9 @@
 └─────────────────────────┘
 ```
 
-**Layout:** Seer Agent panel is **always visible** at the top (not collapsible). Users select resource type + signal, then run the 4-step decision engine (Discover → Rank → Verify → Select). Below the Seer panel: filter tabs + resource cards. Only World ID verified agents appear in the marketplace.
+**Layout:** Filter tabs (All/GPU/Agent/Human/DePIN) + resource cards. Seer panel removed — agents trade via A2A only, not human UI. Only World ID verified agents appear in the marketplace. Fleet agents (Seer/Edge/Shield/Lens) are excluded from the listing.
 
-**Demo step 4 (30s):** Show Seer panel with signal selector. Tap "Run Seer Decision" — show 4-step auto-play. Point out resource type and signal filters. Switch marketplace filter tabs.
+**Demo step 4 (30s):** Browse marketplace. Switch filter tabs. Show resource cards with reputation bars, chain badges, and USDC prices. Click "Hire" to trigger x402 payment.
 
 **Architecture calls:**
 1. `GET /api/resources` → merges agents (IdentityRegistry) + GPUs (broker + GPUProviderRegistry) + humans (mock)
@@ -216,15 +216,17 @@
 
 ```
 ┌─────────────────────────┐
-│  My Resources      🌐✓  │
+│  Profile            🌐✓  │
 ├─────────────────────────┤
-│ Market  GPU  Pred [My]  │
+│ Market  Res  Pred [Prof]│
 ├─────────────────────────┤
 │                         │
 │  World ID: Verified ✓   │
 │  ERC-8004 ID: #1        │
 │                         │
-│  ── My Agent Fleet ──   │
+│  ── Trading Fleet ──    │
+│  Your private AI agents │
+│  — not on marketplace   │
 │                         │
 │  ┌───────────────────┐  │
 │  │ 🔮 Seer     ⚡ 0G  │  │
@@ -260,8 +262,9 @@
 **UX critical path:**
 - 4 agent cards pre-populated (registered during demo setup)
 - Each card shows dual verification: AgentKit + ERC-8004
-- "Register New Agent" button opens RegisterAgentModal (bottom sheet with role selector: Seer/Edge/Shield/Lens)
-- RegisterAgentModal sends correct payload to `/api/agents/register`: agentURI, operatorWorldId, operatorAddress, role
+- Profile is fleet-only — no resource registration here (that's on Resources page)
+- Dashed card links to Resources page: "Register resources for the marketplace →"
+- Fleet agents never appear on the marketplace — FLEET_ROLES filtered in /api/resources
 - Tapping a card could show the A2A agent card JSON (optional depth)
 
 ---

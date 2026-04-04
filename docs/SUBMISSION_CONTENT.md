@@ -36,7 +36,7 @@ Three chains, each doing what it does best: World (Trust) → 0G (Verify) → He
 
 **How it's made (min 280 chars):**
 ```
-Built with Next.js 15 (frontend/SSR) and a standalone Fastify 5 backend (:5001) with Zod validation, managed by PM2. TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision. Fastify runs as a persistent process with World ID WASM initialized once at startup (fixes serverless cold-start crashes). Next.js rewrites proxy /api/* transparently to Fastify.
+Built with Next.js 15 (frontend/SSR) and a standalone Fastify 5 backend (:5001) with Zod validation, managed by PM2. TypeScript throughout. Three core SDKs (MiniKit, 0G broker, 0G SDK) are TypeScript-only, which drove the single-runtime decision. Fastify runs as a persistent process with World ID WASM initialized once at startup (fixes serverless cold-start crashes). Next.js rewrites proxy /api/* transparently to Fastify. Production-grade backend hardening: per-service fetch timeouts (AbortController), exponential backoff retry with jitter, per-service circuit breakers (CLOSED/OPEN/HALF_OPEN), security headers (CSP, CORS, HSTS), response caching, graceful shutdown, and singleton chain client factories — all covered by 34 vitest tests.
 
 0G Chain (Galileo, chainId 16602): We deployed ERC-8004 registries (IdentityRegistry, ReputationRegistry, ValidationRegistry) via Hardhat Ignition with evmVersion cancun. GPUProviderRegistry bridges 0G's listService() SDK with ERC-8004 identity. MockTEEValidator provides ECDSA-based TEE verification. ResourcePrediction.sol implements USDC-denominated prediction markets with oracle resolution.
 
@@ -49,6 +49,8 @@ OpenClaw 4-agent fleet with wallet key isolation: Seer (read-only, no wallet key
 The reputation signal system uses 7 ERC-8004 tags: cost, latency, uptime, compute, region, quality, availability. Lens agent writes feedback, Seer reads it for pricing, Shield enforces minimums.
 
 Retroactive Reputation Engine: We compute historical reputation for the ENTIRE existing 0G provider ecosystem by scanning BalanceUpdated, RefundRequested, and ServiceUpdated events from 0G's native InferenceServing contract (last 2M blocks). 8 providers discovered, 239 transactions analyzed, 6-signal composite scoring (activity 25%, settlement health 20%, TEE compliance 15%, pricing 15%, dispute rate 15%, longevity 10%). Unregistered providers are auto-registered into ERC-8004 IdentityRegistry. Results logged to Hedera HCS audit trail.
+
+Page architecture enforces clean separation: Market (browse + hire all resources), Resources (register + manage your marketplace listings), Profile (deploy your private trading fleet — never listed on marketplace). Fleet agent roles (signal-analyst, market-maker, risk-manager, discovery) are filtered out of the marketplace API so internal agents never appear as hireable resources. ResourceStepper uses a data-driven TYPE_META config — adding a new resource type requires zero JSX changes.
 
 Trading Desk: A visual 5-step agent pipeline (Register → Shield → Lens → Seer → Edge) that runs real A2A calls to each OpenClaw agent, ranks all resource types (GPU, Agent, Human, DePIN) by reputation signals, and settles the optimal lease via Edge's x402 payment on Hedera.
 

@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { ShieldCheck, Plus, Bot, Loader2, Check } from 'lucide-react';
+import { useState } from 'react'; // used by DeployFleetSection
+import { ShieldCheck, Bot, Loader2, Check, ArrowRight } from 'lucide-react';
 import { AgentCard, type AgentRole } from '@/components/AgentCard';
-// ProposalQueue hidden — scope creep, not in any of the 9 bounty tracks
-// import { ProposalQueue } from '@/components/ProposalQueue';
 import { ChainBadge } from '@/components/ChainBadge';
-import { RegisterAgentModal } from '@/components/RegisterAgentModal';
+import Link from 'next/link';
 
 interface AgentData {
   agentId: string;
@@ -57,11 +55,8 @@ async function getSessionAddress(): Promise<{ address: string; worldId: string }
 }
 
 export function ProfileContent({ username, walletAddress, agents }: ProfileContentProps) {
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-
-  // Split agents into fleet (operational) vs resource (marketplace)
+  // Only fleet agents shown on Profile — resource agents are managed on the Resources page
   const fleetAgents = agents.filter((a) => FLEET_ROLES.has(a.role));
-  const resourceAgents = agents.filter((a) => !FLEET_ROLES.has(a.role));
   const deployedRoles = new Set(fleetAgents.map((a) => a.role));
 
   return (
@@ -87,10 +82,13 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
         </div>
       </div>
 
-      {/* ── OpenClaw Trading Fleet ────���──────────────────── */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-primary">Trading Fleet</h2>
-        <span className="text-xs text-secondary">{fleetAgents.length}/4 deployed</span>
+      {/* ── OpenClaw Trading Fleet ─────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-primary">Trading Fleet</h2>
+          <span className="text-xs text-secondary">{fleetAgents.length}/4 deployed</span>
+        </div>
+        <p className="text-xs text-secondary mt-0.5">Your private AI agents — not listed on the marketplace</p>
       </div>
 
       <DeployFleetSection deployedRoles={deployedRoles} />
@@ -111,47 +109,17 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
         </div>
       )}
 
-      {/* ProposalQueue hidden — scope creep, not required for any bounty track */}
-
-      {/* ── Resource Agents (marketplace listings) ──────── */}
-      {resourceAgents.length > 0 && (
-        <>
-          <div className="flex items-center justify-between mt-2">
-            <h2 className="text-base font-semibold text-primary">My Resource Agents</h2>
-            <span className="text-xs text-secondary">{resourceAgents.length} listed</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            {resourceAgents.map((agent) => (
-              <AgentCard
-                key={agent.agentId}
-                name={agent.role}
-                role={(agent.role as AgentRole) ?? 'discovery'}
-                agentId={agent.agentId}
-                operatorWorldId={agent.operatorWorldId}
-                reputation={75}
-                verified={!!agent.operatorWorldId}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Register Agent CTA (legacy modal for custom agents) */}
-      <button
-        onClick={() => setShowRegisterModal(true)}
-        className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg bg-primary-accent text-white text-sm font-semibold w-full active:scale-95 transition-transform cursor-pointer"
+      {/* ── Link to Resources page for marketplace registration ── */}
+      <Link
+        href="/gpu-verify"
+        className="flex items-center justify-between rounded-xl border border-dashed border-border-card p-4 hover:border-primary-accent/50 transition-colors cursor-pointer"
       >
-        <Plus className="w-4 h-4" />
-        Register New Agent
-      </button>
-
-      {showRegisterModal && (
-        <RegisterAgentModal
-          walletAddress={walletAddress ?? ''}
-          onClose={() => setShowRegisterModal(false)}
-          onRegistered={() => setShowRegisterModal(false)}
-        />
-      )}
+        <div>
+          <p className="text-sm font-medium text-primary">Register resources for the marketplace</p>
+          <p className="text-xs text-secondary mt-0.5">GPUs, agents, skills, and DePIN devices available for hire</p>
+        </div>
+        <ArrowRight className="w-4 h-4 text-secondary shrink-0" />
+      </Link>
     </>
   );
 }

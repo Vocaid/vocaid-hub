@@ -113,7 +113,7 @@ export default function GPUVerifyTabs() {
             <div className="rounded-xl border border-dashed border-border-card p-8 text-center">
               <Cpu className="mx-auto mb-2 h-8 w-8 text-secondary" />
               <p className="text-sm text-secondary">No resources registered yet</p>
-              <p className="text-xs text-secondary mt-1">Register a resource to list it on the marketplace</p>
+              <p className="text-xs text-secondary mt-1">Resources you register here will be discoverable on the Market for agents and users to hire</p>
               <button
                 onClick={() => setActiveTab('register')}
                 className="mt-3 rounded-lg bg-primary-accent px-4 py-2 text-sm font-medium text-white cursor-pointer"

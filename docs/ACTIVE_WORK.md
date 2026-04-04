@@ -78,6 +78,14 @@
 | — | Fix Vercel build: commit 6 missing untracked files | `PostHireRating.tsx`, `ProposalQueue.tsx`, `AgentProposalRegistry.sol`, `/api/proposals/route.ts`, deploy script | done | 2026-04-05T07:05Z | 2026-04-05T07:10Z |
 | — | Doc gap analysis: fix 8 discrepancies across 4 files | `README.md`, `ARCHITECTURE.md`, `SUBMISSION.md`, `SUBMISSION_CONTENT.md` | done | 2026-04-05T07:10Z | 2026-04-05T07:30Z |
 | — | Wave 4: Delete Next.js API routes, extract shared types, update middleware + docs | `src/app/api/` (deleted), `src/types/resource.ts` (new), `middleware.ts`, `server/routes/resources.ts`, `src/components/{ResourceCard,ChainBadge,VerificationStatus,ReputationSignals}.tsx`, `docs/ARCHITECTURE.md`, `README.md`, `docs/PENDING_WORK.md`, `docs/ACTIVE_WORK.md` | done | 2026-04-04T20:00Z | 2026-04-04T21:00Z |
+| — | P-099: Separate fleet vs resource agent flows | `profile-content.tsx`, `profile/page.tsx`, `server/routes/resources.ts`, `gpu-verify/page.tsx`, `GPUVerifyTabs.tsx` | done | 2026-04-04T22:00Z | 2026-04-04T22:30Z |
+| — | P-100: ResourceStepper data-driven refactor | `src/components/ResourceStepper.tsx` | done | 2026-04-04T22:30Z | 2026-04-04T22:45Z |
+| — | Doc updates: session changes across 7 docs | `ARCHITECTURE.md`, `README.md`, `SCREEN_FLOW.md`, `PITCH_STRATEGY.md`, `SUBMISSION_CONTENT.md`, `PENDING_WORK.md`, `ACTIVE_WORK.md` | done | 2026-04-04T22:45Z | 2026-04-04T23:00Z |
+| 5 | P-103/104/105: Backend hardening Wave H1 — 3 resilience utilities | `server/utils/fetch-with-timeout.ts`, `server/utils/retry.ts`, `server/utils/circuit-breaker.ts`, `server/__tests__/*.test.ts` | done | 2026-04-04T23:30Z | 2026-04-04T23:36Z |
+| — | P-106: Security headers plugin + graceful shutdown | `server/plugins/security-headers.ts`, `server/index.ts` | done | 2026-04-04T21:00Z | 2026-04-04T21:15Z |
+| — | P-107: Response cache plugin + tests | `server/plugins/response-cache.ts`, `server/__tests__/response-cache.test.ts` | done | 2026-04-04T21:15Z | 2026-04-04T21:30Z |
+| — | P-108: Singleton chain client factories | `server/clients.ts` | done | 2026-04-04T21:30Z | 2026-04-04T21:45Z |
+| — | P-109: Remove mock/demo fallbacks from API routes | `server/routes/*.ts` | done | 2026-04-04T21:45Z | 2026-04-04T22:00Z |
 
 ---
 

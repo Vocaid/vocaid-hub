@@ -101,7 +101,7 @@ All contracts run on testnets with zero real funds. API-layer mitigations applie
 |-------|-------|--------|
 | `POST /api/verify-proof` | 10 requests | 1 minute per IP |
 
-In-memory sliding window rate limiter at `src/lib/rate-limit.ts`. Not distributed — single-process only. Production needs Redis/Upstash.
+Per-route sliding window rate limiter at `server/plugins/rate-limit.ts` (Fastify plugin). Not distributed — single-process only. Production needs Redis/Upstash.
 
 ### Fund Handling
 
@@ -144,9 +144,25 @@ These are accepted risks for a 48-hour hackathon with testnet tokens:
 3. **No persistent payment ledger** — In-memory array lost on restart. Production needs database.
 4. **Single oracle for predictions** — Deployer resolves markets. Production needs decentralized oracle (Chainlink, UMA).
 5. ~~**Error messages leak internals**~~ — **Fixed** (P-080): 13 catch blocks sanitized with generic error strings.
-6. **No distributed rate limiting** — In-memory limiter is single-process. Production needs Redis.
+6. **No distributed rate limiting** — Per-route Fastify plugin (`server/plugins/rate-limit.ts`) is in-memory, single-process. Production needs Redis.
 7. **ERC-8004 registries have unbounded iteration** — `getSummary()` and `readAllFeedback()` are O(n). Fine for demo scale, needs pagination for production.
 8. ~~**0G testnet unreachable**~~ — **Resolved**: 0G Galileo back online. All contracts redeployed and seeded (Tier D).
+
+---
+
+## Backend Hardening (Implemented)
+
+| Layer | File | What It Does |
+|-------|------|-------------|
+| **Fetch Timeout** | `server/utils/fetch-with-timeout.ts` | AbortController wrapper — per-service budgets (World ID 10s, Hedera Mirror 8s, Blocky402 15s, 0G Inference 30s) |
+| **Retry** | `server/utils/retry.ts` | Exponential backoff + jitter. Per-service policies (e.g. `HEDERA_TX: 2 retries/1s`, `RPC_WRITE: 0 retries`) |
+| **Circuit Breaker** | `server/utils/circuit-breaker.ts` | CLOSED→OPEN→HALF_OPEN state machine. 6 pre-configured services. `getBreaker()` singleton factory |
+| **Security Headers** | `server/plugins/security-headers.ts` | CSP, CORS, X-Frame-Options, X-Content-Type-Options, HSTS |
+| **Response Cache** | `server/plugins/response-cache.ts` | TTL-based GET response cache with `Cache-Control` headers |
+| **Graceful Shutdown** | `server/index.ts` | SIGTERM handler — drains connections before exit |
+| **Chain Clients** | `server/clients.ts` | Singleton ethers/viem client factories — reused across requests |
+
+All utilities tested with vitest (34 tests across 4 test files in `server/__tests__/`).
 
 ---
 
@@ -171,7 +187,7 @@ If this protocol moves to production, the following changes are required:
 
 ### Infrastructure
 - Add monitoring (Sentry for errors, Grafana for chain metrics)
-- Add circuit breakers for external dependencies (0G RPC, Hedera Mirror Node, Blocky402)
+- ~~Add circuit breakers for external dependencies (0G RPC, Hedera Mirror Node, Blocky402)~~ **DONE** (`server/utils/circuit-breaker.ts` — per-service CLOSED/OPEN/HALF_OPEN state machine + `server/utils/fetch-with-timeout.ts` + `server/utils/retry.ts`)
 - Load testing for prediction markets under concurrent betting
 - Formal security audit by third party (Trail of Bits, OpenZeppelin)
 

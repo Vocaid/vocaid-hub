@@ -3,7 +3,7 @@ import { Page } from '@/components/PageLayout';
 import { ProfileContent } from './profile-content';
 
 export const metadata = {
-  title: 'My Resources — Vocaid Hub',
+  title: 'Profile — Vocaid Hub',
 };
 
 interface AgentData {
