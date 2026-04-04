@@ -155,6 +155,24 @@ start_ngrok() {
 start_ngrok
 
 # ============================================================
+# 5b. Start Fastify Backend (API server)
+# ============================================================
+TAG_API="${GREEN}[api]${NC}"
+
+echo -e "${TAG_API} Starting Fastify backend on :5001..."
+npm run dev:backend 2>&1 | prefix "$TAG_API" &
+API_PID=$!
+PIDS+=($API_PID)
+
+for i in {1..15}; do
+  if curl -s http://localhost:5001/health > /dev/null 2>&1; then
+    echo -e "${TAG_API} ${GREEN}✓ Backend ready at http://localhost:5001${NC}"
+    break
+  fi
+  sleep 1
+done
+
+# ============================================================
 # 6. Start Next.js dev server (with tagged output)
 # ============================================================
 echo -e "${TAG_NEXT} Starting Next.js on :3000..."
@@ -205,6 +223,7 @@ echo -e "${BLUE}═════════════════════�
 echo -e "${GREEN}  Vocaid Hub — All Services Running${NC}"
 echo -e "${BLUE}════════════════════════════════════════════${NC}"
 echo ""
+echo -e "  ${GREEN}[api]${NC}    http://localhost:5001"
 echo -e "  ${CYAN}[next]${NC}   http://localhost:3000"
 [ -n "$NGROK_URL" ] && echo -e "  ${MAGENTA}[ngrok]${NC}  ${NGROK_URL}"
 echo -e "  ${YELLOW}[claw]${NC}   ws://127.0.0.1:18789"

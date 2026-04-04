@@ -6,8 +6,17 @@ const nextConfig: NextConfig = {
       { protocol: 'https' as const, hostname: 'static.usernames.app-backend.toolsforhumanity.com' },
     ],
   },
-  allowedDevOrigins: ['*'], // Add your dev origin here
+  allowedDevOrigins: ['*'],
   reactStrictMode: false,
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:5001';
+    return {
+      fallback: [
+        { source: '/api/:path*', destination: `${backendUrl}/api/:path*` },
+        { source: '/.well-known/:path*', destination: `${backendUrl}/.well-known/:path*` },
+      ],
+    };
+  },
 };
 
 export default nextConfig;
