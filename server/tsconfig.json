@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "outDir": "../dist/server",
-    "rootDir": ".",
+    "rootDir": "..",
     "paths": {
       "@/*": ["../src/*"]
     }
