@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "prettier --check . --ignore-path ../../.prettierignore"
+    "lint": "prettier --check . --ignore-path ../../.prettierignore",
+    "test": "vitest run"
   },
   "dependencies": {
     "@0glabs/0g-serving-broker": "^0.7.4",
@@ -46,6 +47,7 @@
     "eslint-config-next": "15.2.3",
     "hardhat": "^3.3.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.2"
   }
 }
