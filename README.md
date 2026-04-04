@@ -218,15 +218,15 @@ Explorer: [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai)
 
 | Contract | Address |
 |----------|---------|
-| IdentityRegistry (proxy) | `0x0bd938c2021ba9de937b03f2a4ac793de453e993` |
-| ReputationRegistry (proxy) | `0x3a7d70e5037811aaf0ccc89d4180917a112f3eed` |
-| ValidationRegistry (proxy) | `0x345f915375d935298605888926429b9378bddebe` |
-| IdentityRegistry (impl) | `0x92a3c59aee03e6ce5c2155fe0a2358b71a4ffe99` |
-| ReputationRegistry (impl) | `0xe0c44f212aae8bb3534917ecb6f16c9f436b13f9` |
-| ValidationRegistry (impl) | `0x3460c488c23b8c1fb983ffc1d412a8e0e0da1f87` |
-| GPUProviderRegistry | `0x9f522055c682237cf685b8214e1e6c233199abe4` |
-| MockTEEValidator | `0x80597d12e953d7519a248c9eb750339b1c54fb34` |
-| ResourcePrediction | `0x6ce572729a5cbc8aa9df7ac25d8076e80665194e` |
+| IdentityRegistry (proxy) | `0xc16cf40a33e85f41bed6c90c710ff8c70b8c79ec` |
+| ReputationRegistry (proxy) | `0xa7ba63bce59d366a1c1b647e4ca75a5c11ca47f4` |
+| ValidationRegistry (proxy) | `0x629c61e5a8c78725c8e2cfc6d5b441a4bba0517c` |
+| IdentityRegistry (impl) | `0xdfadbef62c82f7b16562f4b307c8c12fcfc6089f` |
+| ReputationRegistry (impl) | `0x8993b2ad4f1f1719bfcc34d483ab62897776f92a` |
+| ValidationRegistry (impl) | `0x72fac42905a66710e8493d6ab234adb8ba997369` |
+| GPUProviderRegistry | `0x94f7d419dd3ff171cb5cd9291a510528ee1ada59` |
+| MockTEEValidator | `0x8c4a192ed17dbbe2a7424c0008fafde89c730ccd` |
+| ResourcePrediction | `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a` |
 | OG Inference Serving | `0xa79F4c8311FF93C06b8CfB403690cc987c93F91E` |
 | OG Ledger | `0xE70830508dAc0A97e6c087c75f402f9Be669E406` |
 
@@ -234,7 +234,7 @@ Explorer: [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai)
 
 | Contract | Address |
 |----------|---------|
-| CredentialGate | `0x0AD24045c38Df31CE7fdBeba81F8774644ADEEd0` |
+| CredentialGate | `0x6B927bA02FE8E5e15D5d5f742380A49876ad3E02` |
 
 ### Hedera Testnet
 
