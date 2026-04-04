@@ -86,6 +86,8 @@
 | — | P-107: Response cache plugin + tests | `server/plugins/response-cache.ts`, `server/__tests__/response-cache.test.ts` | done | 2026-04-04T21:15Z | 2026-04-04T21:30Z |
 | — | P-108: Singleton chain client factories | `server/clients.ts` | done | 2026-04-04T21:30Z | 2026-04-04T21:45Z |
 | — | P-109: Remove mock/demo fallbacks from API routes | `server/routes/*.ts` | done | 2026-04-04T21:45Z | 2026-04-04T22:00Z |
+| — | P-101+102: Prediction persistence + RegisterAgentModal cleanup | `server/routes/predictions.ts`, `predictions-content.tsx`, `predictions/page.tsx`, `RegisterAgentModal.tsx` (deleted), `src/types/server-utils.d.ts` (new) | done | 2026-04-05T10:00Z | 2026-04-05T11:00Z |
+| — | P-081: Retroactive reputation Phase 5 fix (3rd wallet) | `scripts/compute-retroactive-reputation.ts`, `.env` | done | 2026-04-05T11:00Z | 2026-04-05T12:00Z |
 
 ---
 
