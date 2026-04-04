@@ -81,37 +81,46 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 **Say:** *"This is the innovation. Browse existing providers with reputation signals — cost, latency, uptime, quality. A GPU provider connects, we verify their TEE attestation, and register them on ERC-8004. This identity NFT is on 0G Chain. This tool doesn't exist in 0G's ecosystem yet."*
 
-### 2:05-2:25 — Marketplace
+### 1:45-2:10 — Marketplace + Hire (25s)
 
 **Action sequence:**
-1. Switch back to Tab 1
-2. Click "Market" tab
-3. Show filter tabs: All / GPU / Agent / Human / DePIN
-4. Click through filters — show Tesla Fleet, GridPulse Energy under DePIN
-5. Show ResourceCards with chain badges and reputation bars
-6. Tap "Hire" on a resource — show x402 USDC payment confirmation
+1. Click "Market" tab
+2. Show filter tabs: All / GPU / Agent / Human / DePIN
+3. Show the GPU you just registered alongside agents, humans, DePIN
+4. Tap "Hire" on a resource → MiniKit.pay() → x402 USDC payment
+5. Show PaymentConfirmation: amount, tx hash, x402 on Hedera
 
-**Say:** *"All verified resources in one marketplace — GPUs, agents, human skills, even a Tesla fleet. Hire with x402 USDC on Hedera — $0.0001 gas."*
+**Say:** *"Marketplace — all verified resources. GPUs, agents, human skills, DePIN hardware. Hire with x402 USDC on Hedera. $0.0001 gas."*
 
-### 2:25-2:45 — Prediction Market
+### 2:10-2:35 — Seer Agent Decision (25s)
 
 **Action sequence:**
-1. Click "Predictions" tab
+1. Navigate to `/agent-decision` (via link or direct URL)
+2. Select resource type and signal filters
+3. Click "Run Seer Decision"
+4. Watch 4-step auto-play: Discover → Rank → Verify → Select
+5. Show the GPU you registered being ranked and selected
+
+**Say:** *"Seer agent scans the network, ranks by reputation signals, verifies TEE attestation via Shield, selects the optimal provider. All on-chain via 0G."*
+
+### 2:35-2:50 — Prediction Market (15s)
+
+**Action sequence:**
+1. Click "Predict" tab
 2. Show existing market: "Will H100 cost drop below $0.03?"
-3. Show YES/NO pools with percentages
-4. Place a bet (click YES, confirm)
+3. Place a small bet (YES, 0.01 A0GI)
+4. Show price impact preview and confirm
 
-**Say:** *"Will H100 inference cost drop next week? The market decides. Place bets on resource pricing — a new asset class."*
+**Say:** *"Prediction markets for resource pricing. A new DeFi primitive on 0G Chain."*
 
-### 2:45-3:00 — Payment + Close
+### 2:50-3:00 — Profile + Close (10s)
 
 **Action sequence:**
-1. Go back to marketplace
-2. Click "Hire" on GPU-Alpha
-3. Show payment confirmation: USDC amount, x402 on Hedera, tx hash
-4. Show reputation score updated (if time)
+1. Click "Profile" tab
+2. Show 4-agent fleet (Seer/Edge/Shield/Lens) linked to World ID
+3. Show ERC-8004 IDs and chain badges
 
-**Say:** *"Hire a GPU provider. x402 USDC on Hedera via Blocky402. GPU verification on ERC-8004. First time it's been built."*
+**Say:** *"Four agents. Each with ERC-8004 identity on 0G. Each linked to my World ID. GPU verification — first time it's been built."*
 
 **End.** Stop recording at 3:00.
 

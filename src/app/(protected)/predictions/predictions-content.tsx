@@ -123,6 +123,9 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       {/* Signal Ticker (2-row marquee) */}
       <SignalTicker items={tickerItems} />
 
+      {/* Live Activity Feed */}
+      <ActivityFeed items={activityItems} maxItems={6} />
+
       {/* Prediction Cards */}
       {markets.length > 0 ? (
         <div className="flex flex-col gap-3 stagger-children">
@@ -154,11 +157,6 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
         <Plus className="w-4 h-4" />
         Create Market
       </button>
-
-      {/* Full Activity Feed with filter chips */}
-      <div className="border-t border-border-card pt-4 mt-2">
-        <ActivityFeed items={activityItems} maxItems={12} />
-      </div>
 
       {showCreateModal && (
         <CreateMarketModal
