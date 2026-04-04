@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
 import { PaymentConfirmation } from '@/components/PaymentConfirmation';
+import { ActivityFeed } from '@/components/ActivityFeed';
 import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
@@ -188,6 +189,11 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
           </p>
         </div>
       )}
+
+      {/* Activity Feed */}
+      <div className="mt-6 border-t border-border pt-4">
+        <ActivityFeed maxItems={6} />
+      </div>
 
       {/* Payment confirmation modal */}
       {paymentResult && (
