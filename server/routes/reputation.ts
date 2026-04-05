@@ -37,7 +37,7 @@ export default async function reputationRoutes(app: FastifyInstance) {
     '/reputation',
     {
       schema: { querystring: ReputationQuerySchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       const { agentId, tag } = request.query;
@@ -71,7 +71,7 @@ export default async function reputationRoutes(app: FastifyInstance) {
     '/reputation',
     {
       schema: { body: ReputationFeedbackSchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       // R3: Rate limit

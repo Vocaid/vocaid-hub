@@ -86,7 +86,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
     '/gpu/list',
     {
       schema: { querystring: GpuListQuerySchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       const { address } = request.query;
@@ -125,7 +125,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
     '/gpu/register',
     {
       schema: { body: GpuRegisterSchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       // R3: Rate limit

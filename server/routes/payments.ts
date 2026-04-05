@@ -32,7 +32,7 @@ export default async function paymentRoutes(app: FastifyInstance) {
   // POST /api/payments — x402 USDC payment via Blocky402
   typed.post('/payments', {
     schema: { body: PaymentBodySchema },
-    preHandler: [app.requireWorldId],
+    
   }, async (request, reply) => {
     const rl = app.checkRateLimit(request.ip, '/api/payments', 5, 60_000);
     if (rl) return sendRateLimited(reply, rl);

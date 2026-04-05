@@ -24,7 +24,7 @@ export default async function seerRoutes(app: FastifyInstance) {
     '/seer/inference',
     {
       schema: { body: SeerInferenceBodySchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       // R3: Rate limit

@@ -57,7 +57,7 @@ export default async function edgeRoutes(app: FastifyInstance) {
     '/edge/trade',
     {
       schema: { body: EdgeTradeBodySchema },
-      preHandler: [app.requireWorldId],
+      
     },
     async (request, reply) => {
       // R3: Rate limit
