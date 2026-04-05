@@ -237,6 +237,38 @@ Browser                 Next.js :3000              Fastify :5001          OpenCl
 
 ---
 
+## API Key Authentication (Connect Your Agent)
+
+External OpenClaw agents authenticate via API keys generated on the Profile page. Users select a settlement chain, provide their agent's wallet address, and receive a `voc_...` key.
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Storage** | `src/lib/api-key-ledger.ts` | SHA-256 hashed keys, 90-day expiration, auto-purge |
+| **Auth Plugin** | `server/plugins/api-key-auth.ts` | `requireApiKey` Fastify preHandler — reads `X-API-Key` header |
+| **Routes** | `server/routes/api-keys.ts` | Generate (rate limited), status, revoke — wallet ownership verified |
+| **Frontend** | `src/components/ConnectAgentSection.tsx` | Chain selector + wallet input + key generation UI |
+
+### Which endpoints require API key?
+
+| Requires `X-API-Key` | Public (no auth) |
+|----------------------|------------------|
+| `POST /api/agents/:name/a2a` (execute) | `GET /api/agents/:name/a2a` (discover) |
+| `POST /api/agents/:name/mcp` (execute) | `GET /api/agents/:name/mcp` (schema) |
+| `POST /api/predictions/:id/bet` | `GET /api/predictions` |
+| `POST /api/predictions` (create) | `GET /.well-known/agent-card.json` |
+| `POST /api/payments` | `GET /api/reputation` |
+| `POST /api/initiate-payment` | `GET /api/hedera/audit` |
+
+### Security measures
+
+- Rate limiting: 5 key generations per IP per hour
+- Wallet ownership: session wallet must match requested wallet
+- Key expiration: 90-day TTL, auto-expire on validation
+- Revoked key purge: removed after 7 days
+- Private keys never collected by server — stay in user's local OpenClaw config
+
+---
+
 ## Backend Hardening (`server/utils/` + `server/plugins/`)
 
 Production-grade resilience utilities, all with vitest tests (40 tests across 4 files):

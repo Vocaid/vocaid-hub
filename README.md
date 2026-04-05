@@ -199,34 +199,50 @@ All routes served by Fastify with Zod validation, proxied through Next.js rewrit
 
 ## Agent Access (A2A / Machine-to-Machine)
 
-External AI agents can discover and transact with Vocaid Hub using standard HTTP — no SDK, no browser session required.
+External agents connect via **Connect Your Agent** on the Profile page — generate an API key, select a settlement chain (0G/Hedera/World), and configure a wallet address. The API key authenticates all POST requests.
 
 ```bash
-# 1. Discover agents (ERC-8004 standard path)
-curl -s https://vocaid-hub.vercel.app/.well-known/agent-card.json | jq '.agents | length'
-# → 4
+# 1. Discover agents + contracts (public — no auth)
+curl -s https://hub.vocaid.ai/.well-known/agent-card.json | jq '.contracts'
 
-# 2. Call Seer for AI inference (0G Compute)
-curl -s -X POST https://vocaid-hub.vercel.app/api/seer/inference \
+# 2. Call Seer for AI inference (requires X-API-Key)
+curl -s -X POST https://hub.vocaid.ai/api/agents/seer/a2a \
   -H "Content-Type: application/json" \
-  -d '{"prompt":"Analyze H100 GPU pricing trends"}'
+  -H "X-API-Key: voc_your_key_here" \
+  -d '{"method":"runInference","params":{"prompt":"Analyze H100 pricing"}}'
 
-# 3. Execute trade via Edge agent (Shield clearance + bet)
-curl -s -X POST https://vocaid-hub.vercel.app/api/edge/trade \
+# 3. Place prediction bet (requires X-API-Key)
+curl -s -X POST https://hub.vocaid.ai/api/predictions/0/bet \
   -H "Content-Type: application/json" \
-  -d '{"marketId":0,"side":"yes","amount":"0.01","reason":"Seer signal"}'
-
-# 4. Full demo: ./scripts/demo-agent-curl.sh
+  -H "X-API-Key: voc_your_key_here" \
+  -d '{"side":"yes","amount":0.01}'
 ```
 
-| Capability | Endpoint | Auth Required |
-|-----------|----------|---------------|
-| Agent discovery | `GET /.well-known/agent-card.json` | None |
-| AI inference | `POST /api/seer/inference` | None |
-| Trade execution | `POST /api/edge/trade` | None |
-| x402 payment | `POST /api/payments` (with `X-PAYMENT` header) | x402 signed payload |
+### Authentication Matrix
+
+| Capability | Endpoint | Auth |
+|-----------|----------|------|
+| Agent + contract discovery | `GET /.well-known/agent-card.json` | None (public) |
+| List agents | `GET /api/agents` | None (public) |
+| A2A capability card | `GET /api/agents/:name/a2a` | None (public) |
+| MCP tool schema | `GET /api/agents/:name/mcp` | None (public) |
+| **A2A task execution** | `POST /api/agents/:name/a2a` | **X-API-Key** |
+| **MCP tool execution** | `POST /api/agents/:name/mcp` | **X-API-Key** |
+| **Place prediction bet** | `POST /api/predictions/:id/bet` | **X-API-Key** |
+| **Create market** | `POST /api/predictions` | **X-API-Key** |
+| **Execute payment** | `POST /api/payments` | **X-API-Key** |
+| **Initiate payment** | `POST /api/initiate-payment` | **X-API-Key** |
 | Agent registration | `POST /api/agents/register` | World ID verified |
-| Audit trail | `GET /api/hedera/audit` | None |
+| Audit trail | `GET /api/hedera/audit` | None (public) |
+| Reputation scores | `GET /api/reputation` | None (public) |
+
+### API Key Security
+
+- Keys generated via `POST /api/keys/generate` (rate limited: 5/IP/hour)
+- SHA-256 hashed at rest — plaintext never stored
+- 90-day expiration with auto-expire on validation
+- Wallet ownership verified via session
+- Revoked keys purged after 7 days
 
 ---
 

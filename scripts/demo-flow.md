@@ -21,7 +21,7 @@
 | Step | Time | Route | Action | Key Line |
 |------|------|-------|--------|----------|
 | 1 | 0:00-0:30 | `/` | Wallet login → auto-verify (orb-verified users pass all gates) | "Login with World App. Orb-verified users access everything. Graceful degradation for unverified." |
-| 2 | 0:30-1:00 | `/profile` | Connect Your Agent — generate API key, configure chain + wallet | "Generate an API key. Pick your chain. Your OpenClaw agent calls our A2A/MCP services." |
+| 2 | 0:30-1:00 | `/profile` | Connect Your Agent — select chain (0G/Hedera/World), enter wallet, generate API key. Key authenticates all POST endpoints. Private key stays local. | "Generate an API key. Pick your chain. Your agent adds X-API-Key header — instant access to Seer, Edge, Shield, Lens. Keys expire in 90 days, rate limited, wallet-verified." |
 | 3 | 1:00-2:00 | `/gpu-verify` | GPU provider connects -> TEE verified -> ERC-8004 registration -> visible in marketplace | "This is the innovation. GPU provider verified on-chain via ZK proof. This tool does not exist in 0G's ecosystem yet." |
 | 4 | 2:00-2:30 | `/home` | Browse marketplace: humans + GPUs + agents in one view, filter by type | "Humans, GPUs, and agents -- one marketplace, one protocol." |
 | 5 | 2:30-3:00 | `/predictions` | Place $0.10 USDC bet via MiniKit.pay() → server settles on 0G Chain | "Pay USDC via World App. Server bets on 0G. Users see dollars, never native tokens." |

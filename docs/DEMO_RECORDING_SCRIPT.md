@@ -123,7 +123,7 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 3. Show chain selector (0G/Hedera/World) and agent wallet config
 4. Copy key snippet for OpenClaw config
 
-**Say:** *"Connect your own agent. Generate an API key, pick your chain, and your OpenClaw instance calls our A2A/MCP endpoints. Four agent slots per user — Seer, Edge, Shield, Lens services."*
+**Say:** *"Connect your own agent. Pick a chain, enter your wallet, generate an API key. Your OpenClaw agent adds it as X-API-Key header — instant access to all four services. Private key stays on your machine, never touches our server. Keys expire in 90 days, rate limited, wallet-verified."*
 
 **End.** Stop recording at 3:00.
 
