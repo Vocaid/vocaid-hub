@@ -115,7 +115,12 @@ export default async function gpuRoutes(app: FastifyInstance) {
         return { providers };
       } catch (err) {
         request.log.error({ err }, 'GPU list failed');
-        return reply.code(502).send({ error: '0G broker unreachable' });
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        // Surface specific contract errors (e.g. ServiceNotExist) instead of generic message
+        if (msg.includes('ServiceNotExist') || msg.includes('does not exist')) {
+          return reply.code(404).send({ error: 'Provider not registered on 0G compute network', detail: msg });
+        }
+        return reply.code(502).send({ error: '0G broker unreachable', detail: msg });
       }
     },
   );
@@ -265,7 +270,15 @@ export default async function gpuRoutes(app: FastifyInstance) {
           chainResult = { agentId: registeredAgentId, txHash: receipt!.hash };
         } catch (chainErr) {
           request.log.error({ err: chainErr }, 'Chain registration failed');
-          return reply.code(502).send({ error: 'On-chain registration failed — 0G Galileo may be unreachable' });
+          const msg = chainErr instanceof Error ? chainErr.message : 'Unknown error';
+          // Decode known contract errors for clear user feedback
+          if (msg.includes('AlreadyRegistered') || msg.includes('0x3a81d6fc')) {
+            return reply.code(409).send({ error: 'Provider already registered on-chain. Each wallet can only register one GPU provider.' });
+          }
+          if (msg.includes('OnlyOneProviderPerAddress') || msg.includes('ProviderAlreadyRegistered')) {
+            return reply.code(409).send({ error: 'This wallet already has a registered provider. Use a different wallet.' });
+          }
+          return reply.code(502).send({ error: 'On-chain registration failed', detail: msg });
         }
 
         app.responseCache.invalidate('/api/resources');
