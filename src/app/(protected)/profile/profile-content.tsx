@@ -2,7 +2,6 @@
 
 import { useState } from 'react'; // used by DeployFleetSection
 import { ShieldCheck, Bot, Loader2, Check, ArrowRight } from 'lucide-react';
-import { AgentCard, type AgentRole } from '@/components/AgentCard';
 import { ChainBadge } from '@/components/ChainBadge';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
@@ -22,12 +21,6 @@ interface ProfileContentProps {
   agents: AgentData[];
 }
 
-const ROLE_NAMES: Record<string, string> = {
-  'signal-analyst': 'Seer',
-  'market-maker': 'Edge',
-  'risk-manager': 'Shield',
-  'discovery': 'Lens',
-};
 
 const FLEET_ROLES = new Set(['signal-analyst', 'market-maker', 'risk-manager', 'discovery']);
 
