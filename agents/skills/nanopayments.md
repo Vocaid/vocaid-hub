@@ -20,6 +20,13 @@ When an agent needs to pay for a resource (GPU inference, data feed, skill):
 Pay 0.01 USDC to provider 0.0.12345 for GPU inference
 ```
 
+## HTTP Endpoints
+
+- `POST /api/initiate-payment` (body: `{ resourceName, resourceType, amount }`) -- returns `paymentId` + requirements
+- `POST /api/payments` (header: `X-PAYMENT` base64 payload, body: `{ resourceName }`) -- executes x402 settlement
+
+> Requires `X-API-Key` header for authenticated agent access.
+
 ## Implementation
 
 Uses `src/lib/hedera.ts` and `src/lib/blocky402.ts` for x402 USDC settlement.

@@ -27,7 +27,13 @@ Place bet: market 0, side=yes, amount=5 A0GI
 
 Calls `ResourcePrediction.createMarket()` and `ResourcePrediction.placeBet()` on 0G Galileo
 testnet at `0x82d5f12e55390016c49faab2ccb3c8d55d63fe7a`.
-API route: `POST /api/predictions` (create) and `POST /api/predictions/[id]/bet` (bet).
+API routes:
+- `POST /api/predictions` -- create market
+- `POST /api/predictions/[id]/bet` -- place bet
+- `POST /api/predictions/[id]/claim` -- claim winnings
+- `POST /api/predictions/[id]/resolve` -- resolve market
+
+> POST endpoints require `X-API-Key` header.
 
 ## Constraints
 

@@ -1,3 +1,5 @@
+**Status: In-memory fallback only.** 0G Storage KV integration pending. State is ephemeral — lost on server restart.
+
 # 0G Storage Skill
 
 Persist and retrieve agent state using 0G's decentralized storage network.
@@ -29,8 +31,10 @@ Retrieve it later:
 ## Implementation
 
 Uses `src/lib/og-storage.ts` which wraps 0G Storage KV operations.
-Currently uses in-memory fallback; will be wired to `@0glabs/0g-ts-sdk`
-when the storage network configuration is available.
+
+> **Current status:** Currently in-memory fallback only -- 0G Storage KV not yet wired.
+> State is ephemeral -- lost on server restart.
+> Future: will be accessible via A2A methods `putState`/`getState`.
 
 ## Constraints
 

@@ -20,6 +20,13 @@ quality, uptime, success rate, or response time feedback on-chain.
 Give feedback for agent 1: quality=85, uptime=99
 ```
 
+## HTTP Endpoints
+
+- `GET /api/reputation?agentId=X&tag=Y` -- read reputation scores
+- `POST /api/reputation` (body: `{ agentId, value, tag1, tag2, endpoint, feedbackURI }`) -- write feedback
+
+> Requires `X-API-Key` header.
+
 ## Implementation
 
 Calls `ReputationRegistry.giveFeedback()` on 0G Galileo testnet via `src/lib/reputation.ts`.

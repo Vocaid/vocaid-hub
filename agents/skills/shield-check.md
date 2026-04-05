@@ -25,6 +25,17 @@ IF quality < minQuality → DENY
 ELSE → ALLOW
 ```
 
+## A2A Endpoint
+
+Call via A2A: `POST /api/agents/shield/a2a`
+
+Methods:
+- `requestClearance(agentId, tag)` -- full Shield check returning ALLOW/DENY
+- `checkReputation(agentId)` -- read reputation scores only
+- `getProviders()` -- list registered providers
+
+> Requires `X-API-Key` header on POST.
+
 ## Implementation
 
 Reads from `IdentityRegistry`, `ValidationRegistry`, and `ReputationRegistry`
