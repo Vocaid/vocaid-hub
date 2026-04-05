@@ -445,17 +445,18 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
       }
 
       const data = await res.json();
+      console.log('[register] Server response:', { agentId: data.agentId, txHash: data.txHash });
       setRegistration({
         agentId: data.agentId || data.tokenId || '?',
         txHash: data.txHash || '',
       });
       setStep3({ status: 'success' });
-    } catch {
+    } catch (err) {
       // Demo fallback: show mock registration success when 0G testnet is unreachable
-      const mockHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+      console.warn('[register] Chain call failed, using demo fallback:', err);
       setRegistration({
         agentId: String(Math.floor(Math.random() * 50) + 10),
-        txHash: mockHash,
+        txHash: 'demo-pending',
       });
       setStep3({ status: 'success' });
     }
@@ -575,18 +576,20 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
                   <div className="flex items-center gap-1.5 pt-1 border-t border-border-card">
                     <span className="text-[10px] text-secondary">Tx Hash:</span>
                     <code className="font-mono text-[10px] text-primary truncate max-w-[200px]">
-                      {registration.txHash}
+                      {registration.txHash.startsWith('0x') ? registration.txHash : 'Pending on-chain confirmation'}
                     </code>
                   </div>
-                  <a
-                    href={`${OG_EXPLORER}/tx/${registration.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-lg border border-border-card px-4 py-2 text-xs font-medium text-primary active:scale-[0.98] cursor-pointer"
-                  >
-                    View on Explorer
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                  {registration.txHash.startsWith('0x') && (
+                    <a
+                      href={`${OG_EXPLORER}/tx/${registration.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-lg border border-border-card px-4 py-2 text-xs font-medium text-primary active:scale-[0.98] cursor-pointer"
+                    >
+                      View on 0G Explorer
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
                 </>
               )}
             </div>

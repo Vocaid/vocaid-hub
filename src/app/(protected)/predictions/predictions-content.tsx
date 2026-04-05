@@ -104,17 +104,13 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
         console.log('[bet] World Chain tx:', worldTxHash);
       } else {
         console.warn('[bet] MiniKit.pay() returned no transactionId — full result:', JSON.stringify(payResult));
-        worldTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-        console.log('[bet] Using mock World Chain tx for demo:', worldTxHash);
       }
     } catch (payErr: unknown) {
       const err = payErr as { name?: string; code?: string; message?: string };
-      console.error('[bet] MiniKit.pay() ERROR — full details:', {
+      console.error('[bet] MiniKit.pay() ERROR:', {
         name: err.name, code: err.code, message: err.message,
         input: payInput, deployer: DEPLOYER,
       });
-      worldTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      console.log('[bet] Using mock World Chain tx for demo:', worldTxHash);
     }
 
     // Step 2: Server places bet on 0G Chain with deployer wallet

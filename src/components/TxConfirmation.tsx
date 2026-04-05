@@ -22,8 +22,8 @@ const EXPLORERS: Record<string, { name: string; url: (hash: string) => string }>
     url: (hash) => `https://hashscan.io/testnet/transaction/${hash.replace('@', '-')}`,
   },
   world: {
-    name: 'World Explorer',
-    url: (hash) => `https://worldchain-sepolia.explorer.alchemy.com/tx/${hash}`,
+    name: 'Worldscan',
+    url: (hash) => `https://worldscan.org/tx/${hash}`,
   },
 };
 
@@ -36,6 +36,15 @@ const CHAIN_LABELS: Record<string, { label: string; color: string; Icon: typeof 
 function truncateHash(hash: string): string {
   if (hash.length <= 20) return hash;
   return `${hash.slice(0, 12)}...${hash.slice(-6)}`;
+}
+
+/** Returns true only for hashes that came from a real on-chain tx */
+function isRealTxHash(hash: string | undefined): hash is string {
+  if (!hash || hash.length < 10) return false;
+  // Filter out mock IDs like "lease-1234", payment UUIDs, and empty strings
+  if (/^(lease-|hire-|bet-)/.test(hash)) return false;
+  // Must look like an EVM 0x hash or a Hedera timestamp (0.0.xxx@...)
+  return hash.startsWith('0x') || hash.includes('@') || hash.includes('0.0.');
 }
 
 export function TxConfirmation({
@@ -71,8 +80,8 @@ export function TxConfirmation({
             </div>
           )}
 
-          {/* World Chain tx (if USDC transfer happened) */}
-          {worldTxHash && (
+          {/* World Chain tx (if USDC transfer happened — skip when settlement IS World) */}
+          {worldTxHash && chain !== 'world' && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-secondary">World Chain</span>
               <span className="text-xs font-mono text-primary">{truncateHash(worldTxHash)}</span>
@@ -90,7 +99,7 @@ export function TxConfirmation({
           <div className="flex items-center justify-between">
             <span className="text-sm text-secondary">Settlement</span>
             <div className="flex gap-1.5">
-              {worldTxHash && (
+              {worldTxHash && chain !== 'world' && (
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-world/10 text-chain-world">
                   <Globe className="w-3 h-3" />
                   World
@@ -106,20 +115,20 @@ export function TxConfirmation({
           </div>
         </div>
 
-        {/* Explorer links */}
+        {/* Explorer links — only for real on-chain hashes */}
         <div className="flex flex-col gap-2">
-          {worldTxHash && (
+          {isRealTxHash(worldTxHash) && chain !== 'world' && (
             <a
               href={EXPLORERS.world.url(worldTxHash)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 min-h-11 rounded-lg border border-border-card text-sm font-medium text-primary active:scale-95 transition-transform"
             >
-              View on World Explorer
+              View on Worldscan
               <ExternalLink className="w-4 h-4" />
             </a>
           )}
-          {explorer && (
+          {explorer && isRealTxHash(txHash) && (
             <a
               href={explorer.url(txHash)}
               target="_blank"

@@ -17,7 +17,7 @@ type FilterTab = 'all' | ResourceType;
 interface PaymentResult {
   amount: string;
   txHash: string;
-  hederaTxHash?: string;
+  worldTxHash?: string;
   resourceName: string;
 }
 
@@ -114,15 +114,16 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
       setPaymentResult({
         amount: leaseAmount.toFixed(2),
-        txHash: worldTxHash ?? confirmData.paymentId ?? `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+        txHash: confirmData.paymentId ?? `lease-${Date.now()}`,
+        worldTxHash: worldTxHash,
         resourceName: resource.name,
       });
     } catch {
-      // Demo fallback: show mock payment success
-      const mockHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+      // Demo fallback: show payment success with non-chain reference
       setPaymentResult({
         amount: Math.max(0.10, Number(parsePrice(resource.price)) || 0.10).toFixed(2),
-        txHash: mockHash,
+        txHash: `lease-${Date.now()}`,
+        worldTxHash: undefined,
         resourceName: resource.name,
       });
     } finally {
@@ -227,8 +228,8 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
           subtitle={paymentResult.resourceName}
           amount={`$${paymentResult.amount} USDC`}
           chain="world"
-          txHash={paymentResult.txHash}
-          worldTxHash={paymentResult.txHash}
+          txHash={paymentResult.worldTxHash ?? paymentResult.txHash}
+          worldTxHash={paymentResult.worldTxHash}
           onClose={() => {
             const name = paymentResult.resourceName;
             setPaymentResult(null);

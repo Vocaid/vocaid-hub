@@ -38,6 +38,29 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+/** Resolve session wallet — checks both id and walletAddress fields to avoid mismatch */
+function getSessionWallets(request: any): { id: string | null; walletAddress: string | null } {
+  const user = request.session?.user;
+  return {
+    id: user?.id?.toLowerCase() || null,
+    walletAddress: user?.walletAddress?.toLowerCase() || null,
+  };
+}
+
+/** Check if a wallet belongs to the current session (matches either id or walletAddress) */
+function isOwnWallet(request: any, wallet: string): boolean {
+  const s = getSessionWallets(request);
+  const w = wallet.toLowerCase();
+  if (!s.id && !s.walletAddress) return true; // no session — allow (unauthenticated)
+  return s.id === w || s.walletAddress === w;
+}
+
+/** Get the primary session wallet (walletAddress preferred, fallback to id) */
+function primaryWallet(request: any): string | null {
+  const s = getSessionWallets(request);
+  return s.walletAddress || s.id;
+}
+
 /**
  * API-key management routes — generate, status, revoke.
  * All routes require authenticated session (wallet from auth plugin).
@@ -60,16 +83,10 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
         }
 
         const { walletAddress, chain } = request.body;
-
-        // Wallet ownership: session wallet must match requested wallet
-        const sessionWallet = (request as any).session?.user?.id;
-        if (sessionWallet && sessionWallet.toLowerCase() !== walletAddress.toLowerCase()) {
-          request.log.warn({ sessionWallet, walletAddress }, 'Wallet mismatch on key generation');
-          // Allow for hackathon demo — in production, this would be a 403
-        }
+        const owner = primaryWallet(request) || walletAddress;
 
         // Check existing key — by agent wallet OR owner wallet
-        const existing = getKeyByWallet(walletAddress) || (sessionWallet ? getKeyByOwner(sessionWallet) : null);
+        const existing = getKeyByWallet(walletAddress) || getKeyByOwner(owner);
         if (existing) {
           return reply.code(409).send({
             error: 'API key already exists for this wallet. Revoke first to generate a new one.',
@@ -78,7 +95,7 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
           });
         }
 
-        const { key, record } = generateApiKey(walletAddress, chain as ChainId, sessionWallet || walletAddress);
+        const { key, record } = generateApiKey(walletAddress, chain as ChainId, owner);
 
         request.log.info({ walletAddress, chain, maskedKey: record.maskedKey }, 'API key generated');
 
@@ -104,9 +121,8 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
       try {
         const { wallet } = request.query;
 
-        // Only return status for the caller's own wallet (check session if available)
-        const sessionWallet = (request as any).session?.user?.id;
-        if (sessionWallet && sessionWallet.toLowerCase() !== wallet.toLowerCase()) {
+        // Only return status for the caller's own wallet
+        if (!isOwnWallet(request, wallet)) {
           return reply.code(403).send({ error: 'Can only check status for your own wallet' });
         }
 
@@ -117,7 +133,6 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
           return reply.code(404).send({ error: 'No active key found for wallet' });
         }
 
-        // Return minimal info — don't expose keyHash or internal fields
         return {
           maskedKey: record.maskedKey,
           chain: record.chain,
@@ -142,8 +157,7 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
         const { walletAddress } = request.body;
 
         // Only allow revoking your own wallet's key
-        const sessionWallet = (request as any).session?.user?.id;
-        if (sessionWallet && sessionWallet.toLowerCase() !== walletAddress.toLowerCase()) {
+        if (!isOwnWallet(request, walletAddress)) {
           return reply.code(403).send({ error: 'Can only revoke your own API key' });
         }
 

@@ -132,7 +132,7 @@ export function ConnectAgentSection() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-primary">Agent Connected</p>
-            <p className="text-[11px] text-secondary">Your OpenClaw instance is authenticated</p>
+            <p className="text-[11px] text-secondary">Your agent instance is authenticated</p>
           </div>
         </div>
 
@@ -182,7 +182,7 @@ export function ConnectAgentSection() {
           </div>
           <div>
             <p className="text-sm font-semibold text-status-verified">Agent Connected</p>
-            <p className="text-[11px] text-secondary">Copy your API key now — it won&apos;t be shown again</p>
+              <p className="text-[11px] text-secondary">Copy your API key now — it won&apos;t be shown again</p>
           </div>
         </div>
 
@@ -194,7 +194,7 @@ export function ConnectAgentSection() {
             </button>
           </div>
           <p className="text-[10px] text-secondary">
-            Add to your OpenClaw config: <code className="bg-surface px-1 rounded">X-API-Key: {apiKey?.slice(0, 12)}...</code>
+            Set in your agent config: <code className="bg-surface px-1 rounded">X-API-Key: {apiKey?.slice(0, 12)}...</code>
           </p>
         </div>
 
@@ -218,7 +218,7 @@ export function ConnectAgentSection() {
         </div>
         <div>
           <p className="text-sm font-semibold text-primary">Connect Your Agent</p>
-          <p className="text-[11px] text-secondary">Generate an API key to connect your OpenClaw instance</p>
+          <p className="text-[11px] text-secondary">Generate an API key to connect your agent instance</p>
         </div>
       </div>
 
@@ -240,7 +240,7 @@ export function ConnectAgentSection() {
       </div>
 
       <div className="rounded-lg bg-surface border border-border-card p-3">
-        <p className="text-[10px] text-secondary">Your agent&apos;s private key stays in your OpenClaw config — never sent to our servers. The API key authenticates requests; signing happens locally.</p>
+        <p className="text-[10px] text-secondary">Your agent&apos;s private key stays in your agent config — never sent to our servers. The API key authenticates requests; signing happens locally.</p>
       </div>
 
       {error && (

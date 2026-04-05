@@ -37,7 +37,7 @@ interface StepState {
 /* ─── Constants ────────────────────────────────────── */
 
 const OG_EXPLORER =
-  process.env.NEXT_PUBLIC_OG_EXPLORER_URL ?? 'https://chainscan-newton.0g.ai';
+  process.env.NEXT_PUBLIC_OG_EXPLORER_URL ?? 'https://chainscan-galileo.0g.ai';
 
 /* ─── Helpers ──────────────────────────────────────── */
 
