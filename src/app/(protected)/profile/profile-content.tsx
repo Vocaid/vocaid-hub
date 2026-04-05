@@ -7,6 +7,7 @@ import { ChainBadge } from '@/components/ChainBadge';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import Link from 'next/link';
+import { ConnectAgentSection } from '@/components/ConnectAgentSection';
 
 interface AgentData {
   agentId: string;
@@ -83,6 +84,9 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
           <span className="text-xs text-secondary">ERC-8004 ID: #1</span>
         </div>
       </div>
+
+      {/* ── Connect Your Agent ────────────────────────── */}
+      <ConnectAgentSection />
 
       {/* ── OpenClaw Trading Fleet ─────────────────────── */}
       <div>

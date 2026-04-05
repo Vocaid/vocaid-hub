@@ -38,10 +38,12 @@ import errorHandlerPlugin from './plugins/error-handler.js';
 import x402Plugin from './plugins/x402.js';
 import responseCachePlugin from './plugins/response-cache.js';
 import securityHeadersPlugin from './plugins/security-headers.js';
+import apiKeyAuthPlugin from './plugins/api-key-auth.js';
 
 await app.register(errorHandlerPlugin);
 await app.register(authPlugin);
 await app.register(worldIdGatePlugin);
+await app.register(apiKeyAuthPlugin);
 await app.register(rateLimitPlugin);
 await app.register(x402Plugin);
 await app.register(responseCachePlugin);
@@ -93,6 +95,11 @@ await app.register(activityRoutes, { prefix: '/api' });
 await app.register(hederaRoutes, { prefix: '/api' });
 await app.register(proposalRoutes, { prefix: '/api' });
 await app.register(agentDecisionRoutes, { prefix: '/api' });
+
+// API Key management routes
+import apiKeyRoutes from './routes/api-keys.js';
+await app.register(apiKeyRoutes, { prefix: '/api' });
+
 await app.register(wellKnownRoutes);
 
 // Graceful shutdown
