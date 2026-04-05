@@ -7,7 +7,6 @@ import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
 
@@ -79,20 +78,10 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         return;
       }
 
-      // Step 2: MiniKit.pay() — World App native USDC payment
-      const leaseAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10).toFixed(2);
-      try {
-        await pay({
-          reference: initData.paymentId,
-          to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
-          tokens: [{ symbol: Tokens.USDC, token_amount: leaseAmount }],
-          description: `Lease ${resource.name}`,
-        });
-      } catch (miniErr) {
-        console.log('[pay] MiniKit.pay() unavailable, continuing with x402:', miniErr);
-      }
-
-      // Step 3: x402 settlement on Hedera testnet (server-side, always runs)
+      // Step 2: x402 settlement on Hedera testnet (server-side)
+      // MiniKit.pay() disabled — crashes World App webview by triggering deep link
+      // navigation that destroys the mini app context (see commit 26bc807).
+      // Settlement uses deployer wallet; amount from initiate-payment serves as quote.
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,

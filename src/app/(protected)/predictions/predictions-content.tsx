@@ -8,7 +8,6 @@ import { SignalTicker } from '@/components/SignalTicker';
 import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -81,21 +80,8 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    // Step 1: MiniKit.pay() — fire and forget, crash-safe
-    // Wraps in nested try-catch so World App webview crash doesn't block settlement
-    const usdcAmount = Math.max(0.10, amount).toFixed(2);
-    try {
-      await pay({
-        reference: `bet-${marketId}-${side}-${Date.now()}`,
-        to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
-        tokens: [{ symbol: Tokens.USDC, token_amount: usdcAmount }],
-        description: `Predict ${side.toUpperCase()} — Market #${marketId}`,
-      });
-    } catch (payErr) {
-      console.log('[bet] MiniKit.pay() unavailable, proceeding with server settlement:', payErr);
-    }
-
-    // Step 2: Server places bet on 0G Chain with deployer wallet (user's chosen amount)
+    // MiniKit.pay() disabled — crashes World App webview (deep link kills JS runtime).
+    // Server places bet on 0G Chain with deployer wallet (user's chosen amount).
     const res = await fetch(`/api/predictions/${marketId}/bet`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
