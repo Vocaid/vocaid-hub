@@ -87,10 +87,11 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 1. Click "Market" tab
 2. Show filter tabs: All / GPU / Agent / Human / DePIN
 3. Show the GPU you just registered alongside agents, humans, DePIN
-4. Tap "Hire" on a resource → MiniKit.pay() → x402 USDC payment
-5. Show PaymentConfirmation: amount, tx hash, x402 on Hedera
+4. Tap "Lease" on a resource → MiniKit.pay() opens World App USDC payment
+5. User confirms $0.10 USDC → server settles on Hedera via x402
+6. Show PaymentConfirmation: amount + Hedera tx hash + HashScan link
 
-**Say:** *"Marketplace — all verified resources. GPUs, agents, human skills, DePIN hardware. Hire with x402 USDC on Hedera. $0.0001 gas."*
+**Say:** *"Lease a GPU. Pay $0.10 USDC through World App — native payment, one tap. Server settles on Hedera via x402. $0.0001 gas. Users pay in USDC, agents settle on the destination chain."*
 
 ### 2:10-2:35 — Seer Agent Decision (25s)
 
@@ -108,10 +109,11 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 **Action sequence:**
 1. Click "Predict" tab
 2. Show existing market: "Will H100 cost drop below $0.03?"
-3. Place a small bet (YES, 0.01 A0GI)
-4. Show price impact preview and confirm
+3. Place a bet (YES, $0.10) → MiniKit.pay() USDC payment
+4. Server settles bet on 0G Chain with deployer's A0GI
+5. Show price impact preview and confirmation
 
-**Say:** *"Prediction markets for resource pricing. A new DeFi primitive on 0G Chain."*
+**Say:** *"Prediction markets. Pay $0.10 USDC via World App. Server places the bet on 0G Chain. Users see USDC, never native tokens."*
 
 ### 2:50-3:00 — Profile + Close (10s)
 

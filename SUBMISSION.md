@@ -36,9 +36,10 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 **Evidence:**
 - Full Mini App built with `@worldcoin/minikit-js` and MiniKit React provider
 - MiniKit commands: `verify`, `pay`, `signTypedData`
-- `MiniKit.pay()` executes native World App payment ($0.10 USDC on World Chain mainnet)
-- Cross-chain settlement: MiniKit pays on World → server settles resource lease on Hedera testnet via x402
-- PaymentConfirmation shows BOTH transaction hashes (World Explorer + HashScan)
+- `MiniKit.pay()` for all user payments: resource leasing AND prediction bets ($0.10+ USDC)
+- Users always see USDC — server handles chain-specific settlement (Hedera for leases, 0G for bets)
+- Agents use x402 Hedera micropayments directly ($0.0001 gas) — no World App popup
+- PaymentConfirmation shows settlement tx hash + explorer link
 - Mobile-optimized UI (375-428px viewport)
 - **Files:** `src/app/layout.tsx` (MiniKit provider), `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, all `src/app/(protected)/*` pages
 

@@ -12,7 +12,7 @@
 
 **Emoji:** 🔮
 
-**Demo link:** https://vocaid-hub.vercel.app
+**Demo link:** https://hub.vocaid.ai
 
 **Short description (max 100 chars):**
 ```
@@ -27,7 +27,7 @@ The key innovation: we built the GPU provider verification tool that 0G's own de
 
 Four OpenClaw agents (Seer, Edge, Shield, Lens) operate autonomously — analyzing signals, pricing resources, enforcing risk limits, and monitoring provider quality. Each agent is registered via World AgentKit with ERC-8004 identity, traceable to a verified human via World ID.
 
-Payments settle in USDC via x402 on Hedera through the Blocky402 facilitator. Credential tokens (HTS, non-transferable, KYC-gated) and an immutable HCS audit trail provide compliance infrastructure — all using @hashgraph/sdk with zero Solidity on Hedera.
+Two payment flows: users pay in USDC via World App's native MiniKit payment popup ($0.10+ per transaction), while agents pay directly via x402 USDC micropayments on Hedera ($0.0001 gas). The server handles cross-chain settlement — leases settle on Hedera via Blocky402, prediction bets settle on 0G Chain. Users never see native tokens (A0GI, HBAR). Credential tokens (HTS, non-transferable, KYC-gated) and an immutable HCS audit trail provide compliance infrastructure — all using @hashgraph/sdk with zero Solidity on Hedera.
 
 Resource prediction markets on 0G Chain let anyone bet on future GPU pricing, skill demand, and provider availability — a new asset class for the agentic economy.
 
@@ -169,7 +169,7 @@ Vocaid/vocaid-hub — Primary, Monorepo
 - [ ] Cover image (640x360, 16:9)
 - [ ] At least 3 screenshots
 - [ ] Demo video uploaded (2-4 min, 720p+, human voiceover)
-- [ ] Demo link: https://vocaid-hub.vercel.app
+- [ ] Demo link: https://hub.vocaid.ai
 - [ ] GitHub repo is PUBLIC
 - [ ] All fields filled (name, tagline, description, how it's made)
 - [ ] Tech stack selections complete

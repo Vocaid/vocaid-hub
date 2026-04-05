@@ -24,8 +24,8 @@
 | 2 | 0:30-1:00 | `/profile` | Show 4 registered OpenClaw agents with ERC-8004 IDs | "Four AI agents, each registered via AgentKit with on-chain ERC-8004 identity." |
 | 3 | 1:00-2:00 | `/gpu-verify` | GPU provider connects -> TEE verified -> ERC-8004 registration -> visible in marketplace | "This is the innovation. GPU provider verified on-chain via ZK proof. This tool does not exist in 0G's ecosystem yet." |
 | 4 | 2:00-2:30 | `/home` | Browse marketplace: humans + GPUs + agents in one view, filter by type | "Humans, GPUs, and agents -- one marketplace, one protocol." |
-| 5 | 2:30-3:00 | `/predictions` | Create prediction market, place USDC bet | "Will H100 inference cost drop next week? The market decides." |
-| 6 | 3:00-3:30 | `/home` | Hire a resource -> x402 USDC payment via Blocky402 on Hedera | "Agent pays five cents, $0.0001 gas. x402 USDC via Blocky402 on Hedera." |
+| 5 | 2:30-3:00 | `/predictions` | Place $0.10 USDC bet via MiniKit.pay() → server settles on 0G Chain | "Pay USDC via World App. Server bets on 0G. Users see dollars, never native tokens." |
+| 6 | 3:00-3:30 | `/home` | Lease resource → MiniKit.pay($0.10 USDC) → server settles on Hedera via x402 | "Lease a GPU. MiniKit pays USDC on World Chain. Server settles on Hedera. $0.0001 gas." |
 | 7 | 3:30-4:00 | `/home` | Show reputation scores updated on resource card | "Reputation updates automatically. Our Lens agent wrote quality feedback to ERC-8004." |
 
 ---
@@ -92,6 +92,12 @@ Explorer: `https://testnet.hashscan.io`
 
 **Why 3 chains:**
 "World for trust, 0G for verification, Hedera for settlement -- each does what it does best"
+
+**Why Hedera for leases, 0G for bets:**
+"Leasing is payment-gated access — Hedera has x402 ($0.0001 gas), HTS credentials, HCS audit, zero Solidity. Bets are a DeFi primitive needing EVM smart contracts — 0G provides that. This also maximizes bounty coverage: No Solidity on Hedera ($3k) + Best DeFi on 0G ($6k)."
+
+**How do users pay:**
+"Always USDC via World App's MiniKit.pay(). Server handles chain-specific settlement — Hedera for leases, 0G for bets. Users never see A0GI or HBAR. Agents pay directly on Hedera via x402 micropayments."
 
 **Why ERC-8004:**
 "Only open standard with Validation Registry -- pluggable validators on any EVM chain"
