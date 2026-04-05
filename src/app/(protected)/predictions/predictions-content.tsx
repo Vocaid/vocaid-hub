@@ -7,6 +7,7 @@ import { CreateMarketModal } from '@/components/CreateMarketModal';
 import { SignalTicker } from '@/components/SignalTicker';
 import type { ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
+import { TxConfirmation } from '@/components/TxConfirmation';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import { sendTransaction } from '@worldcoin/minikit-js/commands';
 import { encodeFunctionData, parseUnits } from 'viem';
@@ -23,7 +24,7 @@ const DEMO_SIGNALS: ActivityItem[] = [
   { id: 's8', type: 'depin', agent: 'IoT-Node-7', action: 'heartbeat', detail: 'Temp sensor · São Paulo · 23.4°C', value: 'Online', chain: 'hedera', timestamp: Date.now() - 360_000 },
 ];
 
-const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
+const WORLD_USDC = '0x79a02482a880bce3f13e09da970dc34db4cd24d1' as const;
 const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
 const WORLD_RPC = 'https://worldchain-mainnet.g.alchemy.com/public';
 
@@ -57,6 +58,10 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   const { isVerified, recheckStatus } = useWorldIdGate();
   const [showGateModal, setShowGateModal] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
+  const [txConfirm, setTxConfirm] = useState<{
+    title: string; subtitle: string; amount?: string;
+    chain: 'world' | '0g' | 'hedera'; txHash: string; worldTxHash?: string;
+  } | null>(null);
 
   const refreshMarkets = useCallback(async () => {
     try {
@@ -152,7 +157,14 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    setToast({ message: `Bet placed: $${amount.toFixed(2)} USDC on ${side.toUpperCase()}`, type: 'success' });
+    const data = await res.json();
+    setTxConfirm({
+      title: 'Bet Placed',
+      subtitle: `${side.toUpperCase()} on Market #${marketId}`,
+      amount: `$${amount.toFixed(2)} USDC`,
+      chain: '0g',
+      txHash: data.txHash ?? '',
+    });
     await refreshMarkets();
   }
 
@@ -171,7 +183,13 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       setToast({ message: err.error || 'Resolve failed', type: 'error' });
       return;
     }
-    setToast({ message: `Market resolved: ${outcome.toUpperCase()} wins`, type: 'success' });
+    const resolveData = await res.json();
+    setTxConfirm({
+      title: 'Market Resolved',
+      subtitle: `${outcome.toUpperCase()} wins — Market #${marketId}`,
+      chain: '0g',
+      txHash: resolveData.txHash ?? '',
+    });
     await refreshMarkets();
   }
 
@@ -188,7 +206,14 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       setToast({ message: err.error || 'Claim failed', type: 'error' });
       return;
     }
-    setToast({ message: 'Winnings claimed!', type: 'success' });
+    const claimData = await res.json();
+    setTxConfirm({
+      title: 'Winnings Claimed',
+      subtitle: `Market #${marketId}`,
+      amount: claimData.amount ? `$${claimData.amount} USDC` : undefined,
+      chain: '0g',
+      txHash: claimData.txHash ?? '',
+    });
     await refreshMarkets();
   }
 
@@ -281,6 +306,14 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
           }
         }}
       />
+
+      {/* Transaction confirmation popup */}
+      {txConfirm && (
+        <TxConfirmation
+          {...txConfirm}
+          onClose={() => setTxConfirm(null)}
+        />
+      )}
     </>
   );
 }
