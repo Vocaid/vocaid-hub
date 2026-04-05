@@ -9,8 +9,8 @@ import type { ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { TxConfirmation } from '@/components/TxConfirmation';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-import { sendTransaction } from '@worldcoin/minikit-js/commands';
-import { encodeFunctionData, parseUnits } from 'viem';
+import { MiniKit } from '@worldcoin/minikit-js';
+import { Tokens, tokenToDecimals } from '@worldcoin/minikit-js/commands';
 
 /* ── Demo signals for the ticker — diverse multi-chain activity ── */
 const DEMO_SIGNALS: ActivityItem[] = [
@@ -24,28 +24,7 @@ const DEMO_SIGNALS: ActivityItem[] = [
   { id: 's8', type: 'depin', agent: 'IoT-Node-7', action: 'heartbeat', detail: 'Temp sensor · São Paulo · 23.4°C', value: 'Online', chain: 'hedera', timestamp: Date.now() - 360_000 },
 ];
 
-const WORLD_USDC = '0x79a02482a880bce3f13e09da970dc34db4cd24d1' as const;
 const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
-const WORLD_RPC = 'https://worldchain-mainnet.g.alchemy.com/public';
-
-async function checkWorldUsdcBalance(userAddress: string, requiredAmount: bigint): Promise<boolean> {
-  try {
-    const balanceData = encodeFunctionData({
-      abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }] as const,
-      functionName: 'balanceOf',
-      args: [userAddress as `0x${string}`],
-    });
-    const res = await fetch(WORLD_RPC, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: WORLD_USDC, data: balanceData }, 'latest'] }),
-    });
-    const { result } = await res.json();
-    return BigInt(result || '0x0') >= requiredAmount;
-  } catch {
-    return false;
-  }
-}
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -105,43 +84,24 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    // Step 1: World Chain USDC transfer (only if user has balance)
+    // Step 1: MiniKit.pay() — World App native USDC payment
     const usdcAmount = Math.max(0.10, amount);
-    const requiredUsdc = parseUnits(usdcAmount.toFixed(2), 6);
-
-    let userWallet: string | undefined;
     try {
-      const sessRes = await fetch('/api/auth/session');
-      if (sessRes.ok) {
-        const sess = await sessRes.json();
-        userWallet = sess?.user?.walletAddress || sess?.user?.address;
+      const payResult = await MiniKit.pay({
+        reference: `bet-${marketId}-${side}-${Date.now()}`,
+        to: DEPLOYER,
+        tokens: [{
+          symbol: Tokens.USDC,
+          token_amount: tokenToDecimals(usdcAmount, Tokens.USDC).toString(),
+        }],
+        description: `Predict ${side.toUpperCase()} — Market #${marketId}`,
+      });
+
+      if (payResult.data?.transactionId) {
+        console.log('[bet] World Chain payment:', payResult.data.transactionId);
       }
-    } catch { /* skip */ }
-
-    if (userWallet) {
-      const hasBalance = await checkWorldUsdcBalance(userWallet, requiredUsdc);
-      if (hasBalance) {
-        try {
-          const transferData = encodeFunctionData({
-            abi: [{ name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] }] as const,
-            functionName: 'transfer',
-            args: [DEPLOYER, requiredUsdc],
-          });
-
-          const txResult = await sendTransaction({
-            chainId: 480,
-            transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
-          });
-
-          if (txResult.data?.userOpHash) {
-            console.log('[bet] World Chain USDC transfer:', txResult.data.userOpHash);
-          }
-        } catch (txErr) {
-          console.log('[bet] sendTransaction failed, continuing with server settlement:', txErr);
-        }
-      } else {
-        console.log('[bet] Insufficient USDC on World Chain — using server settlement only');
-      }
+    } catch (payErr) {
+      console.log('[bet] MiniKit.pay() failed, continuing with server settlement:', payErr);
     }
 
     // Step 2: Server places bet on 0G Chain with deployer wallet
