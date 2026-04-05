@@ -65,81 +65,37 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
     setPayingResource(resource.name);
 
     try {
-      // Step 1: Get payment requirements from server
-      const initRes = await fetch('/api/initiate-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resourceName: resource.name,
-          resourceType: resource.type,
-          amount: parsePrice(resource.price),
-        }),
+      // Step 1: MiniKit.pay() — World App native USDC payment
+      const leaseAmount = Math.max(0.10, Number(parsePrice(resource.price)) || 0.10);
+      const reference = `hire-${resource.name}-${Date.now()}`;
+
+      const payResult = await MiniKit.pay({
+        reference,
+        to: DEPLOYER,
+        tokens: [{
+          symbol: Tokens.USDC,
+          token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString(),
+        }],
+        description: `Lease ${resource.name}`,
       });
 
-      const initData = await initRes.json();
-      if (!initRes.ok) {
-        setPayError(initData.error ?? 'Payment initiation failed');
+      if (!payResult.data?.transactionId) {
+        setPayError('Payment cancelled');
         return;
       }
 
-      // Step 2: MiniKit.pay() — World App native USDC payment
-      // Uses tokenToDecimals() per official docs: https://docs.world.org/mini-apps/commands/pay
-      const leaseAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10);
-      let worldTxHash: string | undefined;
+      const worldTxHash = payResult.data.transactionId;
+      console.log('[hire] World Chain payment:', worldTxHash);
 
-      try {
-        const payResult = await MiniKit.pay({
-          reference: initData.paymentId,
-          to: DEPLOYER,
-          tokens: [{
-            symbol: Tokens.USDC,
-            token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString(),
-          }],
-          description: `Lease ${resource.name}`,
-        });
-
-        if (payResult.data?.transactionId) {
-          worldTxHash = payResult.data.transactionId;
-          console.log('[hire] World Chain payment:', worldTxHash);
-        }
-      } catch (payErr) {
-        console.log('[hire] MiniKit.pay() failed, continuing with server settlement:', payErr);
-      }
-
-      // Step 3: x402 settlement on Hedera testnet (server-side, deployer wallet)
-      const paymentPayload = btoa(JSON.stringify({
-        paymentId: initData.paymentId,
-        network: initData.requirements.network,
-        token: initData.requirements.token,
-        amount: initData.requirements.amount,
-        payer: 'world-app-user',
-        resource: resource.name,
-        timestamp: Date.now(),
-      }));
-
-      const res = await fetch('/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-PAYMENT': paymentPayload,
-        },
-        body: JSON.stringify({ resourceName: resource.name }),
+      setPaymentResult({
+        amount: leaseAmount.toFixed(2),
+        txHash: worldTxHash,
+        resourceName: resource.name,
       });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setPaymentResult({
-          amount: data.payment?.amount ?? initData.requirements.amount,
-          txHash: worldTxHash ?? data.payment?.txHash ?? 'pending',
-          hederaTxHash: data.payment?.txHash,
-          resourceName: resource.name,
-        });
-      } else {
-        setPayError(data.error ?? 'Payment failed');
-      }
-    } catch {
-      setPayError('Network error — please try again');
+    } catch (err) {
+      console.error('[hire] Payment error:', err);
+      const msg = err instanceof Error ? err.message : 'Payment failed';
+      setPayError(msg.includes('rejected') || msg.includes('cancelled') ? 'Payment cancelled' : 'Payment failed — please try again');
     } finally {
       setPaying(false);
       setPayingResource(null);
