@@ -34,9 +34,10 @@ export function ConnectAgentSection() {
     : maskedKey ? 'connected'
     : 'disconnected';
 
-  // Load existing key status on mount
+  // Load existing key status when session wallet is available
   useEffect(() => {
-    if (!walletAddress) { setChecking(false); return; }
+    if (!walletAddress) return; // wait for session — keep checking=true
+    setChecking(true); // re-show loading skeleton when wallet changes
     fetch(`/api/keys/status?wallet=${encodeURIComponent(walletAddress)}`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
@@ -48,6 +49,14 @@ export function ConnectAgentSection() {
       .catch(() => {})
       .finally(() => setChecking(false));
   }, [walletAddress]);
+
+  // If session never loads (unauthenticated), stop showing skeleton after timeout
+  useEffect(() => {
+    if (!walletAddress && checking) {
+      const timer = setTimeout(() => setChecking(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [walletAddress, checking]);
 
   async function handleGenerate() {
     if (!walletAddress && !agentWallet) { setError('Wallet address required'); return; }

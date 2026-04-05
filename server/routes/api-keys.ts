@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   generateApiKey,
   getKeyByWallet,
+  getKeyByOwner,
   revokeApiKey,
   type ChainId,
 } from '../../src/lib/api-key-ledger.js';
@@ -67,8 +68,8 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
           // Allow for hackathon demo — in production, this would be a 403
         }
 
-        // Check existing key
-        const existing = getKeyByWallet(walletAddress);
+        // Check existing key — by agent wallet OR owner wallet
+        const existing = getKeyByWallet(walletAddress) || (sessionWallet ? getKeyByOwner(sessionWallet) : null);
         if (existing) {
           return reply.code(409).send({
             error: 'API key already exists for this wallet. Revoke first to generate a new one.',
@@ -77,7 +78,7 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
           });
         }
 
-        const { key, record } = generateApiKey(walletAddress, chain as ChainId);
+        const { key, record } = generateApiKey(walletAddress, chain as ChainId, sessionWallet || walletAddress);
 
         request.log.info({ walletAddress, chain, maskedKey: record.maskedKey }, 'API key generated');
 
@@ -109,7 +110,8 @@ export default async function apiKeyRoutes(app: FastifyInstance) {
           return reply.code(403).send({ error: 'Can only check status for your own wallet' });
         }
 
-        const record = getKeyByWallet(wallet);
+        // Look up by exact wallet OR by owner wallet (handles agent wallet ≠ session wallet)
+        const record = getKeyByWallet(wallet) || getKeyByOwner(wallet);
 
         if (!record) {
           return reply.code(404).send({ error: 'No active key found for wallet' });

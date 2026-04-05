@@ -37,7 +37,7 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 │                         MINI APP (Next.js 15 :3000)                           │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
 │  │    /     │ │/resources │ │/predict  │ │/agent-dec│ │ /profile │           │
-│  │Marketplace│ │Resources │ │Pred Mkt  │ │Seer Flow │ │  My Hub  │           │
+│  │Marketplace│ │Resources │ │Pred Mkt  │ │Seer Flow │ │  Agents  │           │
 │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘           │
 │       └─────────────┴────────────┴─────────────┴─────────────┘               │
 │                              /api/* rewrite                                   │
@@ -194,12 +194,15 @@ All routes served by Fastify with Zod validation, proxied through Next.js rewrit
 | `/api/proposals` | GET/POST | Agent prediction proposals — submit, approve, reject | 0G |
 | `/api/agents/[name]/a2a` | GET/POST | A2A capability card + task execution per agent | 0G + Hedera |
 | `/api/agents/[name]/mcp` | GET/POST | MCP tool schema + tool execution per agent | 0G + Hedera |
+| `/api/keys/generate` | POST | Generate API key (rate limited: 5/IP/hour) | — |
+| `/api/keys/status` | GET | Check API key status by wallet | — |
+| `/api/keys/revoke` | POST | Revoke API key for wallet | — |
 
 ---
 
 ## Agent Access (A2A / Machine-to-Machine)
 
-External agents connect via **Connect Your Agent** on the Profile page — generate an API key, select a settlement chain (0G/Hedera/World), and configure a wallet address. The API key authenticates all POST requests.
+External agents connect via **Connect Your Agent** on the Agents page — generate an API key, select a settlement chain (0G/Hedera/World), and configure a wallet address. The API key authenticates A2A and MCP execution requests.
 
 ```bash
 # 1. Discover agents + contracts (public — no auth)
@@ -211,11 +214,11 @@ curl -s -X POST https://hub.vocaid.ai/api/agents/seer/a2a \
   -H "X-API-Key: voc_your_key_here" \
   -d '{"method":"runInference","params":{"prompt":"Analyze H100 pricing"}}'
 
-# 3. Place prediction bet (requires X-API-Key)
-curl -s -X POST https://hub.vocaid.ai/api/predictions/0/bet \
+# 3. Call Shield for risk check (requires X-API-Key)
+curl -s -X POST https://hub.vocaid.ai/api/agents/shield/mcp \
   -H "Content-Type: application/json" \
   -H "X-API-Key: voc_your_key_here" \
-  -d '{"side":"yes","amount":0.01}'
+  -d '{"tool":"shieldCheck","input":{"provider":"0x1234..."}}'
 ```
 
 ### Authentication Matrix
@@ -228,10 +231,10 @@ curl -s -X POST https://hub.vocaid.ai/api/predictions/0/bet \
 | MCP tool schema | `GET /api/agents/:name/mcp` | None (public) |
 | **A2A task execution** | `POST /api/agents/:name/a2a` | **X-API-Key** |
 | **MCP tool execution** | `POST /api/agents/:name/mcp` | **X-API-Key** |
-| **Place prediction bet** | `POST /api/predictions/:id/bet` | **X-API-Key** |
-| **Create market** | `POST /api/predictions` | **X-API-Key** |
-| **Execute payment** | `POST /api/payments` | **X-API-Key** |
-| **Initiate payment** | `POST /api/initiate-payment` | **X-API-Key** |
+| Place prediction bet | `POST /api/predictions/:id/bet` | Session (World ID) |
+| Create market | `POST /api/predictions` | Session (World ID) |
+| Execute payment | `POST /api/payments` | Session (World ID) |
+| Initiate payment | `POST /api/initiate-payment` | Session (World ID) |
 | Agent registration | `POST /api/agents/register` | World ID verified |
 | Audit trail | `GET /api/hedera/audit` | None (public) |
 | Reputation scores | `GET /api/reputation` | None (public) |
@@ -312,7 +315,7 @@ vocaid-hub/
 │   │       ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │       ├── agent-decision/ # Seer agent resource ranking (ISR 30s) — 4-step visual
 │   │       ├── gpu-verify/     # Resources: Register + manage marketplace listings (SSR)
-│   │       └── profile/        # Connect Your Agent: API key + chain config (SSR)
+│   │       └── profile/        # Agents tab: Connect Your Agent — API key + chain config (SSR)
 │   ├── types/                  # Shared TypeScript types (frontend + backend)
 │   │   └── resource.ts         # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                    # Shared server utilities (20 files)
@@ -336,18 +339,26 @@ vocaid-hub/
 │   │   │   ├── shield.ts       # Risk management (validation)
 │   │   │   └── lens.ts         # Discovery + reputation feedback
 │   │   └── types.ts            # Shared TypeScript types
-│   ├── components/             # React components
-│   │   ├── ResourceCard.tsx    # Resource listing card
-│   │   ├── PredictionCard.tsx  # Prediction market card
-│   │   ├── SignalTicker.tsx    # 2-row auto-scrolling market signal ticker
+│   ├── components/             # React components (19 files)
 │   │   ├── ActivityFeed.tsx    # Live activity feed with filter chips
-│   │   ├── ResourceStepper.tsx  # Unified 3-step registration (GPU/Agent/Human/DePIN)
+│   │   ├── AgentCard.tsx       # OpenClaw agent identity card
+│   │   ├── ChainBadge.tsx      # Chain indicator badge (0G/Hedera/World)
+│   │   ├── ConnectAgentSection.tsx # Agent connection: 4-state UI (loading/disconnected/generated/connected)
 │   │   ├── CreateMarketModal.tsx # Prediction market creation
-│   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
+│   │   ├── GPUStepper.tsx      # GPU-specific 3-step registration + TEE verification
+│   │   ├── PaymentConfirmation.tsx # Payment receipt with tx hash
 │   │   ├── PostHireRating.tsx   # Post-hire rating + prediction suggestion
-│   │   ├── PaymentConfirmation.tsx
-│   │   ├── AgentCard.tsx       # OpenClaw agent card
+│   │   ├── PredictionCard.tsx  # Prediction market card with bet UI
+│   │   ├── ProposalQueue.tsx    # Agent prediction proposal approval queue
+│   │   ├── ReputationBar.tsx   # Reputation score progress bar
+│   │   ├── ReputationSignals.tsx # Reputation signal breakdown (cost/latency/uptime/quality)
+│   │   ├── ResourceCard.tsx    # Resource listing card with chain badge
+│   │   ├── ResourceCardSkeleton.tsx # Skeleton loading state for ResourceCard
+│   │   ├── ResourceStepper.tsx  # Unified 3-step registration (Agent/Human/DePIN)
+│   │   ├── SignalTicker.tsx    # 2-row auto-scrolling market signal ticker
 │   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization
+│   │   ├── VerificationStatus.tsx # World ID verification state display
+│   │   ├── WorldIdGateModal.tsx # World ID verification gate modal
 │   │   └── Navigation/         # Bottom tab navigation
 │   ├── auth/                   # NextAuth configuration
 │   └── providers/              # React context providers

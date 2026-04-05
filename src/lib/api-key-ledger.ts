@@ -12,6 +12,7 @@ export interface ApiKeyRecord {
   keyHash: string;
   maskedKey: string;
   walletAddress: string;
+  ownerWallet?: string; // session wallet that generated the key (may differ from agent wallet)
   chain: ChainId;
   createdAt: string;
   expiresAt: string;
@@ -56,7 +57,7 @@ function purgeStale(keys: ApiKeyRecord[]): ApiKeyRecord[] {
   });
 }
 
-export function generateApiKey(walletAddress: string, chain: ChainId): { key: string; record: ApiKeyRecord } {
+export function generateApiKey(walletAddress: string, chain: ChainId, ownerWallet?: string): { key: string; record: ApiKeyRecord } {
   const raw = randomBytes(24).toString('base64url');
   const key = `voc_${raw}`;
   const now = new Date();
@@ -64,6 +65,7 @@ export function generateApiKey(walletAddress: string, chain: ChainId): { key: st
     keyHash: hashKey(key),
     maskedKey: `voc_${raw.slice(0, 4)}...${raw.slice(-2)}`,
     walletAddress,
+    ownerWallet: ownerWallet || walletAddress,
     chain,
     createdAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + KEY_TTL_MS).toISOString(),
@@ -98,7 +100,11 @@ export function validateApiKey(key: string): ApiKeyRecord | null {
 
 export function revokeApiKey(walletAddress: string): boolean {
   const keys = readKeys();
-  const record = keys.find((k) => k.walletAddress.toLowerCase() === walletAddress.toLowerCase() && !k.revoked);
+  const record = keys.find((k) =>
+    (k.walletAddress.toLowerCase() === walletAddress.toLowerCase()
+      || k.ownerWallet?.toLowerCase() === walletAddress.toLowerCase())
+    && !k.revoked
+  );
   if (!record) return false;
   record.revoked = true;
   writeKeys(keys);
@@ -110,6 +116,19 @@ export function getKeyByWallet(walletAddress: string): ApiKeyRecord | null {
   const record = keys.find((k) => k.walletAddress.toLowerCase() === walletAddress.toLowerCase() && !k.revoked);
   if (!record) return null;
   // Check expiration
+  if (new Date(record.expiresAt).getTime() < Date.now()) return null;
+  return record;
+}
+
+/** Look up by ownerWallet (the session wallet that generated the key) — handles agent wallet ≠ session wallet */
+export function getKeyByOwner(ownerWallet: string): ApiKeyRecord | null {
+  const keys = readKeys();
+  const record = keys.find((k) =>
+    (k.ownerWallet?.toLowerCase() === ownerWallet.toLowerCase()
+      || k.walletAddress.toLowerCase() === ownerWallet.toLowerCase())
+    && !k.revoked
+  );
+  if (!record) return null;
   if (new Date(record.expiresAt).getTime() < Date.now()) return null;
   return record;
 }

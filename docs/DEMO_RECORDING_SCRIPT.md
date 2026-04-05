@@ -34,6 +34,14 @@ cd /Users/ale.fonseca/Documents/Vocaid/vocaid-hub
 # Note the ngrok URL if using tunnel
 ```
 
+### Seed Demo Data (if first run)
+
+```bash
+npx tsx scripts/seed-demo-data.ts
+```
+
+This populates GPU-Alpha, Seer Agent, Maria, and prediction markets. Skip if data already exists.
+
 ### Verify Seed Data Exists
 
 Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria in the marketplace.

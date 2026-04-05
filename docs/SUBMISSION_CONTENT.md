@@ -101,8 +101,6 @@ Notable hack: We discovered Blocky402's Hedera testnet support isn't documented 
 ```
 Claude Code (Anthropic) was the primary development assistant — used for architecture design, code generation across all 3 chains, debugging chain interactions, documentation, and hackathon strategy research. All output was reviewed, tested, and modified by the team.
 
-Cursor IDE was used for AI-assisted code completion and inline editing during rapid implementation phases.
-
 Human contributions: architecture design (3-chain separation), partner selection strategy (World+0G+Hedera), GPU verification concept (identified 0G infrastructure gap in direct conversation with 0G developers), ERC-8004 reputation signal system design, OpenClaw agent security model, demo choreography, and all live testing/debugging.
 ```
 

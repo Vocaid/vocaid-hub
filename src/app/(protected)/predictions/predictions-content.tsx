@@ -5,11 +5,23 @@ import { Plus, ShieldCheck } from 'lucide-react';
 import { PredictionCard, type PredictionMarket } from '@/components/PredictionCard';
 import { CreateMarketModal } from '@/components/CreateMarketModal';
 import { SignalTicker } from '@/components/SignalTicker';
-import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
+import type { ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import { sendTransaction } from '@worldcoin/minikit-js/commands';
 import { encodeFunctionData, parseUnits } from 'viem';
+
+/* ── Demo signals for the ticker — diverse multi-chain activity ── */
+const DEMO_SIGNALS: ActivityItem[] = [
+  { id: 's1', type: 'trade', agent: 'Edge', action: 'settled lease', detail: 'H100 · GPU-Alpha → 0x7a3f', value: '$4.20 USDC', chain: 'hedera', timestamp: Date.now() - 12_000 },
+  { id: 's2', type: 'reputation', agent: 'Lens', action: 'wrote score', detail: 'GPU-Alpha uptime 99.7% · 14 txs', value: '0.94', chain: '0g', timestamp: Date.now() - 38_000 },
+  { id: 's3', type: 'signal', agent: 'Seer', action: 'ranked resources', detail: 'Top pick: GPU-Alpha (cost 0.82 · latency 0.91)', value: '#1', chain: '0g', timestamp: Date.now() - 65_000 },
+  { id: 's4', type: 'verification', agent: 'Shield', action: 'TEE attestation', detail: 'Intel SGX verified for GPU-Alpha', value: 'Pass', chain: '0g', timestamp: Date.now() - 110_000 },
+  { id: 's5', type: 'prediction', agent: 'Seer', action: 'proposed market', detail: '"Will GPU-Alpha maintain >99% uptime next 7d?"', value: '72% YES', chain: '0g', timestamp: Date.now() - 180_000 },
+  { id: 's6', type: 'payment', agent: 'Edge', action: 'x402 micropayment', detail: 'Blocky402 facilitator · Hedera', value: '$0.50 USDC', chain: 'hedera', timestamp: Date.now() - 240_000 },
+  { id: 's7', type: 'skill', agent: 'Maria', action: 'skill posted', detail: 'Solidity Auditor · 3yr exp · $85/hr', value: 'Listed', chain: 'world', timestamp: Date.now() - 300_000 },
+  { id: 's8', type: 'depin', agent: 'IoT-Node-7', action: 'heartbeat', detail: 'Temp sensor · São Paulo · 23.4°C', value: 'Online', chain: 'hedera', timestamp: Date.now() - 360_000 },
+];
 
 const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
 const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
@@ -42,7 +54,6 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   const [markets, setMarkets] = useState(initialMarkets);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
-  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
   const { isVerified, recheckStatus } = useWorldIdGate();
   const [showGateModal, setShowGateModal] = useState(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
@@ -50,35 +61,19 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
   const refreshMarkets = useCallback(async () => {
     try {
       const res = await fetch('/api/predictions');
-      if (!res.ok) return; // keep current state on failure
+      if (!res.ok) return;
       const data = await res.json();
-      // Handle both { markets: [...] } and plain array responses
       const list = Array.isArray(data) ? data : data.markets ?? [];
       if (list.length > 0) setMarkets(list);
     } catch { /* keep current state — ISR will catch up */ }
   }, []);
 
-  const fetchActivity = useCallback(async () => {
-    try {
-      const res = await fetch('/api/activity');
-      if (res.ok) {
-        const data = await res.json();
-        setActivityItems(data.activities || []);
-      }
-    } catch { /* fallback handled by ActivityFeed */ }
-  }, []);
-
-  // Refresh markets + activity on mount and periodically
+  // Refresh markets on mount and periodically
   useEffect(() => {
     refreshMarkets();
-    fetchActivity();
-    const activityInterval = setInterval(fetchActivity, 15_000);
     const marketInterval = setInterval(refreshMarkets, 30_000);
-    return () => {
-      clearInterval(activityInterval);
-      clearInterval(marketInterval);
-    };
-  }, [refreshMarkets, fetchActivity]);
+    return () => clearInterval(marketInterval);
+  }, [refreshMarkets]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -87,8 +82,8 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
     return () => clearTimeout(t);
   }, [toast]);
 
-  // Ticker gets top 8 items
-  const tickerItems = activityItems.slice(0, 8);
+  // Demo signals for the ticker — always visible
+  const tickerItems = DEMO_SIGNALS;
 
   function requireVerified(action: () => void) {
     if (!isVerified) {
@@ -212,11 +207,8 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
         </div>
       )}
 
-      {/* Signal Ticker (2-row marquee) */}
+      {/* Signal Ticker — demo signals showing multi-chain agent activity */}
       <SignalTicker items={tickerItems} />
-
-      {/* Live Activity Feed */}
-      <ActivityFeed items={activityItems} maxItems={6} />
 
       {/* Prediction Cards */}
       {markets.length > 0 ? (
