@@ -10,9 +10,30 @@ import { useWorldIdGate } from '@/hooks/useWorldIdGate';
 import { sendTransaction } from '@worldcoin/minikit-js/commands';
 import { encodeFunctionData, parseUnits } from 'viem';
 
-// USDC.e on World Chain (bridged USDC)
+// USDC.e on World Chain mainnet (bridged USDC)
 const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
 const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
+const WORLD_RPC = 'https://worldchain-mainnet.g.alchemy.com/public';
+
+/** Check if user has enough USDC on World Chain before attempting sendTransaction */
+async function checkWorldUsdcBalance(userAddress: string, requiredAmount: bigint): Promise<boolean> {
+  try {
+    const balanceData = encodeFunctionData({
+      abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] }] as const,
+      functionName: 'balanceOf',
+      args: [userAddress as `0x${string}`],
+    });
+    const res = await fetch(WORLD_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: WORLD_USDC, data: balanceData }, 'latest'] }),
+    });
+    const { result } = await res.json();
+    return BigInt(result || '0x0') >= requiredAmount;
+  } catch {
+    return false;
+  }
+}
 
 type FilterTab = 'all' | ResourceType;
 
@@ -85,32 +106,47 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
       }
 
       // Step 2: World Chain USDC transfer via sendTransaction() (webview-safe)
-      // pay() crashes World App (deep link kills webview — see commit 26bc807).
-      // sendTransaction() executes within the webview and returns userOpHash.
+      // Only attempt if user has sufficient USDC on World Chain mainnet.
+      // If not, skip silently — server settles on Hedera via deployer wallet.
       const leaseAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10);
+      const requiredUsdc = parseUnits(leaseAmount.toFixed(2), 6);
       let worldTxHash: string | undefined;
+
+      // Fetch user wallet from session for balance check
+      let userWallet: string | undefined;
       try {
-        const transferData = encodeFunctionData({
-          abi: [{ name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] }] as const,
-          functionName: 'transfer',
-          args: [DEPLOYER, parseUnits(leaseAmount.toFixed(2), 6)],
-        });
-
-        const txResult = await sendTransaction({
-          chainId: 480, // World Chain
-          transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
-          fallback: () => {
-            console.log('[hire] sendTransaction fallback — using server settlement');
-            return { userOpHash: '', status: 'success' as const, version: 2, from: '', timestamp: '' };
-          },
-        });
-
-        if (txResult.data?.userOpHash) {
-          worldTxHash = txResult.data.userOpHash;
-          console.log('[hire] World Chain USDC transfer:', worldTxHash);
+        const sessRes = await fetch('/api/auth/session');
+        if (sessRes.ok) {
+          const sess = await sessRes.json();
+          userWallet = sess?.user?.walletAddress || sess?.user?.address;
         }
-      } catch (txErr) {
-        console.log('[hire] sendTransaction() unavailable, continuing with server settlement:', txErr);
+      } catch { /* no session — skip World Chain transfer */ }
+
+      if (userWallet) {
+        const hasBalance = await checkWorldUsdcBalance(userWallet, requiredUsdc);
+        if (hasBalance) {
+          try {
+            const transferData = encodeFunctionData({
+              abi: [{ name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] }] as const,
+              functionName: 'transfer',
+              args: [DEPLOYER, requiredUsdc],
+            });
+
+            const txResult = await sendTransaction({
+              chainId: 480,
+              transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
+            });
+
+            if (txResult.data?.userOpHash) {
+              worldTxHash = txResult.data.userOpHash;
+              console.log('[hire] World Chain USDC transfer:', worldTxHash);
+            }
+          } catch (txErr) {
+            console.log('[hire] sendTransaction failed, continuing with server settlement:', txErr);
+          }
+        } else {
+          console.log('[hire] Insufficient USDC on World Chain — using server settlement only');
+        }
       }
 
       // Step 3: x402 settlement on Hedera testnet (server-side, deployer wallet)
