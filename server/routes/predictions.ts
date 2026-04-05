@@ -87,7 +87,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
   // ── POST /api/predictions ──────────────────────────────────────────────
   f.post(
     '/predictions', 
-    { schema: { body: CreateMarketSchema }, preHandler: [app.requireApiKey] },
+    { schema: { body: CreateMarketSchema } },
     async (request, reply) => {
       // R3: Rate limit
       const rl = app.checkRateLimit(request.ip, '/api/predictions', 5, 60_000);
@@ -131,7 +131,7 @@ export default async function predictionRoutes(app: FastifyInstance) {
   // ── POST /api/predictions/:id/bet ──────────────────────────────────────
   f.post(
     '/predictions/:id/bet',
-    { schema: { params: MarketIdParamsSchema, body: PlaceBetSchema }, preHandler: [app.requireApiKey] },
+    { schema: { params: MarketIdParamsSchema, body: PlaceBetSchema } },
     async (request, reply) => {
       const rl = app.checkRateLimit(request.ip, '/api/predictions/bet', 10, 60_000);
       if (rl) return sendRateLimited(reply, rl);

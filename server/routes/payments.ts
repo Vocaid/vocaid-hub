@@ -31,7 +31,6 @@ export default async function paymentRoutes(app: FastifyInstance) {
 
   // POST /api/payments — x402 USDC payment via Blocky402
   typed.post('/payments', {
-    preHandler: [app.requireApiKey],
     schema: { body: PaymentBodySchema },
     
   }, async (request, reply) => {
@@ -144,7 +143,6 @@ export default async function paymentRoutes(app: FastifyInstance) {
 
   // POST /api/initiate-payment — Start x402 payment flow
   typed.post('/initiate-payment', {
-    preHandler: [app.requireApiKey],
     schema: { body: InitiatePaymentSchema },
   }, async (request, reply) => {
     const rl = app.checkRateLimit(request.ip, '/api/initiate-payment', 10, 60_000);

@@ -7,6 +7,9 @@
     "rateLimit": {
       "windowMs": 60000,
       "maxRequests": 30
+    },
+    "defaultHeaders": {
+      "X-API-Key": "voc_x2vTJepH5Lctx3kKcCtk-sQwT9-ehSwc"
     }
   },
   "exec": {

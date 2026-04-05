@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Key, Copy, Check, Loader2, XCircle, Shield } from 'lucide-react';
 
@@ -23,6 +23,17 @@ export function ConnectAgentSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Load existing key status on mount (persist across navigation)
+  useEffect(() => {
+    if (!walletAddress) return;
+    fetch(`/api/keys/status?wallet=${encodeURIComponent(walletAddress)}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.maskedKey) setMaskedKey(data.maskedKey);
+      })
+      .catch(() => {});
+  }, [walletAddress]);
 
   async function handleGenerate() {
     if (!walletAddress && !agentWallet) {

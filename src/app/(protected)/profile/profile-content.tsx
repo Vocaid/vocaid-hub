@@ -99,22 +99,6 @@ export function ProfileContent({ username, walletAddress, agents }: ProfileConte
 
       <DeployFleetSection deployedRoles={deployedRoles} />
 
-      {fleetAgents.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {fleetAgents.map((agent) => (
-            <AgentCard
-              key={agent.agentId}
-              name={ROLE_NAMES[agent.role] ?? agent.role}
-              role={(agent.role as AgentRole) ?? 'discovery'}
-              agentId={agent.agentId}
-              operatorWorldId={agent.operatorWorldId}
-              reputation={75}
-              verified={!!agent.operatorWorldId}
-            />
-          ))}
-        </div>
-      )}
-
       {/* ── Link to Resources page for marketplace registration ── */}
       <Link
         href="/gpu-verify"
