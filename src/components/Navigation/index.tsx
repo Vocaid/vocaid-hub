@@ -1,14 +1,14 @@
 'use client';
 
 import { TabItem, Tabs } from '@worldcoin/mini-apps-ui-kit-react';
-import { Store, Cpu, TrendingUp, User } from 'lucide-react';
+import { Store, Cpu, TrendingUp, Bot } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 const tabs = [
   { value: '/home', icon: <Store className="w-5 h-5" />, label: 'Market' },
   { value: '/gpu-verify', icon: <Cpu className="w-5 h-5" />, label: 'Resources' },
   { value: '/predictions', icon: <TrendingUp className="w-5 h-5" />, label: 'Predict' },
-  { value: '/profile', icon: <User className="w-5 h-5" />, label: 'Agents' },
+  { value: '/profile', icon: <Bot className="w-5 h-5" />, label: 'Agents' },
 ] as const;
 
 export const Navigation = () => {
