@@ -1,8 +1,14 @@
-import {
-  createZGComputeNetworkBroker,
-  type ZGComputeNetworkBroker,
-} from '@0glabs/0g-serving-broker';
+// CJS import — @0glabs/0g-serving-broker ESM bundle broken on Node 24
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+const _require = createRequire(fileURLToPath(import.meta.url));
+const { createZGComputeNetworkBroker } = _require('@0glabs/0g-serving-broker') as {
+  createZGComputeNetworkBroker: (...args: unknown[]) => Promise<ZGComputeNetworkBroker>;
+};
 import { ethers } from 'ethers';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ZGComputeNetworkBroker = { inference: any };
 import { fetchWithTimeout, TIMEOUT_BUDGETS } from '../../server/utils/fetch-with-timeout';
 
 const OG_RPC_URL =
