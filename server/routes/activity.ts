@@ -115,8 +115,8 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
           type = 'trade';
           agent = 'Edge';
           action = `bet ${parsed.side?.toUpperCase() || 'YES'}`;
-          decoded = `Market #${parsed.marketId ?? '?'} — ${parsed.amount || '0.01'} A0GI`;
-          value = `${parsed.amount || '0.01'} A0GI`;
+          decoded = `Market #${parsed.marketId ?? '?'} — ${parsed.amount || '0.01'} USDC`;
+          value = `${parsed.amount || '0.01'} USDC`;
         } else if (parsed.type === 'credential_minted') {
           type = 'verification';
           agent = 'Vocaid';
@@ -128,7 +128,19 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
           agent = 'Oracle';
           action = `resolved ${parsed.outcome?.toUpperCase() || '?'}`;
           decoded = parsed.question?.slice(0, 50) || `Market #${parsed.marketId}`;
-          value = parsed.totalPool ? `${(Number(parsed.totalPool) / 1e18).toFixed(3)} A0GI` : undefined;
+          value = parsed.totalPool ? `${(Number(parsed.totalPool) / 1e18).toFixed(3)} USDC` : undefined;
+        } else if (parsed.event === 'gpu_provider_registered') {
+          type = 'depin';
+          agent = 'GPU Registry';
+          action = 'registered';
+          decoded = `GPU provider #${parsed.agentId || '?'} — ${parsed.gpuModel || 'unknown model'}`;
+          value = parsed.gpuModel;
+        } else if (parsed.event === 'agent_registered') {
+          type = 'signal';
+          agent = parsed.role || 'Agent';
+          action = 'registered';
+          decoded = 'Registered on ERC-8004';
+          value = 'Registered on ERC-8004';
         } else {
           decoded = parsed.event || parsed.type || decoded.slice(0, 60);
         }
@@ -153,8 +165,8 @@ async function fetchHCSAuditTrail(): Promise<ActivityItem[]> {
 function getDemoSignals(): ActivityItem[] {
   const now = Date.now();
   return [
-    { id: 'trade-1', type: 'trade', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.01 A0GI', chain: '0g', timestamp: now - 90000 },
-    { id: 'trade-2', type: 'trade', agent: 'Edge', action: 'bet NO', detail: 'GPU count > 50 by June', value: '0.005 A0GI', chain: '0g', timestamp: now - 540000 },
+    { id: 'trade-1', type: 'trade', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.01 USDC', chain: '0g', timestamp: now - 90000 },
+    { id: 'trade-2', type: 'trade', agent: 'Edge', action: 'bet NO', detail: 'GPU count > 50 by June', value: '0.005 USDC', chain: '0g', timestamp: now - 540000 },
     { id: 'depin-1', type: 'depin', agent: 'Solar-Node-7', action: 'registered', detail: '12kW solar capacity', value: '12kW', chain: '0g', timestamp: now - 240000 },
     { id: 'depin-2', type: 'depin', agent: 'FiberLink-EU', action: 'updated', detail: 'Bandwidth 10Gbps uplink', value: '10Gbps', chain: '0g', timestamp: now - 660000 },
     { id: 'skill-1', type: 'skill', agent: 'Maria', action: 'completed', detail: 'Rust smart contract audit', value: '5 USDC', chain: 'hedera', timestamp: now - 360000 },
@@ -166,14 +178,14 @@ function getDemoActivities(): ActivityItem[] {
   const now = Date.now();
   return [
     { id: 'd1', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'Nebula-H100 quality', value: '87/100', chain: '0g', timestamp: now - 60000 },
-    { id: 'd2', type: 'trade', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.01 A0GI', chain: '0g', timestamp: now - 120000 },
+    { id: 'd2', type: 'trade', agent: 'Edge', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.01 USDC', chain: '0g', timestamp: now - 120000 },
     { id: 'd3', type: 'signal', agent: 'Seer', action: 'detected', detail: 'GPU demand spike EU +18%', chain: '0g', timestamp: now - 180000 },
     { id: 'd4', type: 'depin', agent: 'Solar-Node-7', action: 'registered', detail: '12kW solar capacity', value: '12kW', chain: '0g', timestamp: now - 240000 },
-    { id: 'd5', type: 'prediction', agent: 'Vega', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.005 A0GI', chain: '0g', timestamp: now - 300000 },
+    { id: 'd5', type: 'prediction', agent: 'Vega', action: 'bet YES', detail: 'H100 cost < $0.03/1K', value: '0.005 USDC', chain: '0g', timestamp: now - 300000 },
     { id: 'd6', type: 'skill', agent: 'Maria', action: 'completed', detail: 'Rust smart contract audit', value: '5 USDC', chain: 'hedera', timestamp: now - 360000 },
     { id: 'd7', type: 'payment', agent: 'User', action: 'hired', detail: 'Nebula-H100 via x402', value: '0.04 USDC', chain: 'hedera', timestamp: now - 420000 },
     { id: 'd8', type: 'skill', agent: 'Seer', action: 'analyzed', detail: 'GPU pricing model v3', chain: '0g', timestamp: now - 480000 },
-    { id: 'd9', type: 'trade', agent: 'Edge', action: 'bet NO', detail: 'GPU count > 50 by June', value: '0.005 A0GI', chain: '0g', timestamp: now - 540000 },
+    { id: 'd9', type: 'trade', agent: 'Edge', action: 'bet NO', detail: 'GPU count > 50 by June', value: '0.005 USDC', chain: '0g', timestamp: now - 540000 },
     { id: 'd10', type: 'verification', agent: 'Shield', action: 'verified', detail: 'Helios Solar Farm TEE', value: 'PASS', chain: '0g', timestamp: now - 600000 },
     { id: 'd11', type: 'depin', agent: 'FiberLink-EU', action: 'updated', detail: 'Bandwidth 10Gbps uplink', value: '10Gbps', chain: '0g', timestamp: now - 660000 },
     { id: 'd12', type: 'reputation', agent: 'Lens', action: 'rated', detail: 'Camila Torres quality', value: '91/100', chain: '0g', timestamp: now - 780000 },

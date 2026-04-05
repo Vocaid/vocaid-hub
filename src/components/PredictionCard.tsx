@@ -305,7 +305,7 @@ export function PredictionCard({
                 ) : blocked ? (
                   'Bet Blocked'
                 ) : (
-                  `Confirm Bet — ${selectedAmount} A0GI`
+                  `Confirm Bet — $${selectedAmount?.toFixed(2)} USDC`
                 )}
               </button>
             </div>

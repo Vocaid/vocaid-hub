@@ -120,6 +120,20 @@ export default async function agentRoutes(app: FastifyInstance) {
 
       const result = await registerAgent({ agentURI, operatorWorldId, role, agentkitId });
 
+      // Log registration to HCS audit trail
+      try {
+        const { logAuditMessage } = await import('@/lib/hedera');
+        const topicId = process.env.HEDERA_AUDIT_TOPIC || '0.0.8499635';
+        await logAuditMessage(topicId, JSON.stringify({
+          event: 'agent_registered',
+          agentId: result.agentId.toString(),
+          role,
+          txHash: result.txHash,
+          chain: '0g',
+          timestamp: new Date().toISOString(),
+        }));
+      } catch { /* non-blocking */ }
+
       app.responseCache.invalidate('/api/agents');
       app.responseCache.invalidate('/api/resources');
       return {

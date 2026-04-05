@@ -146,6 +146,24 @@ vocaid-hub/
 └── docs/                      # Planning documentation
 ```
 
+### Settlement Architecture (Chain-Agnostic)
+
+Users always pay USDC via MiniKit on World Chain. The server resolves settlement to the destination chain via `server/utils/settle.ts`:
+
+```
+User (World App)
+  └─ MiniKit.pay() → USDC transfer to deployer on World Chain
+       └─ Server settle() resolver
+            ├─ chain: 'hedera' → x402/Blocky402 (leases, resource payments)
+            ├─ chain: '0g'     → deployer wallet places A0GI tx (prediction bets)
+            └─ chain: 'world'  → direct USDC (future)
+```
+
+- **Deployer wallet** funds native token operations (A0GI for bets, HBAR gas for leases)
+- **No bridges** — the application layer coordinates cross-chain settlement
+- **Users never see** native tokens (A0GI, HBAR) — always USDC
+- **HCS audit** logs all settlements to Hedera topic via `logSettlement()`
+
 ### No Solidity on Hedera
 
 All Hedera operations use `@hashgraph/sdk` (TypeScript). Zero Solidity on Hedera. This qualifies for the "No Solidity Allowed" track ($3k, 3 winners).
@@ -239,25 +257,25 @@ Browser                 Next.js :3000              Fastify :5001          OpenCl
 
 ## API Key Authentication (Connect Your Agent)
 
-External OpenClaw agents authenticate via API keys generated on the Profile page. Users select a settlement chain, provide their agent's wallet address, and receive a `voc_...` key.
+External OpenClaw agents authenticate via API keys generated on the Agents page. Users select a settlement chain, provide their agent's wallet address, and receive a `voc_...` key.
 
 | Component | File | Purpose |
 |-----------|------|---------|
 | **Storage** | `src/lib/api-key-ledger.ts` | SHA-256 hashed keys, 90-day expiration, auto-purge |
 | **Auth Plugin** | `server/plugins/api-key-auth.ts` | `requireApiKey` Fastify preHandler — reads `X-API-Key` header |
 | **Routes** | `server/routes/api-keys.ts` | Generate (rate limited), status, revoke — wallet ownership verified |
-| **Frontend** | `src/components/ConnectAgentSection.tsx` | Chain selector + wallet input + key generation UI |
+| **Frontend** | `src/components/ConnectAgentSection.tsx` | 4-state UI (loading / disconnected / just-generated / connected): chain selector, wallet input, key generation, status display |
 
 ### Which endpoints require API key?
 
-| Requires `X-API-Key` | Public (no auth) |
-|----------------------|------------------|
-| `POST /api/agents/:name/a2a` (execute) | `GET /api/agents/:name/a2a` (discover) |
-| `POST /api/agents/:name/mcp` (execute) | `GET /api/agents/:name/mcp` (schema) |
-| `POST /api/predictions/:id/bet` | `GET /api/predictions` |
-| `POST /api/predictions` (create) | `GET /.well-known/agent-card.json` |
-| `POST /api/payments` | `GET /api/reputation` |
-| `POST /api/initiate-payment` | `GET /api/hedera/audit` |
+| Requires `X-API-Key` | Session (World ID) | Public (no auth) |
+|----------------------|-------------------|------------------|
+| `POST /api/agents/:name/a2a` (execute) | `POST /api/predictions` (create) | `GET /api/agents/:name/a2a` (discover) |
+| `POST /api/agents/:name/mcp` (execute) | `POST /api/predictions/:id/bet` | `GET /api/agents/:name/mcp` (schema) |
+| | `POST /api/payments` | `GET /api/predictions` |
+| | `POST /api/initiate-payment` | `GET /.well-known/agent-card.json` |
+| | | `GET /api/reputation` |
+| | | `GET /api/hedera/audit` |
 
 ### Security measures
 

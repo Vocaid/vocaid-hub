@@ -123,7 +123,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    setToast({ message: `Bet placed: ${amount} A0GI on ${side.toUpperCase()}`, type: 'success' });
+    setToast({ message: `Bet placed: $${amount.toFixed(2)} USDC on ${side.toUpperCase()}`, type: 'success' });
     await refreshMarkets();
   }
 

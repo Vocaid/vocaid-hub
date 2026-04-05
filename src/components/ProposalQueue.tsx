@@ -140,7 +140,7 @@ export function ProposalQueue({ agentIds }: { agentIds: number[] }) {
                   </p>
                   {isBet ? (
                     <p className="text-xs text-secondary mt-0.5">
-                      Bet <span className="font-semibold text-primary">{decoded.amount} A0GI</span> on{' '}
+                      Bet <span className="font-semibold text-primary">${decoded.amount} USDC</span> on{' '}
                       <span className="font-semibold">{decoded.side}</span> — {decoded.question}
                     </p>
                   ) : (

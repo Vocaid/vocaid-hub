@@ -141,17 +141,31 @@ export default async function predictionRoutes(app: FastifyInstance) {
         const { side, amount } = request.body;
 
         const outcomeEnum = side === 'yes' ? 1 : 2;
-        const contract = getContract(true);
-        const value = ethers.parseEther(String(amount));
+        const contractAddress = process.env.RESOURCE_PREDICTION;
+        if (!contractAddress) throw new Error('Missing RESOURCE_PREDICTION env');
 
-        const tx = await contract.placeBet(marketId, outcomeEnum, { value });
-        const receipt = await waitWithTimeout(tx);
+        // Chain-agnostic settlement: deployer wallet places bet with A0GI
+        const { settle, logSettlement } = await import('../utils/settle.js');
+        const result = await settle({
+          chain: '0g',
+          action: 'bet',
+          usdcAmount: String(amount),
+          metadata: {
+            contractAddress,
+            abi: RESOURCE_PREDICTION_ABI,
+            functionName: 'placeBet',
+            args: [marketId, outcomeEnum],
+            value: String(amount),
+          },
+        });
+
+        await logSettlement(result, { marketId, side });
 
         app.responseCache.invalidate('/api/predictions');
         cacheInvalidate('predictions:markets');
         return {
           success: true,
-          txHash: receipt!.hash,
+          txHash: result.txHash,
           marketId,
           side,
           amount: String(amount),

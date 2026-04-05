@@ -281,6 +281,20 @@ export default async function gpuRoutes(app: FastifyInstance) {
           return reply.code(502).send({ error: 'On-chain registration failed', detail: msg });
         }
 
+        // Log registration to HCS audit trail
+        try {
+          const { logAuditMessage } = await import('@/lib/hedera');
+          const topicId = process.env.HEDERA_AUDIT_TOPIC || '0.0.8499635';
+          await logAuditMessage(topicId, JSON.stringify({
+            event: 'gpu_provider_registered',
+            agentId: chainResult.agentId,
+            gpuModel,
+            txHash: chainResult.txHash,
+            chain: '0g',
+            timestamp: new Date().toISOString(),
+          }));
+        } catch { /* non-blocking — don't fail registration if HCS unavailable */ }
+
         app.responseCache.invalidate('/api/resources');
         app.responseCache.invalidate('/api/agents');
         return {
