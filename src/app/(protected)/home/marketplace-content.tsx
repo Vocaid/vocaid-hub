@@ -11,7 +11,7 @@ import { sendTransaction } from '@worldcoin/minikit-js/commands';
 import { encodeFunctionData, parseUnits } from 'viem';
 
 // USDC.e on World Chain mainnet (bridged USDC)
-const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
+const WORLD_USDC = '0x79a02482a880bce3f13e09da970dc34db4cd24d1' as const;
 const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
 const WORLD_RPC = 'https://worldchain-mainnet.g.alchemy.com/public';
 
