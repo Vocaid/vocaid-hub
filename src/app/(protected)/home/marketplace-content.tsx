@@ -7,7 +7,8 @@ import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-import { pay, Tokens } from '@worldcoin/minikit-js/commands';
+// MiniKit.pay() disabled — crashes World App webview (deep link navigation conflict)
+// Payment settles on Hedera testnet via x402/Blocky402 instead
 
 type FilterTab = 'all' | ResourceType;
 
@@ -79,64 +80,9 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         return;
       }
 
-      // Step 2: MiniKit.pay() — World App native payment UI (mainnet USDC, $0.10 min)
-      const payAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10).toFixed(2);
-      let miniKitSuccess = false;
-      let miniKitTxHash = '';
-
-      try {
-        console.log('[pay] Attempting MiniKit.pay():', payAmount, 'USDC');
-        const payResult = await pay({
-          reference: initData.paymentId,
-          to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
-          tokens: [{ symbol: Tokens.USDC, token_amount: payAmount }],
-          description: `Lease ${resource.name}`,
-        });
-
-        if (payResult.executedWith === 'minikit' && payResult.data) {
-          miniKitSuccess = true;
-          miniKitTxHash = (payResult.data as { transactionId?: string }).transactionId ?? '';
-          console.log('[pay] MiniKit.pay() success:', miniKitTxHash);
-        }
-      } catch (miniErr) {
-        console.log('[pay] MiniKit.pay() failed, falling back to x402:', miniErr);
-      }
-
-      if (miniKitSuccess) {
-        // MiniKit paid on World Chain — now also settle on Hedera testnet for cross-chain proof
-        let hederaTxHash = '';
-        try {
-          const settlePayload = btoa(JSON.stringify({
-            paymentId: initData.paymentId,
-            network: 'hedera-testnet',
-            token: initData.requirements.token,
-            amount: payAmount,
-            payer: 'world-app-minikit',
-            miniKitTxHash,
-            resource: resource.name,
-            timestamp: Date.now(),
-          }));
-          const settleRes = await fetch('/api/payments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-PAYMENT': settlePayload },
-            body: JSON.stringify({ resourceName: resource.name }),
-          });
-          if (settleRes.ok) {
-            const settleData = await settleRes.json();
-            hederaTxHash = settleData.payment?.txHash ?? '';
-          }
-        } catch { /* non-blocking — MiniKit already confirmed */ }
-
-        setPaymentResult({
-          amount: payAmount,
-          txHash: miniKitTxHash,
-          hederaTxHash,
-          resourceName: resource.name,
-        });
-        return;
-      }
-
-      // Step 3: Fallback — x402 testnet payment (when not in World App)
+      // Step 2: x402 settlement on Hedera testnet
+      // MiniKit.pay() disabled — crashes World App webview when triggered from mini app
+      // The x402 flow settles directly on Hedera via Blocky402 (server-side, $0.0001 gas)
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,
