@@ -18,7 +18,6 @@ export function ConnectAgentSection() {
 
   const [chain, setChain] = useState<string>('0g');
   const [agentWallet, setAgentWallet] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [maskedKey, setMaskedKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,13 +127,9 @@ export function ConnectAgentSection() {
             <p className="text-[10px] text-secondary">The wallet your agent uses to transact on-chain</p>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="agent-pk" className="text-sm font-medium text-primary">Private Key (encrypted at rest)</label>
-            <input id="agent-pk" type="password"
-              placeholder="0x... (your agent signs transactions with this key)"
-              value={privateKey} onChange={(e) => setPrivateKey(e.target.value)}
-              className="w-full min-h-[44px] rounded-lg border border-border-card bg-surface px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-accent/30" />
-            <p className="text-[10px] text-secondary">Used by your agent to sign on the selected chain. Never shared.</p>
+          {/* Private key management is handled in the user's OpenClaw agent config, not in the web UI */}
+          <div className="rounded-lg bg-surface border border-border-card p-3">
+            <p className="text-[10px] text-secondary">Your agent&apos;s private key stays in your OpenClaw config file — it is never sent to our servers. The API key authenticates your agent&apos;s requests; transaction signing happens locally on your machine.</p>
           </div>
 
           {error && (
