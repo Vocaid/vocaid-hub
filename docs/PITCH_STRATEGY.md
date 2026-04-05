@@ -77,7 +77,7 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 | 0:00 | Tap "Verify with World ID" | *"Everything starts with World ID. No verification, no access."* |
 | 0:25 | Profile → show deployed fleet (fleet-only page) | *"Four private agents on ERC-8004 via AgentKit — not on the marketplace. Each linked to my World ID."* |
 | 0:55 | Resources → register GPU (data-driven stepper) | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem. Same stepper for agents, skills, DePIN."* |
-| 1:55 | Market → browse all types, hire a resource | *"Resources registered appear here. Fleet agents are private — filtered out. Hire with x402 USDC on Hedera — $0.0001 gas."* |
+| 1:55 | Market → browse all types, hire a resource | *"Hire a GPU. Watch — payment happens on World Chain via MiniKit, then settles on Hedera via x402. Two chains, one tap. Both transaction hashes shown."* |
 | 2:25 | Predictions → signal ticker + place bet | *"Resource pricing prediction markets. Will H100 cost drop? The market decides."* |
 | 2:45 | Block explorer → show 0G contracts + Hedera HCS | *"Real contracts on 0G Chain. Immutable audit trail on Hedera. Three chains, each doing what it does best."* |
 
@@ -99,6 +99,7 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 |----------|--------|
 | **"How is this different from Akash/Render?"** | They're GPU marketplaces. We're a verification and discovery layer ON TOP of compute networks. Akash doesn't have on-chain reputation or TEE attestation via ERC-8004. We complement, not compete. |
 | **"Why three chains?"** | Each chain does what it's best at. World has the identity infrastructure (17.9M users). 0G has TEE compute. Hedera has low-cost USDC payments, HTS tokens, and HCS audit. No single chain has all three. |
+| **"How does payment work across chains?"** | Cross-chain settlement: user pays $0.10 USDC via MiniKit on World Chain (native World App UX). Server receives confirmation, then settles the resource lease on Hedera testnet via Blocky402 x402 — $0.0001 gas. Both tx hashes displayed: World Explorer + HashScan. No bridge needed — the application layer coordinates both chains. |
 | **"TEE attestation can be broken (TEE.Fail)?"** | Yes, and we know. That's why we use TWO trust signals: TEE attestation AND on-chain reputation from actual usage. Reputation can't be faked — it's real inference quality tracked over time. |
 | **"Why prediction markets for resource pricing?"** | $7.4B in GPU rentals trade at dynamic spot prices today with zero formal price discovery mechanism. This is the first prediction market for compute pricing. |
 | **"How do you bootstrap liquidity?"** | Seeded with 0G providers (already on their network). Agents are the first consumers. Human providers come via World App distribution (17.9M users). |

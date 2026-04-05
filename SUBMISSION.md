@@ -36,7 +36,9 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 **Evidence:**
 - Full Mini App built with `@worldcoin/minikit-js` and MiniKit React provider
 - MiniKit commands: `verify`, `pay`, `signTypedData`
-- `MiniKit.pay()` wired into marketplace hire flow with x402 fallback
+- `MiniKit.pay()` executes native World App payment ($0.10 USDC on World Chain mainnet)
+- Cross-chain settlement: MiniKit pays on World → server settles resource lease on Hedera testnet via x402
+- PaymentConfirmation shows BOTH transaction hashes (World Explorer + HashScan)
 - Mobile-optimized UI (375-428px viewport)
 - **Files:** `src/app/layout.tsx` (MiniKit provider), `src/components/Pay/index.tsx`, `src/app/(protected)/home/marketplace-content.tsx`, all `src/app/(protected)/*` pages
 
@@ -61,10 +63,12 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 
 ### Hedera — AI & Agentic Payments ($6k, 2 winners)
 **Evidence:**
+- Cross-chain settlement: user pays on World Chain (MiniKit.pay) → Hedera settles via x402/Blocky402
 - Agent-to-agent USDC payments via x402 protocol through Blocky402 facilitator
 - x402 middleware returns 402 Payment Required for unpaid queries
 - USDC token: `0.0.429274` (Circle native on Hedera)
 - $0.0001 gas per transaction
+- Both tx hashes displayed: World Chain + Hedera — provable cross-chain flow
 - **Files:** `src/lib/blocky402.ts`, `server/routes/payments.ts`, `src/components/PaymentConfirmation.tsx`
 
 ### Hedera — No Solidity Allowed ($3k, 3 winners)
