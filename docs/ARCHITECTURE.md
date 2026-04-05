@@ -80,7 +80,7 @@ vocaid-hub/
 │   │       ├── predictions/   # Prediction markets (ISR 10s)
 │   │       ├── agent-decision/# Seer agent GPU selection flow (ISR 30s)
 │   │       ├── gpu-verify/    # Resources: Register + manage marketplace listings (SSR)
-│   │       └── profile/       # Fleet-only: deploy private trading agents (SSR)
+│   │       └── profile/       # Connect Your Agent: API key + chain config (SSR)
 │   ├── types/                 # Shared TypeScript types
 │   │   └── resource.ts        # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                   # Shared server utilities (used by both Next.js + Fastify)

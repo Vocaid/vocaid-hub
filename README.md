@@ -296,7 +296,7 @@ vocaid-hub/
 │   │       ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │       ├── agent-decision/ # Seer agent resource ranking (ISR 30s) — 4-step visual
 │   │       ├── gpu-verify/     # Resources: Register + manage marketplace listings (SSR)
-│   │       └── profile/        # Connect Your Agent: API key generation + chain config (SSR)
+│   │       └── profile/        # Connect Your Agent: API key + chain config (SSR)
 │   ├── types/                  # Shared TypeScript types (frontend + backend)
 │   │   └── resource.ts         # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                    # Shared server utilities (20 files)
