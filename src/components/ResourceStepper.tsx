@@ -413,7 +413,9 @@ export default function ResourceStepper({ defaultType }: { defaultType?: Resourc
           body: JSON.stringify({
             providerAddress: walletAddress,
             gpuModel: verifyInfo?.model || 'GPU Provider',
-            endpoint: verifyInfo?.endpoint || '',
+            ...(verifyInfo?.endpoint && verifyInfo.endpoint !== 'N/A'
+              ? { endpoint: verifyInfo.endpoint }
+              : {}),
           }),
         });
       } else {

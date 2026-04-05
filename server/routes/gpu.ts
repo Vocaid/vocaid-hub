@@ -88,7 +88,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
       schema: { querystring: GpuListQuerySchema },
       preHandler: [app.requireWorldId],
     },
-    async (request) => {
+    async (request, reply) => {
       const { address } = request.query;
 
       try {
@@ -115,8 +115,7 @@ export default async function gpuRoutes(app: FastifyInstance) {
         return { providers };
       } catch (err) {
         request.log.error({ err }, 'GPU list failed');
-        reply.code(502);
-        return { error: '0G broker unreachable' };
+        return reply.code(502).send({ error: '0G broker unreachable' });
       }
     },
   );
