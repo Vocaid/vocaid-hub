@@ -57,6 +57,7 @@ export default async function paymentRoutes(app: FastifyInstance) {
 
     try {
       const body = request.body as { resourceName?: string } | undefined;
+      request.log.info({ resourceName: body?.resourceName, hasPaymentHeader: !!paymentHeader }, '[payments] Processing payment');
 
       // Step 1: Verify the payment with Blocky402
       const verification = await verifyPayment(paymentHeader);
@@ -148,9 +149,11 @@ export default async function paymentRoutes(app: FastifyInstance) {
     const rl = app.checkRateLimit(request.ip, '/api/initiate-payment', 10, 60_000);
     if (rl) return sendRateLimited(reply, rl);
 
-    const { resourceName, resourceType, amount } = request.body;
+    const { resourceName, resourceType, amount, worldTxHash } = request.body as { resourceName: string; resourceType?: string; amount?: number; worldTxHash?: string | null };
     const paymentAmount = amount ?? getDefaultPrice(resourceType);
     const paymentId = crypto.randomUUID();
+
+    request.log.info({ paymentId, resourceName, resourceType, amount: paymentAmount, worldTxHash }, '[initiate-payment] Payment recorded');
 
     return {
       paymentId,

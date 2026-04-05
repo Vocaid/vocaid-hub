@@ -71,26 +71,31 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
       const reference = `hire-${Date.now()}`;
       let worldTxHash: string | undefined;
 
+      const payInput = {
+        reference,
+        to: DEPLOYER,
+        tokens: [{ symbol: Tokens.USDC, token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString() }],
+        description: `Lease ${resource.name}`,
+      };
+      console.log('[hire] MiniKit.pay() input:', JSON.stringify(payInput, null, 2));
+
       try {
-        const payResult = await MiniKit.pay({
-          reference,
-          to: DEPLOYER,
-          tokens: [{
-            symbol: Tokens.USDC,
-            token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString(),
-          }],
-          description: `Lease ${resource.name}`,
-        });
+        const payResult = await MiniKit.pay(payInput);
+        console.log('[hire] MiniKit.pay() result:', JSON.stringify(payResult, null, 2));
 
         if (payResult.data?.transactionId) {
           worldTxHash = payResult.data.transactionId;
-          console.log('[hire] World Chain payment:', worldTxHash);
+          console.log('[hire] World Chain tx:', worldTxHash);
+        } else {
+          console.warn('[hire] MiniKit.pay() returned no transactionId:', payResult);
         }
-      } catch (payErr) {
-        console.log('[hire] MiniKit.pay() error (non-blocking):', payErr);
+      } catch (payErr: unknown) {
+        const err = payErr as { name?: string; code?: string; message?: string };
+        console.error('[hire] MiniKit.pay() FAILED:', { name: err.name, code: err.code, message: err.message });
       }
 
       // Step 2: Record payment on server
+      console.log('[hire] Recording payment on server...');
       const confirmRes = await fetch('/api/initiate-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,6 +107,7 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         }),
       });
       const confirmData = await confirmRes.json();
+      console.log('[hire] Server response:', { status: confirmRes.status, paymentId: confirmData.paymentId, worldTxHash });
 
       setPaymentResult({
         amount: leaseAmount.toFixed(2),

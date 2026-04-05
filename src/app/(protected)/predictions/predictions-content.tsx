@@ -86,22 +86,26 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
 
     // Step 1: MiniKit.pay() — World App native USDC payment
     const usdcAmount = Math.max(0.10, amount);
+    const payInput = {
+      reference: `bet-${marketId}-${side}-${Date.now()}`,
+      to: DEPLOYER,
+      tokens: [{ symbol: Tokens.USDC, token_amount: tokenToDecimals(usdcAmount, Tokens.USDC).toString() }],
+      description: `Predict ${side.toUpperCase()} — Market #${marketId}`,
+    };
+    console.log('[bet] MiniKit.pay() input:', JSON.stringify(payInput, null, 2));
+
     try {
-      const payResult = await MiniKit.pay({
-        reference: `bet-${marketId}-${side}-${Date.now()}`,
-        to: DEPLOYER,
-        tokens: [{
-          symbol: Tokens.USDC,
-          token_amount: tokenToDecimals(usdcAmount, Tokens.USDC).toString(),
-        }],
-        description: `Predict ${side.toUpperCase()} — Market #${marketId}`,
-      });
+      const payResult = await MiniKit.pay(payInput);
+      console.log('[bet] MiniKit.pay() result:', JSON.stringify(payResult, null, 2));
 
       if (payResult.data?.transactionId) {
-        console.log('[bet] World Chain payment:', payResult.data.transactionId);
+        console.log('[bet] World Chain tx:', payResult.data.transactionId);
+      } else {
+        console.warn('[bet] MiniKit.pay() returned no transactionId:', payResult);
       }
-    } catch (payErr) {
-      console.log('[bet] MiniKit.pay() failed, continuing with server settlement:', payErr);
+    } catch (payErr: unknown) {
+      const err = payErr as { name?: string; code?: string; message?: string };
+      console.error('[bet] MiniKit.pay() FAILED:', { name: err.name, code: err.code, message: err.message });
     }
 
     // Step 2: Server places bet on 0G Chain with deployer wallet
