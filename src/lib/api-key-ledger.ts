@@ -4,6 +4,7 @@ import { randomBytes, createHash } from 'crypto';
 
 const DATA_DIR = join(process.cwd(), 'data');
 const KEYS_PATH = join(DATA_DIR, 'api-keys.json');
+const KEY_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 export type ChainId = '0g' | 'hedera' | 'world';
 
@@ -13,6 +14,7 @@ export interface ApiKeyRecord {
   walletAddress: string;
   chain: ChainId;
   createdAt: string;
+  expiresAt: string;
   lastUsedAt: string | null;
   revoked: boolean;
 }
@@ -41,19 +43,35 @@ function hashKey(key: string): string {
   return createHash('sha256').update(key).digest('hex');
 }
 
+/** Purge revoked keys older than 7 days and expired keys */
+function purgeStale(keys: ApiKeyRecord[]): ApiKeyRecord[] {
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+  return keys.filter((k) => {
+    if (k.revoked && new Date(k.createdAt).getTime() < sevenDaysAgo) return false;
+    if (new Date(k.expiresAt).getTime() < now && !k.revoked) {
+      k.revoked = true; // auto-expire
+    }
+    return true;
+  });
+}
+
 export function generateApiKey(walletAddress: string, chain: ChainId): { key: string; record: ApiKeyRecord } {
   const raw = randomBytes(24).toString('base64url');
   const key = `voc_${raw}`;
+  const now = new Date();
   const record: ApiKeyRecord = {
     keyHash: hashKey(key),
     maskedKey: `voc_${raw.slice(0, 4)}...${raw.slice(-2)}`,
     walletAddress,
     chain,
-    createdAt: new Date().toISOString(),
+    createdAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + KEY_TTL_MS).toISOString(),
     lastUsedAt: null,
     revoked: false,
   };
-  const keys = readKeys();
+  let keys = readKeys();
+  keys = purgeStale(keys); // clean up on write
   keys.push(record);
   writeKeys(keys);
   return { key, record };
@@ -61,18 +79,26 @@ export function generateApiKey(walletAddress: string, chain: ChainId): { key: st
 
 export function validateApiKey(key: string): ApiKeyRecord | null {
   const hash = hashKey(key);
-  const keys = readKeys();
+  let keys = readKeys();
+  keys = purgeStale(keys);
   const record = keys.find((k) => k.keyHash === hash && !k.revoked);
-  if (record) {
-    record.lastUsedAt = new Date().toISOString();
+  if (!record) return null;
+
+  // Check expiration
+  if (new Date(record.expiresAt).getTime() < Date.now()) {
+    record.revoked = true;
     writeKeys(keys);
+    return null;
   }
-  return record ?? null;
+
+  record.lastUsedAt = new Date().toISOString();
+  writeKeys(keys);
+  return record;
 }
 
 export function revokeApiKey(walletAddress: string): boolean {
   const keys = readKeys();
-  const record = keys.find((k) => k.walletAddress === walletAddress && !k.revoked);
+  const record = keys.find((k) => k.walletAddress.toLowerCase() === walletAddress.toLowerCase() && !k.revoked);
   if (!record) return false;
   record.revoked = true;
   writeKeys(keys);
@@ -81,5 +107,9 @@ export function revokeApiKey(walletAddress: string): boolean {
 
 export function getKeyByWallet(walletAddress: string): ApiKeyRecord | null {
   const keys = readKeys();
-  return keys.find((k) => k.walletAddress === walletAddress && !k.revoked) ?? null;
+  const record = keys.find((k) => k.walletAddress.toLowerCase() === walletAddress.toLowerCase() && !k.revoked);
+  if (!record) return null;
+  // Check expiration
+  if (new Date(record.expiresAt).getTime() < Date.now()) return null;
+  return record;
 }
