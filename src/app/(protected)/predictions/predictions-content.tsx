@@ -97,6 +97,10 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       const txResult = await sendTransaction({
         chainId: 480, // World Chain
         transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
+        fallback: () => {
+          console.log('[bet] sendTransaction fallback — using server settlement');
+          return { userOpHash: '', status: 'success' as const, version: 2, from: '', timestamp: '' };
+        },
       });
 
       if (txResult.data?.userOpHash) {
