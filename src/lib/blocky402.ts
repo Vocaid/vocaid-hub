@@ -44,7 +44,7 @@ export async function verifyPayment(
     const res = await fetchWithTimeout(`${BLOCKY402_BASE}/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payment: paymentHeader }),
+      body: JSON.stringify({ paymentHeader }),
       timeout: TIMEOUT_BUDGETS.BLOCKY402,
     });
 
@@ -68,7 +68,7 @@ export async function settlePayment(
     const res = await fetchWithTimeout(`${BLOCKY402_BASE}/settle`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payment: paymentPayload }),
+      body: JSON.stringify({ paymentPayload }),
       timeout: TIMEOUT_BUDGETS.BLOCKY402,
     });
 
