@@ -538,6 +538,22 @@ User taps "$0.50 YES" on a prediction
 
 The deployer wallet coordinates both flows: receives USDC from users on World Chain, holds A0GI for 0G bets, holds HBAR for Hedera gas. No cross-chain bridges — the application layer handles settlement.
 
+### Why Hedera for Leases, 0G for Bets
+
+**Leases on Hedera** — Resource leasing is a **payment-gated access** pattern: pay USDC, get access, log to audit trail. Hedera was purpose-built for this:
+- **x402 protocol** via Blocky402: HTTP-native payment gating ($0.0001 gas)
+- **HTS tokens**: Non-transferable credentials minted after payment (proof of lease)
+- **HCS audit trail**: Immutable log of every lease, queryable via Mirror Node
+- **"No Solidity" track**: Zero Solidity on Hedera — all operations via `@hashgraph/sdk` (qualifies for $3k bounty)
+
+**Bets on 0G** — Prediction markets are a **DeFi primitive** requiring on-chain pool management:
+- **Smart contract state**: Binary outcome pools (YES/NO), proportional payouts, oracle resolution — needs EVM execution
+- **`ResourcePrediction.sol`** deployed on 0G Galileo: `createMarket()`, `placeBet()`, `resolveMarket()`, `claimWinnings()`
+- **ERC-8004 integration**: Prediction markets reference agent IDs from the same IdentityRegistry
+- **"Best DeFi on 0G" track**: AI-native DeFi using 0G Chain + Compute + Storage (qualifies for $6k bounty)
+
+Moving bets to Hedera would require redeploying the Solidity contract on Hedera EVM — which would disqualify from the "No Solidity" track ($3k). Keeping bets on 0G maximizes bounty coverage across both chains.
+
 ---
 
 ## Hedera Integration Details
