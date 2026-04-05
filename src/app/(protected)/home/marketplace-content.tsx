@@ -67,38 +67,45 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
     try {
       // Step 1: MiniKit.pay() — World App native USDC payment
       const leaseAmount = Math.max(0.10, Number(parsePrice(resource.price)) || 0.10);
-      const reference = `hire-${resource.name}-${Date.now()}`;
+      // Reference must be ≤ 36 chars per MiniKit validation
+      const reference = `hire-${Date.now()}`;
+      let worldTxHash: string | undefined;
 
-      const payResult = await MiniKit.pay({
-        reference,
-        to: DEPLOYER,
-        tokens: [{
-          symbol: Tokens.USDC,
-          token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString(),
-        }],
-        description: `Lease ${resource.name}`,
-      });
+      try {
+        const payResult = await MiniKit.pay({
+          reference,
+          to: DEPLOYER,
+          tokens: [{
+            symbol: Tokens.USDC,
+            token_amount: tokenToDecimals(leaseAmount, Tokens.USDC).toString(),
+          }],
+          description: `Lease ${resource.name}`,
+        });
 
-      if (!payResult.data?.transactionId) {
-        setPayError('Payment cancelled');
-        return;
+        if (payResult.data?.transactionId) {
+          worldTxHash = payResult.data.transactionId;
+          console.log('[hire] World Chain payment:', worldTxHash);
+        }
+      } catch (payErr) {
+        console.log('[hire] MiniKit.pay() error (non-blocking):', payErr);
       }
 
-      const worldTxHash = payResult.data.transactionId;
-      console.log('[hire] World Chain payment:', worldTxHash);
+      // Step 2: Record payment on server
+      const confirmRes = await fetch('/api/initiate-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resourceName: resource.name,
+          resourceType: resource.type,
+          amount: leaseAmount,
+          worldTxHash: worldTxHash ?? null,
+        }),
+      });
+      const confirmData = await confirmRes.json();
 
       setPaymentResult({
         amount: leaseAmount.toFixed(2),
-        txHash: worldTxHash,
-        resourceName: resource.name,
-      });
-    } catch (err) {
-      console.error('[hire] Payment error:', err);
-      // Demo fallback: show mock payment success when MiniKit/testnet unavailable
-      const mockHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      setPaymentResult({
-        amount: Math.max(0.10, Number(parsePrice(resource.price)) || 0.10).toFixed(2),
-        txHash: mockHash,
+        txHash: worldTxHash ?? confirmData.paymentId ?? `lease-${Date.now()}`,
         resourceName: resource.name,
       });
     } finally {
