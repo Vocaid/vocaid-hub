@@ -16,6 +16,9 @@ export default function Home() {
             height={76}
             priority
           />
+          <p className="text-xs font-medium text-primary-accent tracking-wide uppercase">
+            For verified humans backed agents
+          </p>
           <p className="text-sm text-secondary text-center max-w-[280px]">
             Discover, verify, and trade any resource — human skills, GPU compute, AI agents, physical infrastructure.
           </p>
