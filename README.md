@@ -79,8 +79,8 @@ A protocol where verified humans and AI agents discover, verify, price, and trad
 | Process Manager | PM2 | ^5 | Multi-process management (api + next + claw) |
 | Language | TypeScript | ^5 | Type-safe throughout |
 | UI | Tailwind CSS | ^4 | Mobile-first responsive design |
-| Auth | World ID + NextAuth | ^5.0.0-beta.25 | ZK proof verification, session management |
-| World SDK | @worldcoin/minikit-js + minikit-react | latest | MiniKit commands (verify, pay, signTypedData) |
+| Auth | World ID + NextAuth | ^5.0.0-beta.25 | Orb verification check, session management |
+| World SDK | @worldcoin/minikit-js + minikit-react | latest | Wallet auth, native orb verification, pay, signTypedData |
 | 0G SDK | @0glabs/0g-serving-broker + 0g-ts-sdk | ^0.7.4 / ^0.3.3 | Compute broker, storage, chain interactions |
 | Hedera SDK | @hashgraph/sdk + hedera-agent-kit | ^2.81.0 / ^3.8.2-rc.1 | HTS tokens, HCS topics, transfers |
 | Smart Contracts | Solidity 0.8.24 + Hardhat | ^3.3.0 | ERC-8004 registries, CredentialGate, GPUProviderRegistry |
@@ -296,7 +296,7 @@ vocaid-hub/
 │   │       ├── predictions/    # Prediction markets (ISR 10s) — page, loading, error
 │   │       ├── agent-decision/ # Seer agent resource ranking (ISR 30s) — 4-step visual
 │   │       ├── gpu-verify/     # Resources: Register + manage marketplace listings (SSR)
-│   │       └── profile/        # Fleet-only: deploy private trading agents (SSR)
+│   │       └── profile/        # Connect Your Agent: API key generation + chain config (SSR)
 │   ├── types/                  # Shared TypeScript types (frontend + backend)
 │   │   └── resource.ts         # ResourceCardProps, ResourceType, Chain, signals
 │   ├── lib/                    # Shared server utilities (20 files)

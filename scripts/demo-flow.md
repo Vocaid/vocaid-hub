@@ -20,8 +20,8 @@
 
 | Step | Time | Route | Action | Key Line |
 |------|------|-------|--------|----------|
-| 1 | 0:00-0:30 | `/` | World ID verify -> create resource passport | "Everything starts with World ID. No verification, no access." |
-| 2 | 0:30-1:00 | `/profile` | Show 4 registered OpenClaw agents with ERC-8004 IDs | "Four AI agents, each registered via AgentKit with on-chain ERC-8004 identity." |
+| 1 | 0:00-0:30 | `/` | Wallet login → auto-verify (orb-verified users pass all gates) | "Login with World App. Orb-verified users access everything. Graceful degradation for unverified." |
+| 2 | 0:30-1:00 | `/profile` | Connect Your Agent — generate API key, configure chain + wallet | "Generate an API key. Pick your chain. Your OpenClaw agent calls our A2A/MCP services." |
 | 3 | 1:00-2:00 | `/gpu-verify` | GPU provider connects -> TEE verified -> ERC-8004 registration -> visible in marketplace | "This is the innovation. GPU provider verified on-chain via ZK proof. This tool does not exist in 0G's ecosystem yet." |
 | 4 | 2:00-2:30 | `/home` | Browse marketplace: humans + GPUs + agents in one view, filter by type | "Humans, GPUs, and agents -- one marketplace, one protocol." |
 | 5 | 2:30-3:00 | `/predictions` | Place $0.10 USDC bet via MiniKit.pay() → server settles on 0G Chain | "Pay USDC via World App. Server bets on 0G. Users see dollars, never native tokens." |
@@ -36,7 +36,7 @@
 |---------|----------|
 | 0G testnet down | Show pre-recorded video + point to deployed contracts on chainscan-galileo.0g.ai |
 | Hedera testnet down | Show HTS tokens on testnet.hashscan.io + explain x402 flow with diagram |
-| World ID fails | Use MiniKit dev mode simulator |
+| World ID not detected | Orb verification checked via address book contract on mainnet — show amber banner as graceful degradation |
 | OpenClaw Gateway crash | Restart: `openclaw gateway` (~5s, agents auto-reconnect) |
 | Payment fails | Show mock payment confirmation + HCS audit trail on hashscan |
 

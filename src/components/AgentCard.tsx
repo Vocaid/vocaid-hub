@@ -18,10 +18,10 @@ export interface AgentCardProps {
 }
 
 const roleConfig: Record<AgentRole, { icon: typeof Bot; label: string; color: string }> = {
-  'signal-analyst': { icon: Eye, label: 'Signal Analyst', color: 'text-chain-world' },
+  'signal-analyst': { icon: Eye, label: 'Signal Analyst', color: 'text-primary-accent' },
   'market-maker': { icon: TrendingUp, label: 'Market Maker', color: 'text-chain-og' },
-  'risk-manager': { icon: Shield, label: 'Risk Manager', color: 'text-status-failed' },
-  'discovery': { icon: Bot, label: 'Discovery', color: 'text-chain-hedera' },
+  'risk-manager': { icon: Shield, label: 'Risk Manager', color: 'text-chain-hedera' },
+  'discovery': { icon: Bot, label: 'Discovery', color: 'text-primary-accent' },
 };
 
 export function AgentCard({

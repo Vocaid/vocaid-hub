@@ -57,14 +57,14 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 **Show:** Quick switch to a slide or diagram (can be a pre-made image)
 **Say:** *"Three chains. World for identity. 0G for verification. Hedera for settlement."*
 
-### 0:25-0:45 — World ID Verify
+### 0:25-0:45 — Wallet Login + Auto-Verify
 
 **Action sequence:**
-1. Click "Verify with World ID" button on landing page
-2. MiniKit dialog appears (or dev mode auto-verifies)
-3. Success — redirected to marketplace
+1. Tap "Login with Wallet" on landing page
+2. World App wallet picker opens → sign in
+3. Redirected to marketplace — orb-verified users pass all gates automatically
 
-**Say:** *"World ID gates everything. Verified. Now I can access resources."*
+**Say:** *"Login with World App. Orb-verified users access everything instantly. Unverified users can browse but get a friendly verification gate on actions like hiring or betting."*
 
 ### 0:45-1:45 — GPU Verification (KEY MOMENT — 60 seconds)
 
@@ -115,14 +115,15 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 **Say:** *"Prediction markets. Pay $0.10 USDC via World App. Server places the bet on 0G Chain. Users see USDC, never native tokens."*
 
-### 2:50-3:00 — Profile + Close (10s)
+### 2:50-3:00 — Profile + Connect Your Agent + Close (10s)
 
 **Action sequence:**
 1. Click "Profile" tab
-2. Show 4-agent fleet (Seer/Edge/Shield/Lens) linked to World ID
-3. Show ERC-8004 IDs and chain badges
+2. Show "Connect Your Agent" section — generate API key
+3. Show chain selector (0G/Hedera/World) and agent wallet config
+4. Copy key snippet for OpenClaw config
 
-**Say:** *"Four agents. Each with ERC-8004 identity on 0G. Each linked to my World ID. GPU verification — first time it's been built."*
+**Say:** *"Connect your own agent. Generate an API key, pick your chain, and your OpenClaw instance calls our A2A/MCP endpoints. Four agent slots per user — Seer, Edge, Shield, Lens services."*
 
 **End.** Stop recording at 3:00.
 
@@ -147,7 +148,7 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 
 | Problem | Fallback |
 |---------|----------|
-| World ID dialog doesn't appear | Say "In production, World ID verifies via ZK proof" and skip |
+| World ID verification not detected | Say "Orb verification is checked automatically via World ID address book on mainnet" and skip |
 | GPU registration tx is slow | Say "Transaction submitted" and switch to block explorer tab |
 | Prediction market empty | Already seeded — should have data |
 | Payment fails | Show the Blocky402 `/supported` tab (Tab 4) as proof it works |

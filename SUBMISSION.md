@@ -20,22 +20,23 @@ World ($20k pool) + 0G ($15k pool) + Hedera ($15k pool)
 - 4 OpenClaw agents (Seer, Edge, Shield, Lens) registered via AgentKit
 - Each agent linked to operator's World ID via `operator_world_id` metadata
 - ERC-8004 identity NFT on 0G Chain per agent
+- "Connect Your Agent" profile page: users generate API key (`voc_` prefix), configure chain (0G/Hedera/World) + wallet, paste into OpenClaw config — agents call A2A/MCP endpoints with `X-API-Key` header
 - A2A Agent Cards at `/public/agent-cards/*.json`
 - Agent-to-agent messaging demo: Seer→Edge→Shield→Lens decision cycle (`scripts/demo-agent-fleet.ts`)
-- **Files:** `src/lib/agentkit.ts`, `server/routes/agents.ts`, `scripts/register-agents.ts`, `scripts/demo-agent-fleet.ts`
+- **Files:** `src/lib/agentkit.ts`, `src/lib/api-key-ledger.ts`, `server/routes/agents.ts`, `server/routes/api-keys.ts`, `scripts/register-agents.ts`, `scripts/demo-agent-fleet.ts`
 
 ### World — Best use of World ID 4.0 ($8k, 3 winners)
 **Evidence:**
-- World ID as hard gate for ALL resource access — product breaks without it
+- Graceful degradation: orb-verified users pass all gates instantly; unverified users browse freely but get verification gate on actions (hire, bet, register, deploy)
+- Three-source verification: `useIsUserVerified` (World ID address book on Worldchain mainnet) + `MiniKit.user.verificationStatus.isOrbVerified` (native) + `/api/world-id/check` (CredentialGate on Sepolia fallback)
 - CredentialGate.sol deployed on World Chain Sepolia
-- `MiniKit.verify()` triggers ZK proof flow in World App
-- Verified humans stored on-chain via `verifyAndRegister()`
-- **Files:** `contracts/world/CredentialGate.sol`, `server/routes/world-id.ts`, `src/lib/world-id.ts`
+- World ID gates on: Marketplace (hire), Predictions (bet/resolve/claim/create), Resources (verify/register), Profile (fleet deploy)
+- **Files:** `contracts/world/CredentialGate.sol`, `server/routes/world-id.ts`, `src/hooks/useWorldIdGate.ts`, `src/components/WorldIdGateModal.tsx`
 
 ### World — Best use of MiniKit 2.0 ($4k, 3 winners)
 **Evidence:**
-- Full Mini App built with `@worldcoin/minikit-js` and MiniKit React provider
-- MiniKit commands: `verify`, `pay`, `signTypedData`
+- Full Mini App built with `@worldcoin/minikit-js` and `@worldcoin/minikit-react`
+- MiniKit APIs: `walletAuth` (login), `MiniKit.user.verificationStatus` (native orb check), `useIsUserVerified` (address book contract), `pay`, `signTypedData`
 - `MiniKit.pay()` for all user payments: resource leasing AND prediction bets ($0.10+ USDC)
 - Users always see USDC — server handles chain-specific settlement (Hedera for leases, 0G for bets)
 - Agents use x402 Hedera micropayments directly ($0.0001 gas) — no World App popup
