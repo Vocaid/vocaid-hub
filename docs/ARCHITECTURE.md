@@ -496,6 +496,50 @@ No traditional database. No Redis. No Postgres.
 
 ---
 
+## Cross-Chain Payment Architecture
+
+Users always pay in **USDC via World App** (MiniKit.pay). The server handles chain-specific settlement internally. Users never see A0GI, HBAR, or other native tokens.
+
+### Payment Flow: Resource Leasing
+
+```
+User taps "Lease GPU-Alpha"
+  → MiniKit.pay($0.10 USDC) → World App native payment popup
+  → User confirms → USDC sent to deployer wallet on World Chain
+  → Server receives confirmation
+  → Server settles resource lease on Hedera testnet via x402/Blocky402
+  → HCS audit trail logged
+  → PaymentConfirmation shows: amount + Hedera tx hash + HashScan link
+```
+
+### Payment Flow: Prediction Market Bets
+
+```
+User taps "$0.50 YES" on a prediction
+  → MiniKit.pay($0.50 USDC) → World App native payment popup
+  → User confirms → USDC sent to deployer wallet on World Chain
+  → Server receives confirmation
+  → Server calls ResourcePrediction.placeBet() on 0G Chain with deployer's A0GI
+  → HCS audit trail logged
+  → Toast: "Bet placed: $0.50 on YES"
+```
+
+### Why Two Payment Flows
+
+**Users** pay via World App (MiniKit.pay) — they see USDC, never native tokens.
+**Agents** pay via Hedera x402 — autonomous micropayments, no human interaction.
+
+| Actor | Payment Method | Token | Chain | Min Amount |
+|-------|---------------|-------|-------|------------|
+| **User** (World App) | MiniKit.pay() | USDC | World Chain mainnet | $0.10 |
+| **Agent** (Edge/Lens) | x402 via Blocky402 | USDC | Hedera testnet | $0.0001 |
+| **Agent** (Edge) | placeBet() | A0GI | 0G Galileo | 0.001 A0GI |
+| **System** | HCS TopicMessageSubmit | — | Hedera testnet | Free |
+
+The deployer wallet coordinates both flows: receives USDC from users on World Chain, holds A0GI for 0G bets, holds HBAR for Hedera gas. No cross-chain bridges — the application layer handles settlement.
+
+---
+
 ## Hedera Integration Details
 
 ### Blocky402 x402 Facilitator (VERIFY AT VENUE — ask Hedera sponsor)

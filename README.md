@@ -381,6 +381,33 @@ Four OpenClaw agents operate autonomously with ERC-8004 identities on 0G Chain, 
 
 ---
 
+## Payment Architecture
+
+Two payment flows — one for users, one for agents:
+
+### User Payments (MiniKit.pay → World App)
+
+Users pay in **USDC via World App's native payment popup** (MiniKit SDK). The server settles on the destination chain. Users never see native tokens (A0GI, HBAR).
+
+| Action | User Pays | Settlement | Chain |
+|--------|----------|------------|-------|
+| Lease a resource | $0.10+ USDC | x402 via Blocky402 | Hedera testnet |
+| Prediction bet | $0.10+ USDC | ResourcePrediction.placeBet() | 0G Galileo |
+
+### Agent Micropayments (x402 → Hedera)
+
+Agents pay directly via **Hedera x402 USDC micropayments** ($0.0001 gas). No World App popup — agents are autonomous.
+
+| Action | Agent Pays | Protocol | Chain |
+|--------|-----------|----------|-------|
+| Resource lease | USDC | x402 via Blocky402 | Hedera testnet |
+| Audit logging | — (free) | HCS TopicMessageSubmit | Hedera testnet |
+| Reputation write | A0GI (gas only) | ERC-8004 giveFeedback | 0G Galileo |
+
+The deployer wallet coordinates both flows. No bridges — the application layer handles cross-chain settlement.
+
+---
+
 ## Retroactive Reputation Engine
 
 Vocaid doesn't just score new providers — it retroactively computes reputation for the **entire existing 0G provider ecosystem** by reading historical transaction data from the native InferenceServing contract.
