@@ -75,10 +75,10 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 | Time | Action | Say |
 |------|--------|-----|
 | 0:00 | Tap "Login with Wallet" → auto-verified | *"Login with World App. Orb-verified users pass all gates instantly. Unverified users can browse but can't trade."* |
-| 0:25 | Profile → show deployed fleet (fleet-only page) | *"Four private agents on ERC-8004 via AgentKit — not on the marketplace. Each linked to my World ID."* |
+| 0:25 | Profile → Connect Your Agent | *"Generate an API key, pick your chain, connect your OpenClaw agent. Four services — Seer, Edge, Shield, Lens — all via A2A with X-API-Key auth."* |
 | 0:55 | Resources → register GPU (data-driven stepper) | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem. Same stepper for agents, skills, DePIN."* |
 | 1:55 | Market → browse all types, hire a resource | *"Hire a GPU. Watch — payment happens on World Chain via MiniKit, then settles on Hedera via x402. Two chains, one tap. Both transaction hashes shown."* |
-| 2:25 | Predictions → signal ticker + place bet | *"Resource pricing prediction markets. Will H100 cost drop? The market decides."* |
+| 2:25 | Predictions → place bet → tx confirmation popup | *"Prediction markets. Pay USDC, server settles on 0G. Transaction hash shown with explorer link — real contract, real chain."* |
 | 2:45 | Block explorer → show 0G contracts + Hedera HCS | *"Real contracts on 0G Chain. Immutable audit trail on Hedera. Three chains, each doing what it does best."* |
 
 ### Slide 8: Close (10 seconds)

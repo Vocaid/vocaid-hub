@@ -119,7 +119,7 @@ Open `http://localhost:3000/home` — should show GPU-Alpha, Seer Agent, Maria i
 2. Show existing market: "Will H100 cost drop below $0.03?"
 3. Place a bet (YES, $0.10) → MiniKit.pay() USDC payment
 4. Server settles bet on 0G Chain with deployer's A0GI
-5. Show price impact preview and confirmation
+5. Show tx confirmation popup with 0G Explorer link — tap to verify on-chain
 
 **Say:** *"Prediction markets. Pay $0.10 USDC via World App. Server places the bet on 0G Chain. Users see USDC, never native tokens."*
 
