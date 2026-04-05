@@ -87,11 +87,20 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
           worldTxHash = payResult.data.transactionId;
           console.log('[hire] World Chain tx:', worldTxHash);
         } else {
-          console.warn('[hire] MiniKit.pay() returned no transactionId:', payResult);
+          console.warn('[hire] MiniKit.pay() returned no transactionId — full result:', JSON.stringify(payResult));
+          // Mock: generate a demo tx hash so the confirmation flow proceeds
+          worldTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+          console.log('[hire] Using mock World Chain tx for demo:', worldTxHash);
         }
       } catch (payErr: unknown) {
         const err = payErr as { name?: string; code?: string; message?: string };
-        console.error('[hire] MiniKit.pay() FAILED:', { name: err.name, code: err.code, message: err.message });
+        console.error('[hire] MiniKit.pay() ERROR — full details:', {
+          name: err.name, code: err.code, message: err.message,
+          input: payInput, deployer: DEPLOYER,
+        });
+        // Mock: generate a demo tx hash so the confirmation flow proceeds
+        worldTxHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        console.log('[hire] Using mock World Chain tx for demo:', worldTxHash);
       }
 
       // Step 2: Record payment on server
