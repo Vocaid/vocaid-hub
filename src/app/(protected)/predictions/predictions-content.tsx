@@ -8,6 +8,11 @@ import { SignalTicker } from '@/components/SignalTicker';
 import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
+import { sendTransaction } from '@worldcoin/minikit-js/commands';
+import { encodeFunctionData, parseUnits } from 'viem';
+
+const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
+const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -80,8 +85,28 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    // MiniKit.pay() disabled — crashes World App webview (deep link kills JS runtime).
-    // Server places bet on 0G Chain with deployer wallet (user's chosen amount).
+    // Step 1: World Chain USDC transfer via sendTransaction() (webview-safe)
+    const usdcAmount = Math.max(0.10, amount);
+    try {
+      const transferData = encodeFunctionData({
+        abi: [{ name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] }] as const,
+        functionName: 'transfer',
+        args: [DEPLOYER, parseUnits(usdcAmount.toFixed(2), 6)],
+      });
+
+      const txResult = await sendTransaction({
+        chainId: 480, // World Chain
+        transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
+      });
+
+      if (txResult.data?.userOpHash) {
+        console.log('[bet] World Chain USDC transfer:', txResult.data.userOpHash);
+      }
+    } catch (txErr) {
+      console.log('[bet] sendTransaction() unavailable, proceeding with server settlement:', txErr);
+    }
+
+    // Step 2: Server places bet on 0G Chain with deployer wallet
     const res = await fetch(`/api/predictions/${marketId}/bet`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

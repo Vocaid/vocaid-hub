@@ -71,7 +71,8 @@ export async function listProviders(
   const broker = await getBroker();
   const services = await broker.inference.listService(offset, limit, true);
 
-  return services.map((s) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return services.map((s: any) => ({
     provider: s.provider,
     model: s.model,
     url: s.url,

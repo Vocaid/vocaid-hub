@@ -7,6 +7,12 @@ import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
+import { sendTransaction } from '@worldcoin/minikit-js/commands';
+import { encodeFunctionData, parseUnits } from 'viem';
+
+// USDC.e on World Chain (bridged USDC)
+const WORLD_USDC = '0x79A02482A880bCE3615680d0e3b5710ACB8C6A58' as const;
+const DEPLOYER = (process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE') as `0x${string}`;
 
 type FilterTab = 'all' | ResourceType;
 
@@ -78,10 +84,32 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         return;
       }
 
-      // Step 2: x402 settlement on Hedera testnet (server-side)
-      // MiniKit.pay() disabled — crashes World App webview by triggering deep link
-      // navigation that destroys the mini app context (see commit 26bc807).
-      // Settlement uses deployer wallet; amount from initiate-payment serves as quote.
+      // Step 2: World Chain USDC transfer via sendTransaction() (webview-safe)
+      // pay() crashes World App (deep link kills webview — see commit 26bc807).
+      // sendTransaction() executes within the webview and returns userOpHash.
+      const leaseAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10);
+      let worldTxHash: string | undefined;
+      try {
+        const transferData = encodeFunctionData({
+          abi: [{ name: 'transfer', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] }] as const,
+          functionName: 'transfer',
+          args: [DEPLOYER, parseUnits(leaseAmount.toFixed(2), 6)],
+        });
+
+        const txResult = await sendTransaction({
+          chainId: 480, // World Chain
+          transactions: [{ to: WORLD_USDC, data: transferData, value: '0x0' }],
+        });
+
+        if (txResult.data?.userOpHash) {
+          worldTxHash = txResult.data.userOpHash;
+          console.log('[hire] World Chain USDC transfer:', worldTxHash);
+        }
+      } catch (txErr) {
+        console.log('[hire] sendTransaction() unavailable, continuing with server settlement:', txErr);
+      }
+
+      // Step 3: x402 settlement on Hedera testnet (server-side, deployer wallet)
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,
@@ -106,7 +134,8 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
       if (res.ok && data.success) {
         setPaymentResult({
           amount: data.payment?.amount ?? initData.requirements.amount,
-          txHash: data.payment?.txHash ?? 'pending',
+          txHash: worldTxHash ?? data.payment?.txHash ?? 'pending',
+          hederaTxHash: data.payment?.txHash,
           resourceName: resource.name,
         });
       } else {
