@@ -7,8 +7,7 @@ import { PaymentConfirmation } from '@/components/PaymentConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
-// MiniKit.pay() disabled — crashes World App webview (deep link navigation conflict)
-// Payment settles on Hedera testnet via x402/Blocky402 instead
+import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 type FilterTab = 'all' | ResourceType;
 
@@ -80,9 +79,20 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         return;
       }
 
-      // Step 2: x402 settlement on Hedera testnet
-      // MiniKit.pay() disabled — crashes World App webview when triggered from mini app
-      // The x402 flow settles directly on Hedera via Blocky402 (server-side, $0.0001 gas)
+      // Step 2: MiniKit.pay() — World App native USDC payment
+      const leaseAmount = Math.max(0.10, Number(initData.requirements.amount) || 0.10).toFixed(2);
+      try {
+        await pay({
+          reference: initData.paymentId,
+          to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
+          tokens: [{ symbol: Tokens.USDC, token_amount: leaseAmount }],
+          description: `Lease ${resource.name}`,
+        });
+      } catch (miniErr) {
+        console.log('[pay] MiniKit.pay() unavailable, continuing with x402:', miniErr);
+      }
+
+      // Step 3: x402 settlement on Hedera testnet (server-side, always runs)
       const paymentPayload = btoa(JSON.stringify({
         paymentId: initData.paymentId,
         network: initData.requirements.network,

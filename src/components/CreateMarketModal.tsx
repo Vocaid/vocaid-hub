@@ -146,7 +146,7 @@ export function CreateMarketModal({ onClose, onCreated }: CreateMarketModalProps
                       : 'bg-surface border border-border-card text-secondary'
                   }`}
                 >
-                  {amt} A0GI
+                  ${amt.toFixed(2)}
                 </button>
               ))}
             </div>

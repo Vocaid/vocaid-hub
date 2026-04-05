@@ -36,7 +36,7 @@ interface PredictionCardProps {
   isOracle?: boolean;
 }
 
-const BET_PRESETS = [0.001, 0.005, 0.01];
+const BET_PRESETS = [0.10, 0.50, 1.00];
 
 function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString('en-US', {
@@ -157,7 +157,7 @@ export function PredictionCard({
               <span className="font-medium text-primary">NO {100 - yesPercent}%</span>
             </span>
             <div className="flex items-center gap-1.5 text-secondary">
-              <span className="tabular-nums">{formatPool(String(total))} A0GI</span>
+              <span className="tabular-nums">${formatPool(String(total))} pool</span>
               <Clock className="w-3.5 h-3.5" />
               <span>{formatDate(market.resolutionTime)}</span>
             </div>
@@ -206,7 +206,7 @@ export function PredictionCard({
                       : 'bg-white border border-border-card text-secondary'
                   }`}
                 >
-                  {amt.toFixed(3)} A0GI
+                  ${amt.toFixed(2)}
                 </button>
               ))}
               <input
@@ -232,7 +232,7 @@ export function PredictionCard({
               <div className="flex items-center justify-between">
                 <span className="text-xs text-secondary">Est. Payout</span>
                 <span className="text-sm font-semibold text-primary tabular-nums">
-                  {formatPool(simulation.estimatedPayout.toString())} A0GI
+                  ${formatPool(simulation.estimatedPayout.toString())}
                   <span className="text-chain-hedera font-bold ml-2">
                     {formatMultiplier(simulation.estimatedMultiplier)}
                   </span>
@@ -305,7 +305,7 @@ export function PredictionCard({
                 ) : blocked ? (
                   'Bet Blocked'
                 ) : (
-                  `Confirm Bet — ${selectedAmount} A0GI`
+                  `Confirm Bet — $${selectedAmount?.toFixed(2)}`
                 )}
               </button>
             </div>

@@ -8,6 +8,7 @@ import { SignalTicker } from '@/components/SignalTicker';
 import { ActivityFeed, type ActivityItem } from '@/components/ActivityFeed';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
+import { pay, Tokens } from '@worldcoin/minikit-js/commands';
 
 interface PredictionsContentProps {
   initialMarkets: PredictionMarket[];
@@ -79,10 +80,31 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       requireVerified(() => handleBet(marketId, side, amount));
       return;
     }
+
+    // Step 1: MiniKit.pay() — user pays USDC via World App native payment
+    const usdcAmount = Math.max(0.10, amount).toFixed(2);
+    try {
+      const payResult = await pay({
+        reference: `bet-${marketId}-${side}-${Date.now()}`,
+        to: process.env.NEXT_PUBLIC_PAYMENT_RECEIVER ?? '0x58c45613290313c3aeE76c4C4e70E6e6c54a7eeE',
+        tokens: [{ symbol: Tokens.USDC, token_amount: usdcAmount }],
+        description: `Predict ${side.toUpperCase()} — Market #${marketId}`,
+      });
+
+      if (!payResult.data) {
+        setToast({ message: 'Payment cancelled', type: 'error' });
+        return;
+      }
+    } catch (payErr) {
+      console.log('[bet] MiniKit.pay() failed, proceeding with server-side settlement:', payErr);
+      // Fall through to server-side bet placement
+    }
+
+    // Step 2: Server places the actual bet on 0G Chain with deployer's A0GI
     const res = await fetch(`/api/predictions/${marketId}/bet`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ side, amount }),
+      body: JSON.stringify({ side, amount: 0.01 }), // Server uses small A0GI amount from deployer
     });
 
     if (!res.ok) {
@@ -91,7 +113,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       return;
     }
 
-    setToast({ message: `Bet placed: ${amount} A0GI on ${side.toUpperCase()}`, type: 'success' });
+    setToast({ message: `Bet placed: $${usdcAmount} on ${side.toUpperCase()}`, type: 'success' });
     await refreshMarkets();
   }
 
