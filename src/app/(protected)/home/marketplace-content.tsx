@@ -14,6 +14,7 @@ type FilterTab = 'all' | ResourceType;
 interface PaymentResult {
   amount: string;
   txHash: string;
+  hederaTxHash?: string;
   resourceName: string;
 }
 
@@ -102,7 +103,8 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
       }
 
       if (miniKitSuccess) {
-        // MiniKit paid — now also settle on Hedera testnet for cross-chain proof
+        // MiniKit paid on World Chain — now also settle on Hedera testnet for cross-chain proof
+        let hederaTxHash = '';
         try {
           const settlePayload = btoa(JSON.stringify({
             paymentId: initData.paymentId,
@@ -114,16 +116,21 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
             resource: resource.name,
             timestamp: Date.now(),
           }));
-          await fetch('/api/payments', {
+          const settleRes = await fetch('/api/payments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-PAYMENT': settlePayload },
             body: JSON.stringify({ resourceName: resource.name }),
           });
+          if (settleRes.ok) {
+            const settleData = await settleRes.json();
+            hederaTxHash = settleData.payment?.txHash ?? '';
+          }
         } catch { /* non-blocking — MiniKit already confirmed */ }
 
         setPaymentResult({
           amount: payAmount,
           txHash: miniKitTxHash,
+          hederaTxHash,
           resourceName: resource.name,
         });
         return;
@@ -262,6 +269,7 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
         <PaymentConfirmation
           amount={paymentResult.amount}
           txHash={paymentResult.txHash}
+          hederaTxHash={paymentResult.hederaTxHash}
           resourceName={paymentResult.resourceName}
           onClose={() => {
             const name = paymentResult.resourceName;

@@ -1,18 +1,22 @@
 'use client';
 
-import { CheckCircle, ExternalLink, CircleDollarSign } from 'lucide-react';
+import { CheckCircle, ExternalLink, CircleDollarSign, Globe } from 'lucide-react';
 
 export interface PaymentConfirmationProps {
   amount: string;
   txHash: string;
+  hederaTxHash?: string;
   resourceName: string;
   onClose: () => void;
 }
 
 function hashscanUrl(txHash: string): string {
-  // Hedera tx format: 0.0.X@timestamp → hashscan uses 0.0.X-timestamp (dash-delimited)
   const encoded = txHash.replace('@', '-');
   return `https://hashscan.io/testnet/transaction/${encoded}`;
+}
+
+function worldscanUrl(txHash: string): string {
+  return `https://worldchain-sepolia.explorer.alchemy.com/tx/${txHash}`;
 }
 
 function truncateHash(hash: string): string {
@@ -23,9 +27,13 @@ function truncateHash(hash: string): string {
 export function PaymentConfirmation({
   amount,
   txHash,
+  hederaTxHash,
   resourceName,
   onClose,
 }: PaymentConfirmationProps) {
+  const hasWorldTx = txHash && !txHash.startsWith('hedera');
+  const hasHederaTx = !!hederaTxHash;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
       <div className="w-full max-w-[428px] rounded-t-2xl bg-white p-6 pb-10 flex flex-col gap-5 animate-slide-up">
@@ -54,30 +62,83 @@ export function PaymentConfirmation({
 
           <div className="h-px bg-border-card" />
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-secondary">Tx Hash</span>
-            <span className="text-xs font-mono text-primary">{truncateHash(txHash)}</span>
-          </div>
+          {/* World Chain tx (MiniKit.pay) */}
+          {hasWorldTx && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-secondary">World Chain</span>
+              <span className="text-xs font-mono text-primary">{truncateHash(txHash)}</span>
+            </div>
+          )}
+
+          {/* Hedera tx (x402 settlement) */}
+          {hasHederaTx && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-secondary">Hedera</span>
+              <span className="text-xs font-mono text-primary">{truncateHash(hederaTxHash)}</span>
+            </div>
+          )}
+
+          {/* If no World tx, show the single tx hash */}
+          {!hasWorldTx && !hasHederaTx && txHash && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-secondary">Tx Hash</span>
+              <span className="text-xs font-mono text-primary">{truncateHash(txHash)}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="text-sm text-secondary">Settlement</span>
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-hedera/10 text-chain-hedera">
-              <CircleDollarSign className="w-3.5 h-3.5" />
-              x402 on Hedera
-            </span>
+            <div className="flex gap-1.5">
+              {hasWorldTx && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-world/10 text-chain-world">
+                  <Globe className="w-3 h-3" />
+                  World
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-chain-hedera/10 text-chain-hedera">
+                <CircleDollarSign className="w-3.5 h-3.5" />
+                x402 Hedera
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <a
-          href={hashscanUrl(txHash)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg border border-border-card text-sm font-medium text-primary active:scale-95 transition-transform"
-        >
-          View on HashScan
-          <ExternalLink className="w-4 h-4" />
-        </a>
+        {/* Explorer links */}
+        <div className="flex flex-col gap-2">
+          {hasWorldTx && (
+            <a
+              href={worldscanUrl(txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg border border-border-card text-sm font-medium text-primary active:scale-95 transition-transform cursor-pointer"
+            >
+              View on World Explorer
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+          {hasHederaTx && (
+            <a
+              href={hashscanUrl(hederaTxHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg border border-border-card text-sm font-medium text-primary active:scale-95 transition-transform cursor-pointer"
+            >
+              View on HashScan
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+          {!hasWorldTx && !hasHederaTx && txHash && (
+            <a
+              href={hashscanUrl(txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 min-h-[44px] rounded-lg border border-border-card text-sm font-medium text-primary active:scale-95 transition-transform cursor-pointer"
+            >
+              View on HashScan
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+        </div>
 
         <button
           onClick={onClose}
