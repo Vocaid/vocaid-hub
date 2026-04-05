@@ -25,7 +25,7 @@
          (Trust)        (Verify)    (Settle)
 ```
 
-**Why split?** World ID WASM (`@worldcoin/idkit`) crashes in serverless cold starts. Fastify runs as a persistent process with WASM initialized once at startup. PM2 manages all three processes with autorestart, merged logs, and health monitoring.
+**Why split?** World ID WASM (`@worldcoin/minikit-js`) and chain SDK initialization are expensive in serverless cold starts. Fastify runs as a persistent process with singletons initialized once at startup. PM2 manages all three processes with autorestart, merged logs, and health monitoring.
 
 **Proxy:** `next.config.ts` rewrites `/api/*` and `/.well-known/*` to Fastify :5001 transparently — the browser never talks to :5001 directly.
 
@@ -110,14 +110,14 @@ vocaid-hub/
 │   ��   ├── SignalTicker.tsx   # 2-row auto-scrolling market signal ticker
 │   │   ├── ActivityFeed.tsx   # Live activity feed with filter chips
 ���   │   ├── ResourceStepper.tsx# Unified 3-step registration
-│   │   ├── WorldIdGateModal.tsx# Bottom-sheet World ID verification popup
+│   │   ├── WorldIdGateModal.tsx# Informational World ID verification gate modal
 │   │   ├── ProposalQueue.tsx  # Agent prediction proposal approval queue
 │   │   ├── PostHireRating.tsx # Post-hire rating + prediction suggestion
 │   │   ��── AgentCard.tsx      # OpenClaw agent identity card
 │   │   ├── TradingDesk.tsx    # 5-step agent pipeline visualization
 │   │   └── Navigation/       # Bottom tab navigation (World App)
 │   ├── hooks/                 # React hooks
-│   │   └── useWorldIdGate.ts  # Shared World ID verification state
+│   │   └── useWorldIdGate.ts  # World ID verification via MiniKit + address book contract
 │   ├── auth/                  # NextAuth configuration
 │   └── providers/             # React context providers
 ├── contracts/                 # Solidity (0G Chain + World Chain ONLY)

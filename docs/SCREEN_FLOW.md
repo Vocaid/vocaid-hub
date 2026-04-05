@@ -80,21 +80,22 @@
 └─────────────────────────┘
 ```
 
-**Demo step 1 (30s):** Tap "Verify with World ID" → MiniKit verify dialog → proof validated on-chain via CredentialGate.sol
+**Demo step 1 (30s):** Tap "Login with Wallet" → MiniKit wallet auth → session created. World ID verification is checked automatically via `useWorldIdGate` hook (no manual step needed for orb-verified users).
 
-**UI component:** `WorldIdGateModal.tsx` — bottom-sheet popup wrapping `<Verify />`. Auto-triggers `onVerified` callback on success. Used by both Marketplace (lease gate) and ResourceStepper (registration gate).
+**UI component:** `WorldIdGateModal.tsx` — centered informational modal shown when unverified users attempt gated actions (hire, bet, register, deploy). Directs users to World App Settings for Orb verification. Auto-detects verification via `MiniKit.user.verificationStatus` polling. Used by Marketplace, ResourceStepper, Predictions, and Profile (fleet deploy).
 
 **Architecture calls:**
-1. `MiniKit.commands.verify()` → World App handles ZK proof generation
-2. `POST /api/verify` → backend validates proof
-3. `CredentialGate.verifyAndRegister(signal, root, nullifierHash, proof)` → World Chain tx
-4. UI updates: "Verified Human" badge appears
+1. `MiniKit.walletAuth()` → World App wallet picker + SIWE signature
+2. `useIsUserVerified(walletAddress)` → queries World ID address book contract on Worldchain mainnet
+3. `MiniKit.user.verificationStatus.isOrbVerified` → instant native check (fallback)
+4. `/api/world-id/check` → CredentialGate on Sepolia (legacy fallback)
+5. Graceful degradation: unverified users browse freely, gated actions show modal
 
 **UX critical path:**
-- CTA must be immediately visible (no scroll)
-- Loading state during World ID verification (~3-5s)
-- Success animation after verification
-- Error state if World App not installed
+- Login CTA must be immediately visible (no scroll)
+- Orb-verified users pass all gates automatically (no popup)
+- Unverified users see amber banner + informational modal on gated actions
+- Non-blocking: users can dismiss modal and continue browsing
 
 ---
 
@@ -471,7 +472,7 @@
 | `PaymentConfirmation` | Blocky402 x402 settlement receipt | — | Hedera | — (client-side SDK) |
 | `AgentCard` | IdentityRegistry, AgentKit status | — | 0G + World | `GET /api/agents` |
 | `ResourceStepper` | listService(), MockTEEValidator | GPUProviderRegistry.registerProvider() | 0G | `POST /api/gpu/register` |
-| `WorldIdGateModal` | — | CredentialGate.verifyAndRegister() | World | `POST /api/verify-proof` |
+| `WorldIdGateModal` | MiniKit.user.verificationStatus, World ID address book | — | World | Uses `useWorldIdGate` hook (no API call) |
 
 ---
 

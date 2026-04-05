@@ -74,7 +74,7 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 
 | Time | Action | Say |
 |------|--------|-----|
-| 0:00 | Tap "Verify with World ID" | *"Everything starts with World ID. No verification, no access."* |
+| 0:00 | Tap "Login with Wallet" → auto-verified | *"Login with World App. Orb-verified users pass all gates instantly. Unverified users can browse but can't trade."* |
 | 0:25 | Profile → show deployed fleet (fleet-only page) | *"Four private agents on ERC-8004 via AgentKit — not on the marketplace. Each linked to my World ID."* |
 | 0:55 | Resources → register GPU (data-driven stepper) | *"GPU provider connects, TEE attestation verified, registered on ERC-8004. This tool doesn't exist in 0G's ecosystem. Same stepper for agents, skills, DePIN."* |
 | 1:55 | Market → browse all types, hire a resource | *"Hire a GPU. Watch — payment happens on World Chain via MiniKit, then settles on Hedera via x402. Two chains, one tap. Both transaction hashes shown."* |
@@ -117,9 +117,9 @@ Switch to live app. Demo flow from SCREEN_FLOW.md:
 
 | Time | Show | Say |
 |------|------|-----|
-| 0:00 | World ID verify flow | "Every resource passport requires World ID. No exceptions." |
+| 0:00 | World ID verify flow | "Wallet login checks orb verification automatically. No manual verify step — graceful degradation." |
 | 0:30 | Agent fleet with AgentKit badges | "Four agents registered via AgentKit. Each linked to operator's World ID." |
-| 1:30 | Mini App marketplace | "Full MiniKit 2.0 integration — verify, pay, signTypedData." |
+| 1:30 | Mini App marketplace | "Full MiniKit 2.0 integration — wallet auth, native verification check, pay, signTypedData." |
 | 2:30 | Try removing World ID gate | "Watch — disable World ID, entire system locks. Product breaks without it." |
 | 3:30 | A2A Agent Card | "Agents are discoverable via standard A2A protocol." |
 | 4:30 | Q&A | — |
@@ -167,7 +167,7 @@ Separate from live demo. Pre-recorded, clean, no mistakes.
 | 0:00-0:10 | App logo + tagline | "Vocaid Hub — Reliable Resources for the Agentic Economy." |
 | 0:10-0:25 | Problem slide | "AI agents need compute, skills, and hardware. But there's no protocol for discovery, verification, or pricing." |
 | 0:25-0:40 | Architecture diagram | "We built a three-chain protocol: World for identity, 0G for verification, Hedera for payments and credentials." |
-| 0:40-1:10 | World ID verify flow (screen recording) | "World ID gates everything. Four agents registered via AgentKit." |
+| 0:40-1:10 | Wallet login + marketplace browsing (screen recording) | "Login with World App wallet. Orb-verified users access everything instantly. Unverified users see the marketplace but get a friendly gate on actions." |
 | 1:10-2:00 | GPU verification flow (screen recording) | "This is the innovation. GPU providers verified on-chain via ERC-8004 with TEE attestation. This tool doesn't exist yet." |
 | 2:00-2:30 | Marketplace browse (screen recording) | "Humans, GPUs, agents — one marketplace." |
 | 2:30-3:00 | Payment + credentials (screen recording) | "x402 USDC payments on Hedera. HTS soulbound credential tokens." |
