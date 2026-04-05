@@ -147,6 +147,7 @@ export default async function agentRoutes(app: FastifyInstance) {
   // POST /api/agents/:name/a2a — Execute A2A task
   typed.post('/agents/:name/a2a', {
     schema: { params: AgentNameParamsSchema, body: A2ATaskSchema },
+    preHandler: [app.requireApiKey],
   }, async (request, reply) => {
     const { name } = request.params;
     const ip = request.headers['x-forwarded-for'] as string ?? request.headers['x-real-ip'] as string ?? 'unknown';
@@ -180,6 +181,7 @@ export default async function agentRoutes(app: FastifyInstance) {
   // POST /api/agents/:name/mcp — Execute MCP tool
   typed.post('/agents/:name/mcp', {
     schema: { params: AgentNameParamsSchema, body: McpToolCallSchema },
+    preHandler: [app.requireApiKey],
   }, async (request, reply) => {
     const { name } = request.params;
     const ip = request.headers['x-forwarded-for'] as string ?? request.headers['x-real-ip'] as string ?? 'unknown';
