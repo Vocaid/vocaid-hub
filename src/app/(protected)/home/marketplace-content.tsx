@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { ResourceCard, type ResourceCardProps, type ResourceType } from '@/components/ResourceCard';
-import { PaymentConfirmation } from '@/components/PaymentConfirmation';
+import { TxConfirmation } from '@/components/TxConfirmation';
 import { PostHireRating } from '@/components/PostHireRating';
 import { WorldIdGateModal } from '@/components/WorldIdGateModal';
 import { useWorldIdGate } from '@/hooks/useWorldIdGate';
@@ -280,11 +280,13 @@ export function MarketplaceContent({ resources }: { resources: ResourceCardProps
 
       {/* Payment confirmation modal */}
       {paymentResult && (
-        <PaymentConfirmation
-          amount={paymentResult.amount}
-          txHash={paymentResult.txHash}
-          hederaTxHash={paymentResult.hederaTxHash}
-          resourceName={paymentResult.resourceName}
+        <TxConfirmation
+          title="Resource Leased"
+          subtitle={paymentResult.resourceName}
+          amount={`$${paymentResult.amount} USDC`}
+          chain="hedera"
+          txHash={paymentResult.hederaTxHash ?? paymentResult.txHash}
+          worldTxHash={paymentResult.hederaTxHash ? paymentResult.txHash : undefined}
           onClose={() => {
             const name = paymentResult.resourceName;
             setPaymentResult(null);
