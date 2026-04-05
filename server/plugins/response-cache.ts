@@ -94,7 +94,7 @@ async function responseCachePlugin(app: FastifyInstance) {
     const cached = cache.get(request.routeOptions?.url ?? request.url, query);
 
     if (cached) {
-      reply
+      return reply
         .header('Content-Type', 'application/json')
         .header('Cache-Control', cache.getCacheControl(ttl))
         .header('X-Cache', 'HIT')
