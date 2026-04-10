@@ -16,6 +16,8 @@ describe("HubClient", () => {
     expect(hub.a2a).toBeDefined();
     expect(hub.hedera).toBeDefined();
     expect(hub.identity).toBeDefined();
+    expect(hub.inference).toBeDefined();
+    expect(hub.market).toBeDefined();
     expect(hub.payment).toBeDefined();
     expect(hub.vocaid).toBeDefined();
   });

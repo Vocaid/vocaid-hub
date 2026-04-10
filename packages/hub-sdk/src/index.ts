@@ -4,6 +4,8 @@ export { HubClient } from "./client.js";
 export { A2AModule } from "./modules/a2a.js";
 export { HederaModule } from "./modules/hedera.js";
 export { IdentityModule } from "./modules/identity.js";
+export { InferenceModule } from "./modules/inference.js";
+export { MarketModule } from "./modules/market.js";
 export { PaymentModule } from "./modules/payment.js";
 export { VocaidModule } from "./modules/vocaid.js";
 
@@ -64,6 +66,26 @@ export type {
   CredentialTokenConfig,
   MintCredentialInput,
 } from "./modules/hedera.js";
+
+// Types — inference
+export type {
+  InferenceProvider,
+  ChatMessage,
+  ChatOptions,
+  ChatResponse,
+  EmbedResponse,
+  CostEstimate,
+} from "./modules/inference.js";
+
+// Types — market
+export type {
+  Market,
+  MarketStatus,
+  CreateMarketInput,
+  PlaceBetInput,
+  BetReceipt,
+  MarketResolution,
+} from "./modules/market.js";
 
 // Types — x402 fetch
 export type {
