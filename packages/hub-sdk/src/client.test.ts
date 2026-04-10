@@ -14,7 +14,9 @@ describe("HubClient", () => {
     const hub = new HubClient(validOptions);
     expect(hub).toBeDefined();
     expect(hub.a2a).toBeDefined();
+    expect(hub.hedera).toBeDefined();
     expect(hub.identity).toBeDefined();
+    expect(hub.payment).toBeDefined();
     expect(hub.vocaid).toBeDefined();
   });
 

@@ -1,6 +1,8 @@
 import { HubConfigError } from "./errors.js";
 import { A2AModule } from "./modules/a2a.js";
+import { HederaModule } from "./modules/hedera.js";
 import { IdentityModule } from "./modules/identity.js";
+import { PaymentModule } from "./modules/payment.js";
 import { VocaidModule } from "./modules/vocaid.js";
 import type { HubClientOptions, ChainMap } from "./types/index.js";
 
@@ -8,7 +10,9 @@ const DEFAULT_HUB_URL = "https://vocaid-hub.vercel.app";
 
 export class HubClient {
   readonly a2a: A2AModule;
+  readonly hedera: HederaModule;
   readonly identity: IdentityModule;
+  readonly payment: PaymentModule;
   readonly vocaid: VocaidModule;
   readonly hubUrl: string;
   readonly chains: ChainMap;
@@ -34,7 +38,9 @@ export class HubClient {
     const shared = { apiKey, hubUrl: this.hubUrl, chains: this.chains };
 
     this.a2a = new A2AModule(shared);
+    this.hedera = new HederaModule(shared);
     this.identity = new IdentityModule(shared);
+    this.payment = new PaymentModule(shared);
     this.vocaid = new VocaidModule(shared);
   }
 }
