@@ -120,16 +120,15 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       body: JSON.stringify({ side, amount }),
     });
 
-    const mockHash = () => `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-
     if (!res.ok) {
-      // Demo fallback: show mock bet success when 0G testnet unreachable
+      // Demo fallback: show bet success when 0G testnet unreachable
+      // Uses demo- prefix so isRealTxHash() filters it (no fake explorer links)
       setTxConfirm({
         title: 'Bet Placed',
         subtitle: `${side.toUpperCase()} on Market #${marketId}`,
         amount: `$${amount.toFixed(2)} USDC`,
         chain: '0g',
-        txHash: mockHash(),
+        txHash: `demo-bet-${marketId}-${Date.now()}`,
         worldTxHash,
       });
       await refreshMarkets();
@@ -142,7 +141,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       subtitle: `${side.toUpperCase()} on Market #${marketId}`,
       amount: `$${amount.toFixed(2)} USDC`,
       chain: '0g',
-      txHash: data.txHash || mockHash(),
+      txHash: data.txHash || `demo-bet-${marketId}-${Date.now()}`,
       worldTxHash,
     });
     await refreshMarkets();
@@ -158,14 +157,12 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ outcome }),
     });
-    const mockHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
     if (!res.ok) {
-      // Demo fallback
       setTxConfirm({
         title: 'Market Resolved',
         subtitle: `${outcome.toUpperCase()} wins — Market #${marketId}`,
         chain: '0g',
-        txHash: mockHash,
+        txHash: `demo-resolve-${marketId}-${Date.now()}`,
       });
       await refreshMarkets();
       return;
@@ -175,7 +172,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       title: 'Market Resolved',
       subtitle: `${outcome.toUpperCase()} wins — Market #${marketId}`,
       chain: '0g',
-      txHash: resolveData.txHash ?? '',
+      txHash: resolveData.txHash || `demo-resolve-${marketId}-${Date.now()}`,
     });
     await refreshMarkets();
   }
@@ -188,14 +185,12 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
     const res = await fetch(`/api/predictions/${marketId}/claim`, {
       method: 'POST',
     });
-    const claimMockHash = `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
     if (!res.ok) {
-      // Demo fallback
       setTxConfirm({
         title: 'Winnings Claimed',
         subtitle: `Market #${marketId}`,
         chain: '0g',
-        txHash: claimMockHash,
+        txHash: `demo-claim-${marketId}-${Date.now()}`,
       });
       await refreshMarkets();
       return;
@@ -206,7 +201,7 @@ export function PredictionsContent({ initialMarkets }: PredictionsContentProps) 
       subtitle: `Market #${marketId}`,
       amount: claimData.amount ? `$${claimData.amount} USDC` : undefined,
       chain: '0g',
-      txHash: claimData.txHash ?? '',
+      txHash: claimData.txHash || `demo-claim-${marketId}-${Date.now()}`,
     });
     await refreshMarkets();
   }
